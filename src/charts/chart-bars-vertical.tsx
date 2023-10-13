@@ -1,13 +1,4 @@
-import {
-  Chart as ChartJS,
-  DefaultDataPoint,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
+import { Chart as ChartJS, DefaultDataPoint, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, ChartProps } from 'react-chartjs-2';
 
 /**

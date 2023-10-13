@@ -5,19 +5,13 @@ export type GeoChartType = ChartType;
 /**
  * Extends the ChartData used by Chart.js and represents the whole Data to be displayed in the Chart
  */
-export interface GeoChartData<
-  TType extends GeoChartType = GeoChartType,
-  TData = DefaultDataPoint<TType>,
-  TLabel = string
-  > extends ChartData<TType, TData, TLabel> { };
+export interface GeoChartData<TType extends GeoChartType = GeoChartType, TData = DefaultDataPoint<TType>, TLabel = string>
+  extends ChartData<TType, TData, TLabel> {}
 
 /**
  * Represents a Dataset to be shown in the Chart
  */
-export type GeoChartDataset<
-  TType extends GeoChartType = GeoChartType,
-  TData = DefaultDataPoint<TType>
-  > = ChartDataset<TType, TData>;
+export type GeoChartDataset<TType extends GeoChartType = GeoChartType, TData = DefaultDataPoint<TType>> = ChartDataset<TType, TData>;
 
 /**
  * Extends the ChartOptions used by Chart.js with more 'GeoChart' options
@@ -30,6 +24,15 @@ export interface GeoChartOptions extends ChartOptions<GeoChartType> {
     xAxis?: GeoChartOptionsAxis;
     yAxis?: GeoChartOptionsAxis;
   };
+}
+
+/**
+ * The default colors to assign to the chart.
+ */
+export type GeoChartDefaultColors = {
+  backgroundColor: string;
+  borderColor: string;
+  color: string;
 };
 
 /**
