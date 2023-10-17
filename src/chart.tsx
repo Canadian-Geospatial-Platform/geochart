@@ -199,3 +199,20 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
 
   return renderChartContainer();
 }
+
+/**
+ * React's default properties for the GeoChart
+ */
+Chart.defaultProps = {
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false,
+      },
+    },
+    geochart: {
+      chart: 'line',
+    },
+  },
+};
