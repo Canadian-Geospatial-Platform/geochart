@@ -16,13 +16,94 @@ export class ChartValidator {
   private ajv: Ajv.Ajv;
 
   public SCHEMA_DATA = {
+    $schema: 'http://json-schema.org/draft-07/schema#',
     type: 'object',
     properties: {
-      labels: { type: 'array' },
-      datasets: { type: 'array' },
+      labels: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+      },
+      datasets: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            label: {
+              type: 'string',
+            },
+            data: {
+              oneOf: [
+                {
+                  type: 'array',
+                  items: {
+                    type: 'integer',
+                  },
+                },
+                {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      x: {
+                        type: 'integer',
+                      },
+                      y: {
+                        type: 'integer',
+                      },
+                    },
+                    required: ['x', 'y'],
+                  },
+                },
+                {
+                  type: 'object',
+                },
+              ],
+            },
+            backgroundColor: {
+              oneOf: [
+                {
+                  type: 'string',
+                  // pattern:
+                  //  '^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|rgba\\((\\s*\\d+\\s*,){3}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\)|rgb\\((\\s*\\d+\\s*,){2}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\))$',
+                },
+                {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    // pattern:
+                    //  '^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|rgba\\((\\s*\\d+\\s*,){3}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\)|rgb\\((\\s*\\d+\\s*,){2}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\))$',
+                  },
+                },
+              ],
+            },
+            borderColor: {
+              oneOf: [
+                {
+                  type: 'string',
+                  // pattern:
+                  //  '^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|rgba\\((\\s*\\d+\\s*,){3}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\)|rgb\\((\\s*\\d+\\s*,){2}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\))$',
+                },
+                {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                    // pattern:
+                    //  '^(#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})|rgba\\((\\s*\\d+\\s*,){3}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\)|rgb\\((\\s*\\d+\\s*,){2}\\s*(0(\\.\\d+)?|1(\\.0)?|\\.\\d+|\\d+(\\.\\d+)?)\\s*\\))$',
+                  },
+                },
+              ],
+            },
+            borderWidth: {
+              type: 'integer',
+            },
+          },
+          required: ['data'],
+        },
+      },
     },
-    required: ['labels', 'datasets'],
-    // additionalProperties: false
+    required: ['datasets'],
   };
 
   public SCHEMA_OPTIONS = {
@@ -43,12 +124,14 @@ export class ChartValidator {
       geochart: {
         type: 'object',
         properties: {
-          chart: { type: 'string' },
+          chart: {
+            type: 'string',
+            pattern: '^(line|bar|pie|doughnut)$',
+          },
         },
       },
     },
     required: ['geochart'],
-    // additionalProperties: false
   };
 
   /**
