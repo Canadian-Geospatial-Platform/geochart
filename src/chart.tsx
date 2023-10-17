@@ -1,26 +1,49 @@
+/* eslint-disable no-console */
+// TODO: Remove the disable above
 import { Box } from '@mui/material';
-import { Chart as ChartJS, ChartData, ChartOptions, DefaultDataPoint } from 'chart.js';
-import { GeoChartOptions, GeoChartType, GeoChartData, GeoChartDefaultColors } from './chart-types';
+import {
+  Chart as ChartJS,
+  ChartDataset,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  Title,
+  Tooltip,
+  ArcElement,
+} from 'chart.js';
+import { Chart as ChartReact } from 'react-chartjs-2';
+import { GeoChartOptions, GeoChartType, GeoChartData, GeoChartAction, GeoChartDefaultColors } from './chart-types';
 import { ChartValidator, ValidatorResult } from './chart-validator';
-import { ChartDoughnut } from './charts/chart-doughnut';
-import { ChartBarsVertical } from './charts/chart-bars-vertical';
-import { ChartPie } from './charts/chart-pie';
-import { ChartLine } from './charts/chart-line';
-import styles from './chart.module.css';
 
 /**
  * Main props for the Chart
  */
 export interface TypeChartChartProps<TType extends GeoChartType> {
-  style?: unknown;
+  style?: unknown; // Will be casted as CSSProperties later via the imported cgpv react
   defaultColors?: GeoChartDefaultColors;
   data?: GeoChartData<TType>;
   options?: GeoChartOptions;
-  redraw?: boolean;
+  action?: GeoChartAction;
   handleSliderXChanged?: (value: number | number[]) => void;
   handleSliderYChanged?: (value: number | number[]) => void;
   handleError?: (dataErrors: ValidatorResult, optionsErrors: ValidatorResult) => void;
 }
+
+/**
+ * SX Classes for the Chart
+ */
+const sxClasses = {
+  checkDatasetWrapper: {
+    display: 'inline-block',
+  },
+  checkDataset: {
+    display: 'inline-flex',
+    verticalAlign: 'middle',
+    marginRight: '20px !important',
+  },
+};
 
 /**
  * Create a customized Chart UI
@@ -33,14 +56,15 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any;
   const { cgpv } = w;
-  const { CSSProperties } = cgpv.react;
-  const { Slider } = cgpv.ui.elements;
-  const { style: elStyle, data, options: elOptions, redraw } = props;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { useEffect, useState, useRef, CSSProperties } = cgpv.react;
+  const { Grid, Checkbox, Slider, Typography } = cgpv.ui.elements;
+  const { style: elStyle, data, options: elOptions, action: elAction } = props;
 
   // Cast the style
   const style = elStyle as typeof CSSProperties;
 
-  // Attribute the default colors
+  // Attribute the ChartJS default colors
   if (props.defaultColors?.backgroundColor) ChartJS.defaults.backgroundColor = props.defaultColors?.backgroundColor;
   if (props.defaultColors?.borderColor) ChartJS.defaults.borderColor = props.defaultColors?.borderColor;
   if (props.defaultColors?.color) ChartJS.defaults.color = props.defaultColors?.color;
@@ -63,6 +87,25 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
     }
   }
 
+  // STATE / REF SECTION *******
+  const [redraw, setRedraw] = useState(elAction?.shouldRedraw);
+  const chartRef = useRef(null);
+  // const [selectedDatasets, setSelectedDatasets] = useState();
+
+  // If redraw is true, reset the property, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
+  // A bit funky, but as documented online.
+  if (elAction?.shouldRedraw) {
+    elAction!.shouldRedraw = false;
+    setRedraw(true);
+    setTimeout(() => {
+      setRedraw(false);
+    }, 200);
+  }
+
+  /**
+   * Handles when the X Slider changes
+   * @param value number | number[] Indicates the slider value
+   */
   const handleSliderXChange = (value: number | number[]) => {
     // If callback set
     if (props.handleSliderXChanged) {
@@ -70,6 +113,10 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
     }
   };
 
+  /**
+   * Handles when the Y Slider changes
+   * @param value number | number[] Indicates the slider value
+   */
   const handleSliderYChange = (value: number | number[]) => {
     // If callback set
     if (props.handleSliderYChanged) {
@@ -78,55 +125,36 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
   };
 
   /**
+   * Handles when a dataset was checked/unchecked (via the legend)
+   * @param datasetIndex number Indicates the dataset index that was checked/unchecked
+   * @param checked boolean Indicates the checked state
+   */
+  const handleDatasetChecked = (datasetIndex: number, checked: boolean) => {
+    // Toggle visibility of the dataset
+    chartRef.current.setDatasetVisibility(datasetIndex, checked);
+    chartRef.current.update();
+  };
+
+  /**
    * Renders the Chart JSX.Element itself using Line as default
    * @returns The Chart JSX.Element itself using Line as default
    */
   const renderChart = (): JSX.Element => {
     // Depending on the type of chart
-    switch (options!.geochart.chart) {
+    switch (options.geochart.chart) {
       case 'bar':
-        // Vertical Bars Chart
-        return (
-          <ChartBarsVertical
-            type="bar"
-            data={data as ChartData<'bar', DefaultDataPoint<'bar'>, string>}
-            options={options as ChartOptions<'bar'>}
-            redraw={redraw}
-          />
-        );
+        return <ChartReact ref={chartRef} type="bar" style={style} data={data!} options={options} redraw={redraw} />;
 
       case 'pie':
-        // Pie Chart
-        return (
-          <ChartPie
-            type="pie"
-            data={data as ChartData<'pie', DefaultDataPoint<'pie'>, string>}
-            options={options as ChartOptions<'pie'>}
-            redraw={redraw}
-          />
-        );
+        return <ChartReact ref={chartRef} type="pie" style={style} data={data!} options={options} redraw={redraw} />;
 
       case 'doughnut':
         // Doughnut Chart
-        return (
-          <ChartDoughnut
-            type="doughnut"
-            data={data as ChartData<'doughnut', number[], string>}
-            options={options as ChartOptions<'doughnut'>}
-            redraw={redraw}
-          />
-        );
+        return <ChartReact ref={chartRef} type="doughnut" style={style} data={data!} options={options} redraw={redraw} />;
 
       default:
         // Line Chart is default
-        return (
-          <ChartLine
-            type="line"
-            data={data as ChartData<'line', DefaultDataPoint<'line'>, string>}
-            options={options as ChartOptions<'line'>}
-            redraw={redraw}
-          />
-        );
+        return <ChartReact ref={chartRef} type="line" style={style} data={data!} options={options} redraw={redraw} />;
     }
   };
 
@@ -135,7 +163,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
    * @returns The X Chart Slider JSX.Element or an empty div
    */
   const renderXSlider = (): JSX.Element => {
-    const { xSlider } = options!.geochart;
+    const { xSlider } = options.geochart;
     if (xSlider?.display) {
       return (
         <Box sx={{ height: '100%' }}>
@@ -159,7 +187,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
    * @returns The Y Chart Slider JSX.Element or an empty div
    */
   const renderYSlider = (): JSX.Element => {
-    const { ySlider } = options!.geochart;
+    const { ySlider } = options.geochart;
     if (ySlider?.display) {
       return (
         <Box sx={{ height: '100%' }}>
@@ -175,6 +203,46 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
         </Box>
       );
     }
+    // None
+    return <div />;
+  };
+
+  /**
+   * Renders the Dataset selector, aka the legend
+   * @returns The Dataset selector Element
+   */
+  const renderDatasetSelector = (): JSX.Element => {
+    const { datasets } = data!;
+    if (datasets.length > 1) {
+      return (
+        <div>
+          {datasets.map((ds: ChartDataset, idx: number) => {
+            // Find a color for the legend based on the dataset info
+            let { color } = ChartJS.defaults;
+            if (ds.borderColor) color = ds.borderColor! as string;
+            else if (ds.backgroundColor) color = ds.backgroundColor! as string;
+
+            // Return the Legend item
+            return (
+              // eslint-disable-next-line react/no-array-index-key
+              <Box sx={sxClasses.checkDatasetWrapper} key={idx}>
+                <Checkbox
+                  value={idx}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    handleDatasetChecked(idx, e.target?.checked);
+                  }}
+                  defaultChecked
+                />
+                <Typography sx={{ ...sxClasses.checkDataset, ...{ color } }} noWrap>
+                  {ds.label}
+                </Typography>
+              </Box>
+            );
+          })}
+        </div>
+      );
+    }
+    // None
     return <div />;
   };
 
@@ -183,19 +251,33 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
    * @returns The whole Chart container JSX.Element or an empty div
    */
   const renderChartContainer = (): JSX.Element => {
-    if (data && options && options.geochart) {
+    if (options.geochart && data?.datasets) {
       return (
-        <div style={style} className={styles.chartContainer}>
-          <div className={styles.chartContainerGrid1}>{renderChart()}</div>
-          <div className={styles.chartContainerGrid2}>{renderYSlider()}</div>
-          <div className={styles.chartContainerGrid3}>{renderXSlider()}</div>
-          <div className={styles.chartContainerGrid4} />
-        </div>
+        <Grid container style={style}>
+          <Grid item xs={12}>
+            {renderDatasetSelector()}
+          </Grid>
+          <Grid item xs={11}>
+            {renderChart()}
+          </Grid>
+          <Grid item xs={1}>
+            {renderYSlider()}
+          </Grid>
+          <Grid item xs={11}>
+            {renderXSlider()}
+          </Grid>
+        </Grid>
       );
     }
 
     return <div />;
   };
+
+  // Effect hook to add and remove event listeners
+  useEffect(() => {
+    // Prep ChartJS
+    ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, ArcElement);
+  }, []);
 
   return renderChartContainer();
 }

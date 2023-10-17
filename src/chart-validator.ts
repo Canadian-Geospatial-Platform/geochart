@@ -16,13 +16,86 @@ export class ChartValidator {
   private ajv: Ajv.Ajv;
 
   public SCHEMA_DATA = {
+    $schema: 'http://json-schema.org/draft-07/schema#',
     type: 'object',
     properties: {
-      labels: { type: 'array' },
-      datasets: { type: 'array' },
+      labels: {
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+      },
+      datasets: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            label: {
+              type: 'string',
+            },
+            data: {
+              oneOf: [
+                {
+                  type: 'array',
+                  items: {
+                    type: 'number',
+                  },
+                },
+                {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      x: {
+                        type: 'number',
+                      },
+                      y: {
+                        type: 'number',
+                      },
+                    },
+                    required: ['x', 'y'],
+                  },
+                },
+                {
+                  type: 'object',
+                },
+              ],
+            },
+            backgroundColor: {
+              oneOf: [
+                {
+                  type: 'string',
+                },
+                {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                },
+              ],
+            },
+            borderColor: {
+              oneOf: [
+                {
+                  type: 'string',
+                },
+                {
+                  type: 'array',
+                  items: {
+                    type: 'string',
+                  },
+                },
+              ],
+            },
+            borderWidth: {
+              type: 'integer',
+            },
+          },
+          required: ['data'],
+        },
+      },
     },
-    required: ['labels', 'datasets'],
-    // additionalProperties: false
+    required: ['datasets'],
   };
 
   public SCHEMA_OPTIONS = {
@@ -43,12 +116,14 @@ export class ChartValidator {
       geochart: {
         type: 'object',
         properties: {
-          chart: { type: 'string' },
+          chart: {
+            enum: ['line', 'bar', 'pie', 'doughnut'],
+            default: 'line',
+          },
         },
       },
     },
     required: ['geochart'],
-    // additionalProperties: false
   };
 
   /**
