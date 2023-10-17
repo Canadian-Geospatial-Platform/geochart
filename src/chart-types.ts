@@ -14,6 +14,15 @@ export interface GeoChartData<TType extends GeoChartType = GeoChartType, TData =
 export type GeoChartDataset<TType extends GeoChartType = GeoChartType, TData = DefaultDataPoint<TType>> = ChartDataset<TType, TData>;
 
 /**
+ * Indicates an action to be performed by the Chart.
+ * Special type that allows the child component a accept a 'todo action' via props and reset the prop value without the parent being notified.
+ * This is essentially to simplify the setTimeout handling to be managed inside the Chart component instead of higher in the application.
+ */
+export type GeoChartAction = {
+  shouldRedraw?: boolean;
+};
+
+/**
  * Extends the ChartOptions used by Chart.js with more 'GeoChart' options
  */
 export interface GeoChartOptions extends ChartOptions<GeoChartType> {
