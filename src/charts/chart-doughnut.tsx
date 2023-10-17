@@ -1,5 +1,5 @@
 import { Chart as ChartJS, DefaultDataPoint, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut, ChartProps} from 'react-chartjs-2';
+import { Doughnut, ChartProps } from 'react-chartjs-2';
 
 /**
  * Create a customized Chart Doughnut UI
