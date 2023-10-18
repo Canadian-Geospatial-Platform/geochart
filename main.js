@@ -27805,9 +27805,17 @@ function App() {
     console.error(dataErrors.errors, optionsErrors.errors);
     alert('There was an error parsing the Chart inputs. View console for details.');
   };
+
+  /**
+   * Handles when the Chart X Axis has changed.
+   */
   var handleChartXAxisChanged = function handleChartXAxisChanged() {
     console.log('Handle Chart X Axis');
   };
+
+  /**
+   * Handles when the Chart Y Axis has changed.
+   */
   var handleChartYAxisChanged = function handleChartYAxisChanged() {
     console.log('Handle Chart Y Axis');
   };
@@ -27820,7 +27828,7 @@ function App() {
     };
   });
 
-  // Render
+  // Render the Chart
   return /*#__PURE__*/(0,jsx_runtime.jsx)(chart_Chart, {
     style: {
       width: 800
