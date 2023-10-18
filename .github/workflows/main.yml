@@ -36,4 +36,5 @@ jobs:
         with:
           branch: gh-pages # The branch name where you want to push the assets
           folder: dist # The directory where your assets are generated
+          ssh-key: ${{ secrets.PUSH-GH-PAGES }}
           single-commit: true
