@@ -33,7 +33,7 @@ jobs:
       # Push to the gh-pages branch
       - name: Push to gh-pages branch
         uses: JamesIves/github-pages-deploy-action@v4.4.1
-        env:
+        with:
           branch: gh-pages # The branch name where you want to push the assets
           folder: dist # The directory where your assets are generated
           single-commit: true
