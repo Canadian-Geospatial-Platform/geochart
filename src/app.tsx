@@ -18,6 +18,9 @@ export function App(): JSX.Element {
   const [data, setData] = useState();
   const [options, setOptions] = useState();
 
+  /**
+   * Handles when the Chart has to be loaded with data or options.
+   */
   const handleChartLoad = (e: Event) => {
     const ev = e as CustomEvent;
     if (ev.detail.data) {
