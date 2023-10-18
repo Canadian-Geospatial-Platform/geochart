@@ -2,7 +2,7 @@ import { Chart } from './chart';
 import { ValidatorResult } from './chart-validator';
 
 /**
- * Create a container to visualize a GeoChart in a standalone manner.
+ * Create a container to visualize a GeoChart in a standalone manner..
  *
  * @returns {JSX.Elemet} the element that has the GeoChart
  */
@@ -79,7 +79,7 @@ export function App(): JSX.Element {
     };
   });
 
-  // Render
+  // Render the Chart
   return (
     <Chart
       style={{ width: 800 }}
