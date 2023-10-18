@@ -57,10 +57,16 @@ export function App(): JSX.Element {
     alert('There was an error parsing the Chart inputs. View console for details.');
   };
 
+  /**
+   * Handles when the Chart X Axis has changed.
+   */
   const handleChartXAxisChanged = () => {
     console.log('Handle Chart X Axis');
   };
 
+  /**
+   * Handles when the Chart Y Axis has changed.
+   */
   const handleChartYAxisChanged = () => {
     console.log('Handle Chart Y Axis');
   };
