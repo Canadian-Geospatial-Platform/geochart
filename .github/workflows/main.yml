@@ -1,10 +1,12 @@
 name: Build artifacts and push to gh-pages
 on:
-  #pull_request_target:
-  #  types: [closed]
-  push:
+  pull_request_target:
+    types: [closed]
     branches:
       - develop
+  # push:
+  #   branches:
+  #     - develop
   workflow_dispatch:
 
 jobs:
