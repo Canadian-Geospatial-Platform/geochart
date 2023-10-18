@@ -79,7 +79,7 @@ export function App(): JSX.Element {
     };
   });
 
-  // Render
+  // Render the Chart
   return (
     <Chart
       style={{ width: 800 }}
