@@ -27250,6 +27250,12 @@ const Scatter = /* #__PURE__ */ (/* unused pure expression or super */ null && (
 
 //# sourceMappingURL=index.js.map
 
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classCallCheck.js
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/createClass.js
 
 function _defineProperties(target, props) {
@@ -27269,12 +27275,6 @@ function _createClass(Constructor, protoProps, staticProps) {
   });
   return Constructor;
 }
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classCallCheck.js
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
 // EXTERNAL MODULE: ./node_modules/ajv/lib/ajv.js
 var ajv = __webpack_require__(96);
 var ajv_default = /*#__PURE__*/__webpack_require__.n(ajv);
@@ -27291,155 +27291,184 @@ var ajv_default = /*#__PURE__*/__webpack_require__.n(ajv);
 /**
  * The Char Validator class to validate data and options inputs.
  */
-var ChartValidator = /*#__PURE__*/_createClass(
-/**
- * Constructs a Chart Validate object to validate schemas.
- */
-function ChartValidator() {
-  var _this = this;
-  _classCallCheck(this, ChartValidator);
-  // The JSON validator used by ChartValidate
-  _defineProperty(this, "SCHEMA_DATA", {
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    type: 'object',
-    properties: {
-      labels: {
-        type: 'array',
-        items: {
-          type: 'string'
-        }
-      },
-      datasets: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            label: {
-              type: 'string'
-            },
-            data: {
-              oneOf: [{
-                type: 'array',
-                items: {
-                  type: 'number'
-                }
-              }, {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  properties: {
-                    x: {
-                      type: 'number'
-                    },
-                    y: {
-                      type: 'number'
-                    }
-                  },
-                  required: ['x', 'y']
-                }
-              }, {
-                type: 'object'
-              }]
-            },
-            backgroundColor: {
-              oneOf: [{
-                type: 'string'
-              }, {
-                type: 'array',
-                items: {
-                  type: 'string'
-                }
-              }]
-            },
-            borderColor: {
-              oneOf: [{
-                type: 'string'
-              }, {
-                type: 'array',
-                items: {
-                  type: 'string'
-                }
-              }]
-            },
-            borderWidth: {
-              type: 'integer'
-            }
-          },
-          required: ['data']
-        }
-      }
-    },
-    required: ['datasets']
-  });
-  _defineProperty(this, "SCHEMA_OPTIONS", {
-    type: 'object',
-    properties: {
-      responsive: {
-        type: 'boolean'
-      },
-      plugins: {
-        type: 'object',
-        properties: {
-          legend: {
+var ChartValidator = /*#__PURE__*/function () {
+  /**
+   * Constructs a Chart Validate object to validate schemas.
+   */
+  function ChartValidator() {
+    var _this = this;
+    _classCallCheck(this, ChartValidator);
+    // The JSON validator used by ChartValidate
+    _defineProperty(this, "SCHEMA_DATA", {
+      $schema: 'http://json-schema.org/draft-07/schema#',
+      type: 'object',
+      properties: {
+        labels: {
+          type: 'array',
+          items: {
+            type: 'string'
+          }
+        },
+        datasets: {
+          type: 'array',
+          items: {
             type: 'object',
             properties: {
-              display: {
-                type: 'boolean'
+              label: {
+                type: 'string'
+              },
+              data: {
+                oneOf: [{
+                  type: 'array',
+                  items: {
+                    type: 'number'
+                  }
+                }, {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      x: {
+                        type: 'number'
+                      },
+                      y: {
+                        type: 'number'
+                      }
+                    },
+                    required: ['x', 'y']
+                  }
+                }, {
+                  type: 'object'
+                }]
+              },
+              backgroundColor: {
+                oneOf: [{
+                  type: 'string'
+                }, {
+                  type: 'array',
+                  items: {
+                    type: 'string'
+                  }
+                }]
+              },
+              borderColor: {
+                oneOf: [{
+                  type: 'string'
+                }, {
+                  type: 'array',
+                  items: {
+                    type: 'string'
+                  }
+                }]
+              },
+              borderWidth: {
+                type: 'integer'
+              }
+            },
+            required: ['data']
+          }
+        }
+      },
+      required: ['datasets']
+    });
+    _defineProperty(this, "SCHEMA_OPTIONS", {
+      type: 'object',
+      properties: {
+        responsive: {
+          type: 'boolean'
+        },
+        plugins: {
+          type: 'object',
+          properties: {
+            legend: {
+              type: 'object',
+              properties: {
+                display: {
+                  type: 'boolean'
+                }
               }
             }
           }
-        }
-      },
-      geochart: {
-        type: 'object',
-        properties: {
-          chart: {
-            "enum": ['line', 'bar', 'pie', 'doughnut'],
-            "default": 'line',
-            description: 'Supported types of chart.'
+        },
+        geochart: {
+          type: 'object',
+          properties: {
+            chart: {
+              "enum": ['line', 'bar', 'pie', 'doughnut'],
+              "default": 'line',
+              description: 'Supported types of chart.'
+            }
           }
         }
-      }
-    },
-    required: ['geochart']
-  });
-  /**
-   * Validates the data input parameters.
-   */
-  _defineProperty(this, "validateData", function (data) {
-    var _validate$errors;
-    // Compile
-    var validate = _this.ajv.compile(_this.SCHEMA_DATA);
+      },
+      required: ['geochart']
+    });
+    /**
+     * Validates the data input parameters.
+     */
+    _defineProperty(this, "validateData", function (data) {
+      var _validate$errors;
+      // Compile
+      var validate = _this.ajv.compile(_this.SCHEMA_DATA);
 
-    // Validate
-    var valid = validate(data);
-    return {
-      valid: valid,
-      errors: (_validate$errors = validate.errors) === null || _validate$errors === void 0 ? void 0 : _validate$errors.map(function (e) {
-        return e.message || 'generic schema error';
-      })
-    };
-  });
-  /**
-   * Validates the options input parameters.
-   */
-  _defineProperty(this, "validateOptions", function (options) {
-    var _validate$errors2;
-    // Compile
-    var validate = _this.ajv.compile(_this.SCHEMA_OPTIONS);
+      // Validate
+      var valid = validate(data);
+      return {
+        param: 'data',
+        valid: valid,
+        errors: (_validate$errors = validate.errors) === null || _validate$errors === void 0 ? void 0 : _validate$errors.map(function (e) {
+          var m = e.message || 'generic schema error';
+          return "".concat(e.schemaPath, " | ").concat(e.keyword, " | ").concat(m);
+        })
+      };
+    });
+    /**
+     * Validates the options input parameters.
+     */
+    _defineProperty(this, "validateOptions", function (options) {
+      var _validate$errors2;
+      // Compile
+      var validate = _this.ajv.compile(_this.SCHEMA_OPTIONS);
 
-    // Validate
-    var valid = validate(options);
-    return {
-      valid: valid,
-      errors: (_validate$errors2 = validate.errors) === null || _validate$errors2 === void 0 ? void 0 : _validate$errors2.map(function (e) {
-        return e.message || 'generic schema error';
-      })
-    };
-  });
-  // The embedded JSON validator
-  this.ajv = new (ajv_default())();
-});
+      // Validate
+      var valid = validate(options);
+      return {
+        param: 'options',
+        valid: valid,
+        errors: (_validate$errors2 = validate.errors) === null || _validate$errors2 === void 0 ? void 0 : _validate$errors2.map(function (e) {
+          var m = e.message || 'generic schema error';
+          return "".concat(e.schemaPath, " | ").concat(e.keyword, " | ").concat(m);
+        })
+      };
+    });
+    // The embedded JSON validator
+    this.ajv = new (ajv_default())();
+  }
+  _createClass(ChartValidator, null, [{
+    key: "parseValidatorResultsMessages",
+    value: function parseValidatorResultsMessages(valRes) {
+      // Gather all error messages for data input
+      var msg = '';
+      valRes.forEach(function (v) {
+        // Redirect
+        msg += ChartValidator.parseValidatorResultMessage(v);
+      });
+      return msg.replace(/^\n+|\n+$/gm, '');
+    }
+  }, {
+    key: "parseValidatorResultMessage",
+    value: function parseValidatorResultMessage(valRes) {
+      var _valRes$errors;
+      // Gather all error messages for data input
+      var msg = '';
+      (_valRes$errors = valRes.errors) === null || _valRes$errors === void 0 || _valRes$errors.forEach(function (m) {
+        msg += "".concat(m, "\n");
+      });
+      return msg.replace(/^\n+|\n+$/gm, '');
+    }
+  }]);
+  return ChartValidator;
+}();
 ;// CONCATENATED MODULE: ./src/chart.tsx
 
 
@@ -27479,7 +27508,7 @@ var sxClasses = {
  * @returns {JSX.Element} the created Chart element
  */
 function chart_Chart(props) {
-  var _props$defaultColors, _props$defaultColors2, _props$defaultColors3, _props$defaultColors4, _props$defaultColors5, _props$defaultColors6;
+  var _options$geochart;
   // Prep ChartJS
   Chart.register.apply(Chart, _toConsumableArray(registerables));
 
@@ -27487,7 +27516,6 @@ function chart_Chart(props) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   var w = window;
   var cgpv = w.cgpv;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   var _cgpv$react = cgpv.react,
     useEffect = _cgpv$react.useEffect,
     useState = _cgpv$react.useState,
@@ -27501,31 +27529,25 @@ function chart_Chart(props) {
   var elStyle = props.style,
     data = props.data,
     elOptions = props.options,
-    elAction = props.action;
+    elAction = props.action,
+    defaultColors = props.defaultColors,
+    handleSliderXChanged = props.handleSliderXChanged,
+    handleSliderYChanged = props.handleSliderYChanged,
+    handleError = props.handleError;
 
   // Cast the style
   var style = elStyle;
 
   // Attribute the ChartJS default colors
-  if ((_props$defaultColors = props.defaultColors) !== null && _props$defaultColors !== void 0 && _props$defaultColors.backgroundColor) Chart.defaults.backgroundColor = (_props$defaultColors2 = props.defaultColors) === null || _props$defaultColors2 === void 0 ? void 0 : _props$defaultColors2.backgroundColor;
-  if ((_props$defaultColors3 = props.defaultColors) !== null && _props$defaultColors3 !== void 0 && _props$defaultColors3.borderColor) Chart.defaults.borderColor = (_props$defaultColors4 = props.defaultColors) === null || _props$defaultColors4 === void 0 ? void 0 : _props$defaultColors4.borderColor;
-  if ((_props$defaultColors5 = props.defaultColors) !== null && _props$defaultColors5 !== void 0 && _props$defaultColors5.color) Chart.defaults.color = (_props$defaultColors6 = props.defaultColors) === null || _props$defaultColors6 === void 0 ? void 0 : _props$defaultColors6.color;
+  if (defaultColors !== null && defaultColors !== void 0 && defaultColors.backgroundColor) Chart.defaults.backgroundColor = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.backgroundColor;
+  if (defaultColors !== null && defaultColors !== void 0 && defaultColors.borderColor) Chart.defaults.borderColor = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.borderColor;
+  if (defaultColors !== null && defaultColors !== void 0 && defaultColors.color) Chart.defaults.color = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.color;
 
   // Merge default options
   var options = _objectSpread(_objectSpread({}, chart_Chart.defaultProps.options), elOptions);
-
-  // If options and data are specified
-  if (options && data) {
-    // Validate the data and options as received
-    var validator = new ChartValidator();
-    var resOptions = validator.validateOptions(options);
-    var resData = validator.validateData(data);
-
-    // If any errors
-    if (!resOptions.valid || !resData.valid) {
-      // If a callback is defined
-      if (props.handleError) props.handleError(resData, resOptions);else console.error(resData, resOptions);
-    }
+  if (!(options !== null && options !== void 0 && (_options$geochart = options.geochart) !== null && _options$geochart !== void 0 && _options$geochart.chart)) {
+    // Deep assign, in case geochart was specified in elOptions, but geochart wasn't (losing the default for 'chart' by accident)
+    options.geochart.chart = chart_Chart.defaultProps.options.geochart.chart;
   }
 
   // STATE / REF SECTION *******
@@ -27534,27 +27556,14 @@ function chart_Chart(props) {
     redraw = _useState2[0],
     setRedraw = _useState2[1];
   var chartRef = useRef(null);
-  // const [selectedDatasets, setSelectedDatasets] = useState();
-
-  // If redraw is true, reset the property, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
-  // A bit funky, but as documented online.
-  if (elAction !== null && elAction !== void 0 && elAction.shouldRedraw) {
-    elAction.shouldRedraw = false;
-    setRedraw(true);
-    setTimeout(function () {
-      setRedraw(false);
-    }, 200);
-  }
 
   /**
    * Handles when the X Slider changes
    * @param value number | number[] Indicates the slider value
    */
   var handleSliderXChange = function handleSliderXChange(value) {
-    // If callback set
-    if (props.handleSliderXChanged) {
-      props.handleSliderXChanged(value);
-    }
+    // Callback
+    handleSliderXChanged === null || handleSliderXChanged === void 0 || handleSliderXChanged(value);
   };
 
   /**
@@ -27562,10 +27571,8 @@ function chart_Chart(props) {
    * @param value number | number[] Indicates the slider value
    */
   var handleSliderYChange = function handleSliderYChange(value) {
-    // If callback set
-    if (props.handleSliderYChanged) {
-      props.handleSliderYChanged(value);
-    }
+    // Callback
+    handleSliderYChanged === null || handleSliderYChanged === void 0 || handleSliderYChanged(value);
   };
 
   /**
@@ -27719,13 +27726,80 @@ function chart_Chart(props) {
     }
     return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {});
   };
-  return renderChartContainer();
+
+  /**
+   * Renders the whole Chart container JSX.Element or an empty div
+   * @returns The whole Chart container JSX.Element or an empty div
+   */
+  var renderChartContainerFailed = function renderChartContainerFailed() {
+    return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {
+      style: {
+        color: 'red'
+      },
+      children: "Error rendering the Chart. Check console for details."
+    });
+  };
+
+  //
+  // PROCEED WITH LOGIC HERE!
+  //
+
+  // If options and data are specified
+  var resOptions;
+  var resData;
+  if (options && data) {
+    // Validate the data and options as received
+    var validator = new ChartValidator();
+    resOptions = validator.validateOptions(options) || undefined;
+    resData = validator.validateData(data);
+  }
+
+  // Effect hook to raise the error on the correct React state.
+  // This is because it's quite probable the handling of the error will want to modify the state of another
+  // component (e.g. Snackbar) and React will throw a warning if this is not done in the useEffect().
+  useEffect(function () {
+    // If the options or data schemas were checked and had errors
+    if (resData && resOptions && (!resData.valid || !resOptions.valid)) {
+      // If a callback is defined
+      handleError === null || handleError === void 0 || handleError(resData, resOptions);
+      console.error(resData, resOptions);
+    }
+  }, [handleError, resData, resOptions]);
+
+  // If options and data are specified
+  if (options && data) {
+    var _resOptions, _resData;
+    // If no errors
+    if ((_resOptions = resOptions) !== null && _resOptions !== void 0 && _resOptions.valid && (_resData = resData) !== null && _resData !== void 0 && _resData.valid) {
+      // If redraw is true, reset the property, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
+      // A bit funky, but as documented online.
+      if (elAction !== null && elAction !== void 0 && elAction.shouldRedraw) {
+        elAction.shouldRedraw = false;
+        setRedraw(true);
+        setTimeout(function () {
+          setRedraw(false);
+        }, 200);
+      }
+
+      // Render the chart
+      return renderChartContainer();
+    }
+
+    // Failed to render
+    return renderChartContainerFailed();
+  }
+
+  // Nothing to render, no errors either
+  return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {});
 }
 
 /**
  * React's default properties for the GeoChart
  */
 chart_Chart.defaultProps = {
+  style: null,
+  defaultColors: null,
+  data: null,
   options: {
     responsive: true,
     plugins: {
@@ -27736,9 +27810,14 @@ chart_Chart.defaultProps = {
     geochart: {
       chart: 'line'
     }
-  }
+  },
+  action: null,
+  handleSliderXChanged: null,
+  handleSliderYChanged: null,
+  handleError: null
 };
 ;// CONCATENATED MODULE: ./src/app.tsx
+
 
 
 
@@ -27747,6 +27826,7 @@ chart_Chart.defaultProps = {
  *
  * @returns {JSX.Element} the element that has the GeoChart
  */
+
 function App() {
   // Fetch the cgpv module
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -27785,39 +27865,13 @@ function App() {
    * @param optionsErrors The options errors that happened (if any)
    */
   var handleError = function handleError(dataErrors, optionsErrors) {
-    var _dataErrors$errors, _optionsErrors$errors;
     // Gather all error messages
-    var msgData = '';
-    (_dataErrors$errors = dataErrors.errors) === null || _dataErrors$errors === void 0 || _dataErrors$errors.forEach(function (m) {
-      msgData += "".concat(m, "\n");
-    });
-
-    // Gather all error messages
-    var msgOptions = '';
-    (_optionsErrors$errors = optionsErrors.errors) === null || _optionsErrors$errors === void 0 || _optionsErrors$errors.forEach(function (m) {
-      msgOptions += "".concat(m, "\n");
-    });
+    var msgAll = ChartValidator.parseValidatorResultsMessages([dataErrors, optionsErrors]);
 
     // Show the error (actually, can't because the snackbar is linked to a map at the moment and geochart is standalone)
     // TODO: Decide if we want the snackbar outside of a map or not and use showError or not
-    cgpv.api.utilities.showError('', msgData);
-    cgpv.api.utilities.showError('', msgOptions);
-    console.error(dataErrors.errors, optionsErrors.errors);
-    alert('There was an error parsing the Chart inputs. View console for details.');
-  };
-
-  /**
-   * Handles when the Chart X Axis has changed.
-   */
-  var handleChartXAxisChanged = function handleChartXAxisChanged() {
-    console.log('Handle Chart X Axis');
-  };
-
-  /**
-   * Handles when the Chart Y Axis has changed.
-   */
-  var handleChartYAxisChanged = function handleChartYAxisChanged() {
-    console.log('Handle Chart Y Axis');
+    cgpv.api.utilities.showError('', msgAll);
+    alert("There was an error parsing the Chart inputs.\n\n".concat(msgAll, "\n\nView console for details."));
   };
 
   // Effect hook to add and remove event listeners
@@ -27835,8 +27889,6 @@ function App() {
     },
     data: data,
     options: options,
-    handleSliderXChanged: handleChartXAxisChanged,
-    handleSliderYChanged: handleChartYAxisChanged,
     handleError: handleError
   });
 }
