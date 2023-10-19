@@ -1,5 +1,5 @@
 import { Chart } from './chart';
-import { ChartValidator, ValidatorResult } from './chart-validator';
+import { SchemaValidator, ValidatorResult } from './schema-validator';
 
 /**
  * Create a container to visualize a GeoChart in a standalone manner.
@@ -21,7 +21,7 @@ export function App(): JSX.Element {
   /**
    * Handles when the Chart has to be loaded with data or options.
    */
-  const handleChartLoad = (e: Event) => {
+  const handleChartLoad = (e: Event): void => {
     const ev = e as CustomEvent;
     if (ev.detail.data) {
       setData(ev.detail.data);
@@ -36,11 +36,12 @@ export function App(): JSX.Element {
    * @param dataErrors The data errors that happened (if any)
    * @param optionsErrors The options errors that happened (if any)
    */
-  const handleError = (dataErrors: ValidatorResult, optionsErrors: ValidatorResult) => {
+  const handleError = (dataErrors: ValidatorResult, optionsErrors: ValidatorResult): void => {
     // Gather all error messages
-    const msgAll = ChartValidator.parseValidatorResultsMessages([dataErrors, optionsErrors]);
+    const msgAll = SchemaValidator.parseValidatorResultsMessages([dataErrors, optionsErrors]);
 
-    // Show the error (actually, can't because the snackbar is linked to a map at the moment and geochart is standalone)
+    // Show the error (actually, can't because the snackbar is linked to a map at the moment
+    // and geochart is standalone without a cgpv.init() at all)
     // TODO: Decide if we want the snackbar outside of a map or not and use showError or not
     cgpv.api.utilities.showError('', msgAll);
     alert(`There was an error parsing the Chart inputs.\n\n${msgAll}\n\nView console for details.`);

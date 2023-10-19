@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 import { Chart as ChartJS, ChartDataset, registerables } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
 import { GeoChartOptions, GeoChartType, GeoChartData, GeoChartAction, GeoChartDefaultColors } from './chart-types';
-import { ChartValidator, ValidatorResult } from './chart-validator';
+import { SchemaValidator, ValidatorResult } from './schema-validator';
 
 /**
  * Main props for the Chart
@@ -84,7 +84,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
    * Handles when the X Slider changes
    * @param value number | number[] Indicates the slider value
    */
-  const handleSliderXChange = (value: number | number[]) => {
+  const handleSliderXChange = (value: number | number[]): void => {
     // Callback
     handleSliderXChanged?.(value);
   };
@@ -93,7 +93,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
    * Handles when the Y Slider changes
    * @param value number | number[] Indicates the slider value
    */
-  const handleSliderYChange = (value: number | number[]) => {
+  const handleSliderYChange = (value: number | number[]): void => {
     // Callback
     handleSliderYChanged?.(value);
   };
@@ -103,7 +103,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
    * @param datasetIndex number Indicates the dataset index that was checked/unchecked
    * @param checked boolean Indicates the checked state
    */
-  const handleDatasetChecked = (datasetIndex: number, checked: boolean) => {
+  const handleDatasetChecked = (datasetIndex: number, checked: boolean): void => {
     // Toggle visibility of the dataset
     chartRef.current.setDatasetVisibility(datasetIndex, checked);
     chartRef.current.update();
@@ -188,7 +188,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
               <Box sx={sxClasses.checkDatasetWrapper} key={idx}>
                 <Checkbox
                   value={idx}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
                     handleDatasetChecked(idx, e.target?.checked);
                   }}
                   defaultChecked
@@ -238,7 +238,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
    * @returns The whole Chart container JSX.Element or an empty div
    */
   const renderChartContainerFailed = (): JSX.Element => {
-    return <div style={{ color: 'red' }}>Error rendering the Chart. Check console for details.</div>;
+    return <div style={{ fontStyle: 'italic', color: 'red' }}>Error rendering the Chart. Check console for details.</div>;
   };
 
   //
@@ -250,7 +250,7 @@ export function Chart(props: TypeChartChartProps<GeoChartType>): JSX.Element {
   let resData: ValidatorResult | undefined;
   if (options && data) {
     // Validate the data and options as received
-    const validator = new ChartValidator();
+    const validator = new SchemaValidator();
     resOptions = validator.validateOptions(options) || undefined;
     resData = validator.validateData(data);
   }

@@ -1,0 +1,87 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GeoChart Data Schema",
+  "description": "This Schema validator validates the GeoChart data.",
+  "type": "object",
+  
+  "properties": {
+    "labels": {
+      "description": "The labels to use for the X axis.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "datasets": {
+      "description": "The mandatory datasets information to use to build the chart.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "data": {
+            "oneOf": [
+              {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "number"
+                    },
+                    "y": {
+                      "type": "number"
+                    }
+                  },
+                  "required": ["x", "y"]
+                }
+              },
+              {
+                "type": "object"
+              }
+            ]
+          },
+          "backgroundColor": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "borderColor": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "borderWidth": {
+            "type": "integer"
+          }
+        },
+        "required": ["data"]
+      }
+    }
+  },
+  "required": ["datasets"]
+}

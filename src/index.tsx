@@ -1,7 +1,8 @@
 import App from './app';
 
+// Export the types from the package
 export * from './chart-types';
-export * from './chart-validator';
+export * from './schema-validator';
 export * from './chart';
 
 // Search for a special root in case we are loading the geochart standalone

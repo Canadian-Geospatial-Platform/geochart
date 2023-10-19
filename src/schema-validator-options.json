@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GeoChart Options Schema",
+  "description": "This Schema validator validates the GeoChart options.",
+  "type": "object",
+  
+  "properties": {
+    "responsive": { "type": "boolean" },
+    "plugins": {
+      "type": "object",
+      "properties": {
+        "legend": {
+          "type": "object",
+          "properties": {
+            "display": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "geochart": {
+      "type": "object",
+      "properties": {
+        "chart": {
+          "enum": ["line", "bar", "pie", "doughnut"],
+          "default": "line",
+          "description": "Supported types of chart."
+        }
+      }
+    }
+  },
+  "required": ["geochart"]
+}
