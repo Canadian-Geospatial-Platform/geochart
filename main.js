@@ -7380,7 +7380,7 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-// UNUSED EXPORTS: Chart, ChartValidator
+// UNUSED EXPORTS: Chart, SchemaValidator
 
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayWithHoles.js
 function _arrayWithHoles(arr) {
@@ -27250,12 +27250,6 @@ const Scatter = /* #__PURE__ */ (/* unused pure expression or super */ null && (
 
 //# sourceMappingURL=index.js.map
 
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classCallCheck.js
-function _classCallCheck(instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-}
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/createClass.js
 
 function _defineProperties(target, props) {
@@ -27275,11 +27269,24 @@ function _createClass(Constructor, protoProps, staticProps) {
   });
   return Constructor;
 }
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/classCallCheck.js
+function _classCallCheck(instance, Constructor) {
+  if (!(instance instanceof Constructor)) {
+    throw new TypeError("Cannot call a class as a function");
+  }
+}
 // EXTERNAL MODULE: ./node_modules/ajv/lib/ajv.js
 var ajv = __webpack_require__(96);
 var ajv_default = /*#__PURE__*/__webpack_require__.n(ajv);
-;// CONCATENATED MODULE: ./src/chart-validator.ts
+;// CONCATENATED MODULE: ./src/schema-validator-data.json
+const schema_validator_data_namespaceObject = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Data Schema","description":"This Schema validator validates the GeoChart data.","type":"object","properties":{"labels":{"description":"The labels to use for the X axis.","type":"array","items":{"type":"string"}},"datasets":{"description":"The mandatory datasets information to use to build the chart.","type":"array","items":{"type":"object","properties":{"label":{"type":"string"},"data":{"oneOf":[{"type":"array","items":{"type":"number"}},{"type":"array","items":{"type":"object","properties":{"x":{"type":"number"},"y":{"type":"number"}},"required":["x","y"]}},{"type":"object"}]},"backgroundColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderWidth":{"type":"integer"}},"required":["data"]}}},"required":["datasets"]}');
+;// CONCATENATED MODULE: ./src/schema-validator-options.json
+const schema_validator_options_namespaceObject = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Options Schema","description":"This Schema validator validates the GeoChart options.","type":"object","properties":{"responsive":{"type":"boolean"},"plugins":{"type":"object","properties":{"legend":{"type":"object","properties":{"display":{"type":"boolean"}}}}},"geochart":{"type":"object","properties":{"chart":{"enum":["line","bar","pie","doughnut"],"default":"line","description":"Supported types of chart."}}}},"required":["geochart"]}');
+;// CONCATENATED MODULE: ./src/schema-validator.ts
 
+
+
+var _class;
 
 
 
@@ -27289,186 +27296,85 @@ var ajv_default = /*#__PURE__*/__webpack_require__.n(ajv);
  */
 
 /**
- * The Char Validator class to validate data and options inputs.
+ * The Schema Validator class to validate json objects.
  */
-var ChartValidator = /*#__PURE__*/function () {
+var SchemaValidator = /*#__PURE__*/_createClass(
+// The embedded JSON validator
+
+/**
+ * Constructs a Chart Validate object to validate schemas.
+ */
+function SchemaValidator() {
+  var _this = this;
+  _classCallCheck(this, SchemaValidator);
   /**
-   * Constructs a Chart Validate object to validate schemas.
+   * Validates the data input parameters.
+   * @param data object the data json object to validate
    */
-  function ChartValidator() {
-    var _this = this;
-    _classCallCheck(this, ChartValidator);
-    // The JSON validator used by ChartValidate
-    _defineProperty(this, "SCHEMA_DATA", {
-      $schema: 'http://json-schema.org/draft-07/schema#',
-      type: 'object',
-      properties: {
-        labels: {
-          type: 'array',
-          items: {
-            type: 'string'
-          }
-        },
-        datasets: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              label: {
-                type: 'string'
-              },
-              data: {
-                oneOf: [{
-                  type: 'array',
-                  items: {
-                    type: 'number'
-                  }
-                }, {
-                  type: 'array',
-                  items: {
-                    type: 'object',
-                    properties: {
-                      x: {
-                        type: 'number'
-                      },
-                      y: {
-                        type: 'number'
-                      }
-                    },
-                    required: ['x', 'y']
-                  }
-                }, {
-                  type: 'object'
-                }]
-              },
-              backgroundColor: {
-                oneOf: [{
-                  type: 'string'
-                }, {
-                  type: 'array',
-                  items: {
-                    type: 'string'
-                  }
-                }]
-              },
-              borderColor: {
-                oneOf: [{
-                  type: 'string'
-                }, {
-                  type: 'array',
-                  items: {
-                    type: 'string'
-                  }
-                }]
-              },
-              borderWidth: {
-                type: 'integer'
-              }
-            },
-            required: ['data']
-          }
-        }
-      },
-      required: ['datasets']
-    });
-    _defineProperty(this, "SCHEMA_OPTIONS", {
-      type: 'object',
-      properties: {
-        responsive: {
-          type: 'boolean'
-        },
-        plugins: {
-          type: 'object',
-          properties: {
-            legend: {
-              type: 'object',
-              properties: {
-                display: {
-                  type: 'boolean'
-                }
-              }
-            }
-          }
-        },
-        geochart: {
-          type: 'object',
-          properties: {
-            chart: {
-              "enum": ['line', 'bar', 'pie', 'doughnut'],
-              "default": 'line',
-              description: 'Supported types of chart.'
-            }
-          }
-        }
-      },
-      required: ['geochart']
-    });
-    /**
-     * Validates the data input parameters.
-     */
-    _defineProperty(this, "validateData", function (data) {
-      var _validate$errors;
-      // Compile
-      var validate = _this.ajv.compile(_this.SCHEMA_DATA);
+  _defineProperty(this, "validateData", function (data) {
+    // Redirect
+    return _this.validateJsonSchema(schema_validator_data_namespaceObject, data);
+  });
+  /**
+   * Validates the options input parameters.
+   * @param options object the options json object to validate
+   */
+  _defineProperty(this, "validateOptions", function (options) {
+    // Redirect
+    return _this.validateJsonSchema(schema_validator_options_namespaceObject, options);
+  });
+  /**
+   * Validates the a jsonObj using a schema validator.
+   * @param schema object the schema validator json to validate the jsonObj with
+   * @param jsonObj object the json object to validate
+   */
+  _defineProperty(this, "validateJsonSchema", function (schema, jsonObj) {
+    var _validate$errors;
+    // Compile
+    var validate = _this.ajv.compile(schema);
 
-      // Validate
-      var valid = validate(data);
-      return {
-        param: 'data',
-        valid: valid,
-        errors: (_validate$errors = validate.errors) === null || _validate$errors === void 0 ? void 0 : _validate$errors.map(function (e) {
-          var m = e.message || 'generic schema error';
-          return "".concat(e.schemaPath, " | ").concat(e.keyword, " | ").concat(m);
-        })
-      };
-    });
-    /**
-     * Validates the options input parameters.
-     */
-    _defineProperty(this, "validateOptions", function (options) {
-      var _validate$errors2;
-      // Compile
-      var validate = _this.ajv.compile(_this.SCHEMA_OPTIONS);
+    // Validate
+    var valid = validate(jsonObj);
 
-      // Validate
-      var valid = validate(options);
-      return {
-        param: 'options',
-        valid: valid,
-        errors: (_validate$errors2 = validate.errors) === null || _validate$errors2 === void 0 ? void 0 : _validate$errors2.map(function (e) {
-          var m = e.message || 'generic schema error';
-          return "".concat(e.schemaPath, " | ").concat(e.keyword, " | ").concat(m);
-        })
-      };
-    });
-    // The embedded JSON validator
-    this.ajv = new (ajv_default())();
-  }
-  _createClass(ChartValidator, null, [{
-    key: "parseValidatorResultsMessages",
-    value: function parseValidatorResultsMessages(valRes) {
-      // Gather all error messages for data input
-      var msg = '';
-      valRes.forEach(function (v) {
-        // Redirect
-        msg += ChartValidator.parseValidatorResultMessage(v);
-      });
-      return msg.replace(/^\n+|\n+$/gm, '');
-    }
-  }, {
-    key: "parseValidatorResultMessage",
-    value: function parseValidatorResultMessage(valRes) {
-      var _valRes$errors;
-      // Gather all error messages for data input
-      var msg = '';
-      (_valRes$errors = valRes.errors) === null || _valRes$errors === void 0 || _valRes$errors.forEach(function (m) {
-        msg += "".concat(m, "\n");
-      });
-      return msg.replace(/^\n+|\n+$/gm, '');
-    }
-  }]);
-  return ChartValidator;
-}();
+    // Return a ValidatorResult
+    return {
+      valid: valid,
+      errors: (_validate$errors = validate.errors) === null || _validate$errors === void 0 ? void 0 : _validate$errors.map(function (e) {
+        var m = e.message || 'generic schema error';
+        return "".concat(e.schemaPath, " | ").concat(e.keyword, " | ").concat(m);
+      })
+    };
+  });
+  // The embedded JSON validator
+  this.ajv = new (ajv_default())();
+});
+_class = SchemaValidator;
+/**
+ * Returns a string representation of the errors of all ValidatorResult objects.
+ * @param valRes ValidatorResult[] the list of validation results to read and put to string
+ */
+_defineProperty(SchemaValidator, "parseValidatorResultsMessages", function (valRes) {
+  // Gather all error messages for data input
+  var msg = '';
+  valRes.forEach(function (v) {
+    // Redirect
+    msg += _class.parseValidatorResultMessage(v);
+  });
+  return msg.replace(/^\n+|\n+$/gm, '');
+});
+/**
+ * Returns a string representation of the error in the ValidatorResult object.
+ * @param valRes ValidatorResult the validation result to read and put to string
+ */
+_defineProperty(SchemaValidator, "parseValidatorResultMessage", function (valRes) {
+  var _valRes$errors;
+  // Gather all error messages for data input
+  var msg = '';
+  (_valRes$errors = valRes.errors) === null || _valRes$errors === void 0 || _valRes$errors.forEach(function (m) {
+    msg += "".concat(m, "\n");
+  });
+  return msg.replace(/^\n+|\n+$/gm, '');
+});
 ;// CONCATENATED MODULE: ./src/chart.tsx
 
 
@@ -27491,6 +27397,10 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
  * SX Classes for the Chart
  */
 var sxClasses = {
+  chartError: {
+    fontStyle: 'italic',
+    color: 'red'
+  },
   checkDatasetWrapper: {
     display: 'inline-block'
   },
@@ -27603,8 +27513,8 @@ function chart_Chart(props) {
   };
 
   /**
-   * Renders the X Chart Slider JSX.Element or an empty div
-   * @returns The X Chart Slider JSX.Element or an empty div
+   * Renders the X Chart Slider JSX.Element or an empty box
+   * @returns The X Chart Slider JSX.Element or an empty box
    */
   var renderXSlider = function renderXSlider() {
     var xSlider = options.geochart.xSlider;
@@ -27618,18 +27528,17 @@ function chart_Chart(props) {
           min: xSlider.min || 0,
           max: xSlider.max || 100,
           value: xSlider.value || 0,
-          track: xSlider.track || false,
           customOnChange: handleSliderXChange
         })
       });
     }
     // None
-    return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {});
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box_Box, {});
   };
 
   /**
-   * Renders the Y Chart Slider JSX.Element or an empty div
-   * @returns The Y Chart Slider JSX.Element or an empty div
+   * Renders the Y Chart Slider JSX.Element or an empty box
+   * @returns The Y Chart Slider JSX.Element or an empty box
    */
   var renderYSlider = function renderYSlider() {
     var ySlider = options.geochart.ySlider;
@@ -27643,14 +27552,13 @@ function chart_Chart(props) {
           min: ySlider.min || 0,
           max: ySlider.max || 100,
           value: ySlider.value || 0,
-          track: ySlider.track || false,
           orientation: "vertical",
           customOnChange: handleSliderYChange
         })
       });
     }
     // None
-    return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {});
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box_Box, {});
   };
 
   /**
@@ -27661,7 +27569,7 @@ function chart_Chart(props) {
     var _ref = data,
       datasets = _ref.datasets;
     if (datasets.length > 1) {
-      return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(Box_Box, {
         children: datasets.map(function (ds, idx) {
           // Find a color for the legend based on the dataset info
           var color = Chart.defaults.color;
@@ -27693,12 +27601,12 @@ function chart_Chart(props) {
       });
     }
     // None
-    return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {});
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box_Box, {});
   };
 
   /**
-   * Renders the whole Chart container JSX.Element or an empty div
-   * @returns The whole Chart container JSX.Element or an empty div
+   * Renders the whole Chart container JSX.Element or an empty box
+   * @returns The whole Chart container JSX.Element or an empty box
    */
   var renderChartContainer = function renderChartContainer() {
     if (options.geochart && data !== null && data !== void 0 && data.datasets) {
@@ -27724,18 +27632,16 @@ function chart_Chart(props) {
         })]
       });
     }
-    return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {});
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box_Box, {});
   };
 
   /**
-   * Renders the whole Chart container JSX.Element or an empty div
-   * @returns The whole Chart container JSX.Element or an empty div
+   * Renders the whole Chart container JSX.Element or an empty box
+   * @returns The whole Chart container JSX.Element or an empty box
    */
   var renderChartContainerFailed = function renderChartContainerFailed() {
-    return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {
-      style: {
-        color: 'red'
-      },
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box_Box, {
+      sx: sxClasses.chartError,
       children: "Error rendering the Chart. Check console for details."
     });
   };
@@ -27749,7 +27655,7 @@ function chart_Chart(props) {
   var resData;
   if (options && data) {
     // Validate the data and options as received
-    var validator = new ChartValidator();
+    var validator = new SchemaValidator();
     resOptions = validator.validateOptions(options) || undefined;
     resData = validator.validateData(data);
   }
@@ -27790,7 +27696,7 @@ function chart_Chart(props) {
   }
 
   // Nothing to render, no errors either
-  return /*#__PURE__*/(0,jsx_runtime.jsx)("div", {});
+  return /*#__PURE__*/(0,jsx_runtime.jsx)(Box_Box, {});
 }
 
 /**
@@ -27866,9 +27772,10 @@ function App() {
    */
   var handleError = function handleError(dataErrors, optionsErrors) {
     // Gather all error messages
-    var msgAll = ChartValidator.parseValidatorResultsMessages([dataErrors, optionsErrors]);
+    var msgAll = SchemaValidator.parseValidatorResultsMessages([dataErrors, optionsErrors]);
 
-    // Show the error (actually, can't because the snackbar is linked to a map at the moment and geochart is standalone)
+    // Show the error (actually, can't because the snackbar is linked to a map at the moment
+    // and geochart is standalone without a cgpv.init() at all)
     // TODO: Decide if we want the snackbar outside of a map or not and use showError or not
     cgpv.api.utilities.showError('', msgAll);
     alert("There was an error parsing the Chart inputs.\n\n".concat(msgAll, "\n\nView console for details."));
@@ -27895,6 +27802,8 @@ function App() {
 /* harmony default export */ const app = (App);
 ;// CONCATENATED MODULE: ./src/index.tsx
 
+
+// Export the types from the package
 
 
 

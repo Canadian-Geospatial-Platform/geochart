@@ -43,6 +43,26 @@
       };
 
       const DATA_NATIVE_3 = {
+        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        datasets: [
+          {
+            label: 'Dataset 1',
+            data: [12, 19, 3, 5, 2, 3],
+            borderColor: "rgba(255, 99, 132, 0.5)",
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            stepped: 'middle', 
+          },
+          {
+            label: 'Dataset 2',
+            data: [22, 29, 13, 15, 12, 13],
+            borderColor: "rgba(53, 162, 235, 0.5)",
+            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            stepped: 'middle', 
+          },
+        ],
+      };
+
+      const DATA_NATIVE_4 = {
         datasets: [{
           data: {
             January: 10,
@@ -52,7 +72,7 @@
         }]
       };
 
-      const DATA_NATIVE_4 = {
+      const DATA_NATIVE_5 = {
         labels: ['Red', 'Blue', 'Yellow'],
         datasets: [{
           data: [{"x": 10, "y": 15}, {"x": 15, "y": 25}, {"x": 20, "y": 10}]
@@ -90,15 +110,13 @@
             display: true,
             min: 0,
             max: 100,
-            value: 50,
-            track: 'normal',
+            value: [0, 100],
           },
           ySlider: {
             display: true,
             min: 0,
             max: 100,
-            value: 100,
-            track: 'normal',
+            value: [0, 100],
           }
         }
       };
@@ -119,15 +137,13 @@
             display: true,
             min: 0,
             max: 100,
-            value: 50,
-            track: 'normal',
+            value: [0, 100],
           },
           ySlider: {
             display: true,
             min: 0,
             max: 100,
-            value: 100,
-            track: 'normal',
+            value: [0, 100],
           },
           xAxis: {
             type: 'time'
@@ -136,7 +152,7 @@
             type: 'time'
           },
         }
-      };</script><script defer="defer" src="main.js"></script></head><body><div class="" style="text-align: center;"><div style="background-color: aliceblue;"><div style="text-align: left;">GEOCHART INPUTS</div><div><div style="display:inline-block;width:49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data using object</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="20" style="width: 100%;"></textarea></div></div><div style="display:inline-block;width:49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1_A)">Import Options Line (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_B)">Import Options Bar</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_C)">Import Options Pie</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_D)">Import Options Doughnut</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options Line w/ Sliders</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_3)">Import Options All-in</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="20" style="width: 100%;"></textarea></div></div></div></div><div><button onclick="buildChart()" style="padding:5px;"><strong>BUILD CHART FROM CHART INPUTS</strong></button></div></div><script>function importDataParsed(data) {
+      };</script><script defer="defer" src="main.js"></script></head><body><div class="" style="text-align: center;"><div style="background-color: aliceblue;"><div style="text-align: left;">GEOCHART INPUTS</div><div><div style="display:inline-block;width:49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using object</button> <button onclick="importDataParsed(DATA_NATIVE_5)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="20" style="width: 100%;"></textarea></div></div><div style="display:inline-block;width:49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1_A)">Import Options Line (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_B)">Import Options Bar</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_C)">Import Options Pie</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_D)">Import Options Doughnut</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options Line w/ Sliders</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_3)">Import Options All-in</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="20" style="width: 100%;"></textarea></div></div></div></div><div><button onclick="buildChart()" style="padding:5px;"><strong>BUILD CHART FROM CHART INPUTS</strong></button></div></div><script>function importDataParsed(data) {
         document.getElementById('CHARTDATAPARSED').value = JSON.stringify(data, null, 2);
       }
 
