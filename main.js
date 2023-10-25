@@ -27278,10 +27278,10 @@ function _classCallCheck(instance, Constructor) {
 // EXTERNAL MODULE: ./node_modules/ajv/lib/ajv.js
 var ajv = __webpack_require__(96);
 var ajv_default = /*#__PURE__*/__webpack_require__.n(ajv);
-;// CONCATENATED MODULE: ./src/schema-validator-data.json
-const schema_validator_data_namespaceObject = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Data Schema","description":"This Schema validator validates the GeoChart data.","type":"object","properties":{"labels":{"description":"The labels to use for the X axis.","type":"array","items":{"type":"string"}},"datasets":{"description":"The mandatory datasets information to use to build the chart.","type":"array","items":{"type":"object","properties":{"label":{"type":"string"},"data":{"oneOf":[{"type":"array","items":{"type":"number"}},{"type":"array","items":{"type":"object","properties":{"x":{"type":"number"},"y":{"type":"number"}},"required":["x","y"]}},{"type":"object"}]},"backgroundColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderWidth":{"type":"integer"}},"required":["data"]}}},"required":["datasets"]}');
-;// CONCATENATED MODULE: ./src/schema-validator-options.json
-const schema_validator_options_namespaceObject = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Options Schema","description":"This Schema validator validates the GeoChart options.","type":"object","properties":{"responsive":{"type":"boolean"},"plugins":{"type":"object","properties":{"legend":{"type":"object","properties":{"display":{"type":"boolean"}}}}},"geochart":{"type":"object","properties":{"chart":{"enum":["line","bar","pie","doughnut"],"default":"line","description":"Supported types of chart."}}}},"required":["geochart"]}');
+;// CONCATENATED MODULE: ./schema-data.json
+const schema_data_namespaceObject = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Data Schema","description":"This Schema validator validates the GeoChart data.","type":"object","properties":{"labels":{"description":"The labels to use for the X axis.","type":"array","items":{"type":"string"}},"datasets":{"description":"The mandatory datasets information to use to build the chart.","type":"array","items":{"type":"object","properties":{"label":{"type":"string"},"data":{"oneOf":[{"type":"array","items":{"type":"number"}},{"type":"array","items":{"type":"object","properties":{"x":{"type":"number"},"y":{"type":"number"}},"required":["x","y"]}},{"type":"object"}]},"backgroundColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderWidth":{"type":"integer"}},"required":["data"]}}},"required":["datasets"]}');
+;// CONCATENATED MODULE: ./schema-options.json
+const schema_options_namespaceObject = JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Options Schema","description":"This Schema validator validates the GeoChart options.","type":"object","properties":{"responsive":{"type":"boolean"},"plugins":{"type":"object","properties":{"legend":{"type":"object","properties":{"display":{"type":"boolean"}}}}},"geochart":{"type":"object","properties":{"chart":{"enum":["line","bar","pie","doughnut"],"default":"line","description":"Supported types of chart."}}}},"required":["geochart"]}');
 ;// CONCATENATED MODULE: ./src/schema-validator.ts
 
 
@@ -27313,7 +27313,7 @@ function SchemaValidator() {
    */
   _defineProperty(this, "validateData", function (data) {
     // Redirect
-    return _this.validateJsonSchema(schema_validator_data_namespaceObject, data);
+    return _this.validateJsonSchema(schema_data_namespaceObject, data);
   });
   /**
    * Validates the options input parameters.
@@ -27321,7 +27321,7 @@ function SchemaValidator() {
    */
   _defineProperty(this, "validateOptions", function (options) {
     // Redirect
-    return _this.validateJsonSchema(schema_validator_options_namespaceObject, options);
+    return _this.validateJsonSchema(schema_options_namespaceObject, options);
   });
   /**
    * Validates the a jsonObj using a schema validator.
