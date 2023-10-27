@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GeoChart Inputs Schema",
+  "description": "This Schema validator validates the GeoChart Inputs. ABSOLUTELY UNFINISHED.",
+  "type": "object",
+  "properties": {
+    "chart": {
+      "description": "Supported types of chart.",
+      "enum": ["line", "bar", "pie", "doughnut"],
+      "default": "line"      
+    },
+    "geochart": {
+      "type": "object"
+    }
+  },
+  "required": ["chart", "geochart"]
+}

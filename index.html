@@ -11,9 +11,303 @@
       href="https://fonts.googleapis.com/icon?family=Material+Icons"
     />
 
-    <script src="https://canadian-geospatial-platform.github.io/geoview/public/cgpv-main.js"></script>
+    <!-- <script src="http://localhost:8081/cgpv-main.js"></script> -->
+    <script src="https://alex-nrcan.github.io/geoview/cgpv-main.js"></script>
 
     <script>
+      const DATA_INPUT_1 = {
+        chart: 'line',
+        title: 'The Title 1',
+        geochart: {
+          featuresUsePalette: true,
+          xAxis: {
+            type: 'time',
+            unit: 'month',
+            property: 'CollectionStart_DebutPrelevement'
+          },
+          yAxis: {
+            property: 'Activity_Activite_mBqm3'
+          },
+          xSlider: {
+            display: true,
+          },
+          ySlider: {
+            display: true,
+          }
+        },
+        category: "Radionuclide_Radionucleide",
+        datasources: [{
+          display: "Feature 1",
+          items: [
+            {
+              Location_Emplacement: 'Victoria',
+              CollectionStart_DebutPrelevement: 1678320000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 2.7395,
+              OBJECTID: 56874
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Yellowknife',
+              CollectionStart_DebutPrelevement: 1679443200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.0166,
+              OBJECTID: 56876
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1678406400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.939,
+              OBJECTID: 56877
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1679011200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.1814,
+              OBJECTID: 56878
+            },
+            {
+              Location_Emplacement: 'Toronto',
+              CollectionStart_DebutPrelevement: 1677974400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.6715,
+              OBJECTID: 56879
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1668643200000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 3.2589,
+              OBJECTID: 56880
+            }]
+        },{
+          display: "Feature 2",
+          items: [
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1678320000000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 2.7395,
+              OBJECTID: 56874
+            },
+            {
+              Location_Emplacement: 'Toronto',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Yellowknife',
+              CollectionStart_DebutPrelevement: 1679443200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.0166,
+              OBJECTID: 56876
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1678406400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.939,
+              OBJECTID: 56877
+            },
+            {
+              Location_Emplacement: 'Victoria',
+              CollectionStart_DebutPrelevement: 1679011200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.1814,
+              OBJECTID: 56878
+            },
+            {
+              Location_Emplacement: 'Calgary',
+              CollectionStart_DebutPrelevement: 1677974400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.6715,
+              OBJECTID: 56879
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1668643200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 3.2589,
+              OBJECTID: 56880
+            }]
+        }],
+        chartjsOptions: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            }
+          }
+        }
+      };
+
+      const DATA_INPUT_2 = {
+        chart: 'bar',
+        title: 'The Title 2',
+        geochart: {
+          featuresUsePalette: true,
+          xAxis: {
+            property: 'Location_Emplacement'
+          },
+          yAxis: {
+            property: 'Activity_Activite_mBqm3'
+          },
+          xSlider: {
+            display: true,
+          },
+          ySlider: {
+            display: true,
+          }
+        },
+        category: 'Radionuclide_Radionucleide',
+        datasources: [{
+          value: "1",
+          display: "Feature 1",
+          items: [
+            {
+              Location_Emplacement: 'Victoria',
+              CollectionStart_DebutPrelevement: 1678320000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 2.7395,
+              OBJECTID: 56874
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Yellowknife',
+              CollectionStart_DebutPrelevement: 1679443200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.0166,
+              OBJECTID: 56876
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1678406400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.939,
+              OBJECTID: 56877
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1679011200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.1814,
+              OBJECTID: 56878
+            },
+            {
+              Location_Emplacement: 'Toronto',
+              CollectionStart_DebutPrelevement: 1677974400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.6715,
+              OBJECTID: 56879
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1668643200000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 3.2589,
+              OBJECTID: 56880
+            }
+          ]
+        }],
+        chartjsOptions: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      }
+      
+      const DATA_INPUT_3 = {
+        chart: 'bar',
+        title: 'The Title 3',
+        geochart: {
+          featuresUsePalette: true,
+          labelsAreColors: true,
+          xAxis: {
+            property: 'label'
+          },
+          yAxis: {
+            property: 'data'
+          },
+          xSlider: {
+            display: true,
+          },
+          ySlider: {
+            display: true,
+          }
+        },
+        datasources: [{
+          format: 'compressed',
+          display: "Feature 1",
+          items: [
+          {
+            data: '92;43.54;12.3;66;75',
+            label: 'Red;Green;Blue;Yellow;Orange'
+          },
+          {
+            data: '553;54;32.553;5.43;55',
+            label: 'Red;Green;Blue;Yellow;Orange'
+          },
+          {
+            data: '155;55;255',
+            label: 'Red;Green;Blue'
+          }]
+        }],
+        chartjsOptions: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            }
+          }
+        }
+      };
+
+      const OPTIONS_NATIVE_1 = {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      };
+
+      const OPTIONS_NATIVE_2 = {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            border: {
+              color: "red"
+            },
+            suggestedMin: 0,
+            suggestedMax: 50,
+          }
+        }
+      };
+
       const DATA_NATIVE_1 = {
         labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
         datasets: [
@@ -79,140 +373,86 @@
       };
 
       const DATA_NATIVE_4 = {
-        datasets: [{
-          data: {
-            January: 10,
-            February: 20,
-            March: 30
-          }
-        }]
-      };
-
-      const DATA_NATIVE_5 = {
         labels: ['Red', 'Blue', 'Yellow'],
         datasets: [{
           data: [{"x": 10, "y": 15}, {"x": 15, "y": 25}, {"x": 20, "y": 10}]
         }]
       };
-
-      const OPTIONS_NATIVE_1_A = {
-        geochart: {
-          chart: "line"
-        }
-      };
-
-      const OPTIONS_NATIVE_1_B = {
-        geochart: {
-          chart: "bar"
-        }
-      };
-
-      const OPTIONS_NATIVE_1_C = {
-        geochart: {
-          chart: "pie"
-        }
-      };
-
-      const OPTIONS_NATIVE_1_D = {
-        geochart: {
-          chart: "doughnut"
-        }
-      };
-
-      const OPTIONS_NATIVE_2 = {
-        geochart: {
-          chart: "line",
-          xSlider: {
-            display: true,
-            min: 0,
-            max: 100,
-            value: [0, 100],
-          },
-          ySlider: {
-            display: true,
-            min: 0,
-            max: 100,
-            value: [0, 100],
-          }
-        }
-      };
-
-      const OPTIONS_NATIVE_3 = {
-        scales: {
-          y: {
-            border: {
-              color: "red"
-            },
-            suggestedMin: 0,
-            suggestedMax: 50,
-          }
-        },
-        geochart: {
-          chart: "line",
-          xSlider: {
-            display: true,
-            min: 0,
-            max: 100,
-            value: [0, 100],
-          },
-          ySlider: {
-            display: true,
-            min: 0,
-            max: 100,
-            value: [0, 100],
-          },
-          xAxis: {
-            type: 'time'
-          },
-          yAxis: {
-            type: 'time'
-          },
-        }
-      };
     </script>
   </head>
 
   <body>
-    <div class="" style="text-align: center;">
-      <div style="background-color: aliceblue;">
+    <div style="text-align: center; height: 400px;">
+      <div style="display:inline-block; background-color: lightgreen; width: 49%; height: 100%; vertical-align:top;">
         <div style="text-align: left;">
-          GEOCHART INPUTS
+          GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span>
         </div>
         <div>
-          <div style="display:inline-block;width:49%;">
+          <div>
+            <button onclick="importDataInputs(DATA_INPUT_1)">Import Data LINE w/ time w/sliders</button>
+            <button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button>
+            <button onclick="importDataInputs(DATA_INPUT_3)">Import Data 'compressed' BAR</button>
+          </div>
+          <div>
+            <textarea id="CHARTDATAINPUTS" rows="20" style="width: 98%;"></textarea>
+          </div>
+        </div>
+        <div>
+          <button onclick="buildChartInputs()" style="padding:5px;"><strong>BUILD CHART FROM GEOCHART INPUTS</strong></button>
+        </div>
+      </div>
+
+      <div style="display:inline-block; background-color: aliceblue; width: 50%; height: 100%; vertical-align:top;">
+        <div style="text-align: left;">
+          CHART.JS PROPS <span style="font-size: small;">(these Chart.js native parameters are used to draw the actual chart itself)</span>
+        </div>
+        <div style="padding:10px;">
+          <select id="CHARTTYPE">
+            <option value='line' selected>Line</option>
+            <option value='bar'>Bar</option>
+            <option value='pie'>Pie</option>
+            <option value='doughnut'>Doughnut</option>
+          </select>
+        </div>
+        <div>
+          <div style="display:inline-block; width: 49%;">
+            <div>
+              <button onclick="importOptionsParsed(OPTIONS_NATIVE_1)">Import Options (default)</button>
+              <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options dummy scale</button>
+            </div>
+            <div>
+              <textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea>
+            </div>
+          </div>
+          <div style="display:inline-block; width: 49%;">
             <div>
               <button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button>
               <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button>
               <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button>
-              <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using object</button>
-              <button onclick="importDataParsed(DATA_NATIVE_5)">Import Data using x,y</button>
+              <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button>
             </div>
             <div>
-              <textarea id="CHARTDATAPARSED" rows="20" style="width: 100%;"></textarea>
-            </div>
-          </div>
-          <div style="display:inline-block;width:49%;">
-            <div>
-              <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_A)">Import Options Line (default)</button>
-              <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_B)">Import Options Bar</button>
-              <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_C)">Import Options Pie</button>
-              <button onclick="importOptionsParsed(OPTIONS_NATIVE_1_D)">Import Options Doughnut</button>
-              <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options Line w/ Sliders</button>
-              <button onclick="importOptionsParsed(OPTIONS_NATIVE_3)">Import Options All-in</button>
-            </div>
-            <div>
-              <textarea id="CHARTOPTIONSPARSED" rows="20" style="width: 100%;"></textarea>
+              <textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea>
             </div>
           </div>
         </div>
-      </div>
-
-      <div>
-        <button onclick="buildChart()" style="padding:5px;"><strong>BUILD CHART FROM CHART INPUTS</strong></button>
+        <div>
+          <button onclick="buildChartNative()" style="padding:5px;"><strong>BUILD CHART FROM CHART.JS PROPS</strong></button>
+        </div>
       </div>
     </div>
 
+    <!--------------- CHART IS HERE -----------------> 
+    <div id="root2aca7b6b288c"></div>
+    <div>
+      <button onclick="redrawChart()" style="padding:5px;"><strong>LOOKS WEIRD? REACT STATE BUG? REDRAW!</strong></button>
+    </div>
+
     <script>
+      function importDataInputs(inputs) {
+        document.getElementById('CHARTDATAINPUTS').value = JSON.stringify(inputs, null, 2);
+      }
+
       function importDataParsed(data) {
         document.getElementById('CHARTDATAPARSED').value = JSON.stringify(data, null, 2);
       }
@@ -221,13 +461,31 @@
         document.getElementById('CHARTOPTIONSPARSED').value = JSON.stringify(options, null, 2);
       }
       
-      function buildChart() {
-        let data = {};
-        let options = {};
+      function buildChartInputs() {
+        let chartInputs = null;
+        
+        try {
+          if (document.getElementById('CHARTDATAINPUTS').value)
+            chartInputs = JSON.parse(document.getElementById('CHARTDATAINPUTS').value);
+        }
+        catch (ex) {
+          alert('Failed to create JSON from input data text area.');
+          console.error(ex);
+        }
+        
+        // Emit a Chart Changed event so the chart updates
+        // This is not using the conventional way to communicate with the Chart.
+        window.dispatchEvent(new CustomEvent("chart/load", { detail: { inputs: chartInputs } }));
+      }
+      
+      function buildChartNative() {
+        let chartType = document.getElementById('CHARTTYPE').value || 'line';
+        let chartData = null;
+        let chartOptions = null;
         
         try {
           if (document.getElementById('CHARTDATAPARSED').value)
-            data = JSON.parse(document.getElementById('CHARTDATAPARSED').value);
+            chartData = JSON.parse(document.getElementById('CHARTDATAPARSED').value);
         }
         catch (ex) {
           alert('Failed to create JSON from input data text area.');
@@ -235,7 +493,7 @@
         }
         try {
           if (document.getElementById('CHARTOPTIONSPARSED').value)
-            options = JSON.parse(document.getElementById('CHARTOPTIONSPARSED').value);
+            chartOptions = JSON.parse(document.getElementById('CHARTOPTIONSPARSED').value);
         }
         catch (ex)  {
           alert('Failed to create JSON from input options text area.');
@@ -243,21 +501,37 @@
         }
 
         // Emit a Chart Changed event so the chart updates
-        window.dispatchEvent(new CustomEvent("chart/load", {detail: { data, options }}));
+        // This is not using the conventional way to communicate with the Chart.
+        window.dispatchEvent(new CustomEvent("chart/load", { detail: { chart: chartType, data: chartData, options: chartOptions } }));
+      }
+
+      function redrawChart() {
+        // Emit a Chart Redraw event so the chart updates
+        // This is not using the conventional way to communicate with the Chart.
+        window.dispatchEvent(new CustomEvent("chart/redraw"));
+      }
+
+      function handleChartLoaded(e) {
+        // Update ui
+        document.getElementById('CHARTTYPE').value = e.detail.chart;
+        document.getElementById('CHARTOPTIONSPARSED').value = JSON.stringify(e.detail.options, null, 2);
+        document.getElementById('CHARTDATAPARSED').value = JSON.stringify(e.detail.data, null, 2);
       }
 
       // Load data 1
+      importDataInputs(DATA_INPUT_1);
       importDataParsed(DATA_NATIVE_1);
-      importOptionsParsed(OPTIONS_NATIVE_1_A);
+      importOptionsParsed(OPTIONS_NATIVE_1);
 
       // Wait 1 second for index.tsx to execute and the Chart to enter the DOM.
-      // Hacky, but it's only to load default values off the start. It is also because we don't have a cgpv.init callback.
-      setTimeout(() => {
-        buildChart();
+      // This is hacky, but it's only to load default values off the start. It is also because we don't have a cgpv.init callback.
+      setTimeout(() => {
+        buildChartInputs();
       }, 1000);
-    </script>
 
-    <div id="root2aca7b6b288c"></div>
+      // Listen on the chart parsed to update the UI
+      window.addEventListener('chart/parsed', handleChartLoaded);
+    </script>
   </body>
 
 </html>

@@ -1,6 +1,8 @@
-import Ajv from 'ajv';
-import SCHEMA_DATA from '../schema-data.json';
-import SCHEMA_OPTIONS from '../schema-options.json';
+import Ajv, { ErrorObject } from 'ajv';
+import addFormats from 'ajv-formats';
+import SCHEMA_INPUTS from '../schema-inputs.json';
+import SCHEMA_DATA from '../schema-chartjs-data.json';
+import SCHEMA_OPTIONS from '../schema-chartjs-options.json';
 
 /**
  * Represents the result of a Chart data or options inputs validations.
@@ -15,7 +17,7 @@ export type ValidatorResult = {
  */
 export class SchemaValidator {
   // The embedded JSON validator
-  private ajv: Ajv.Ajv;
+  private ajv: Ajv;
 
   /**
    * Constructs a Chart Validate object to validate schemas.
@@ -23,10 +25,20 @@ export class SchemaValidator {
   constructor() {
     // The embedded JSON validator
     this.ajv = new Ajv();
+    addFormats(this.ajv);
   }
 
   /**
-   * Validates the data input parameters.
+   * Validates the GeoChart input parameters.
+   * @param data object the data json object to validate
+   */
+  validateInputs = (data: object): ValidatorResult => {
+    // Redirect
+    return this.validateJsonSchema(SCHEMA_INPUTS, data);
+  };
+
+  /**
+   * Validates the ChartJS data parameters.
    * @param data object the data json object to validate
    */
   validateData = (data: object): ValidatorResult => {
@@ -35,7 +47,7 @@ export class SchemaValidator {
   };
 
   /**
-   * Validates the options input parameters.
+   * Validates the ChartJS options parameters.
    * @param options object the options json object to validate
    */
   validateOptions = (options: object): ValidatorResult => {
@@ -58,7 +70,7 @@ export class SchemaValidator {
     // Return a ValidatorResult
     return {
       valid,
-      errors: validate.errors?.map((e: Ajv.ErrorObject) => {
+      errors: validate.errors?.map((e: ErrorObject) => {
         const m = e.message || 'generic schema error';
         return `${e.schemaPath} | ${e.keyword} | ${m}`;
       }),
