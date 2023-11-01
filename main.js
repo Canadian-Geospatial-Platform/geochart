@@ -44560,6 +44560,57 @@ function GeoChart(props) {
     setChartData(parsedData);
   };
 
+  /**
+   * Filters the datasource based on 2 possible and independent axis.
+   * Ideally, we'd filter the data on the 2 independent axis individually and then grab the intersecting results,
+   * but, for performance reasons, the code cumulates the filtered data instead.
+   */
+  var calculateFiltering = function calculateFiltering(datasource, xValues, yValues) {
+    // If chart type is line
+    var resItemsFinal = _toConsumableArray(datasource.items);
+    if ((inputs === null || inputs === void 0 ? void 0 : inputs.chart) === 'line') {
+      // If filterings on x supported
+      if (Array.isArray(xValues) && xValues.length === 2) {
+        var _inputs$geochart;
+        // If filtering on time values
+        if ((inputs === null || inputs === void 0 || (_inputs$geochart = inputs.geochart) === null || _inputs$geochart === void 0 || (_inputs$geochart = _inputs$geochart.xAxis) === null || _inputs$geochart === void 0 ? void 0 : _inputs$geochart.type) === 'time') {
+          // Grab the filters
+          var theDateFrom = new Date(xValues[0]);
+          var theDateTo = new Date(xValues[1]);
+
+          // Filter the datasource.items
+          resItemsFinal = datasource.items.filter(function (item) {
+            var d = new Date(item[inputs.geochart.xAxis.property]);
+            return theDateFrom <= d && d <= theDateTo;
+          });
+        } else {
+          // Default filtering on number values
+          var from = xValues[0];
+          var to = xValues[1];
+
+          // Filter the datasource.items
+          resItemsFinal = datasource.items.filter(function (item) {
+            return from <= item[inputs.geochart.xAxis.property] && item[inputs.geochart.xAxis.property] <= to;
+          });
+        }
+      }
+
+      // If more filterings on y, cumulate it
+      if (Array.isArray(yValues) && yValues.length === 2) {
+        var _from = yValues[0];
+        var _to = yValues[1];
+
+        // Filter the rest of the items using the reminding items
+        resItemsFinal = resItemsFinal.filter(function (item) {
+          return _from <= item[inputs.geochart.yAxis.property] && item[inputs.geochart.yAxis.property] <= _to;
+        });
+      }
+    }
+
+    // Set new filtered inputs
+    setFilteredRecords(resItemsFinal);
+  };
+
   /** ******************************************* CORE FUNCTIONS END **************************************************** */
   /** *************************************** EVENT HANDLERS SECTION START ********************************************** */
 
@@ -44599,21 +44650,8 @@ function GeoChart(props) {
    * @param value number | number[] Indicates the slider value
    */
   var handleSliderXChange = function handleSliderXChange(newValue) {
-    var _inputs$geochart;
-    // If current chart has time as x axis
-    if ((inputs === null || inputs === void 0 ? void 0 : inputs.chart) === 'line' && (inputs === null || inputs === void 0 || (_inputs$geochart = inputs.geochart) === null || _inputs$geochart === void 0 || (_inputs$geochart = _inputs$geochart.xAxis) === null || _inputs$geochart === void 0 ? void 0 : _inputs$geochart.type) === 'time' && Array.isArray(newValue) && newValue.length === 2) {
-      var theDateFrom = new Date(newValue[0]);
-      var theDateTo = new Date(newValue[1]);
-
-      // Filter the datasource.items using datasource.items
-      var resItems = selectedDatasource.items.filter(function (item) {
-        var d = new Date(item[inputs.geochart.xAxis.property]);
-        return theDateFrom <= d && d <= theDateTo;
-      });
-
-      // Set new filtered inputs
-      setFilteredRecords(resItems);
-    }
+    // Calculate filterings
+    calculateFiltering(selectedDatasource, newValue, ySliderValues);
 
     // Callback
     onSliderXChanged === null || onSliderXChanged === void 0 || onSliderXChanged(newValue);
@@ -44623,9 +44661,12 @@ function GeoChart(props) {
    * Handles when the Y Slider changes
    * @param value number | number[] Indicates the slider value
    */
-  var handleSliderYChange = function handleSliderYChange(value) {
+  var handleSliderYChange = function handleSliderYChange(newValue) {
+    // Calculate filterings
+    calculateFiltering(selectedDatasource, xSliderValues, newValue);
+
     // Callback
-    onSliderYChanged === null || onSliderYChanged === void 0 || onSliderYChanged(value);
+    onSliderYChanged === null || onSliderYChanged === void 0 || onSliderYChanged(newValue);
   };
 
   /**
@@ -44643,12 +44684,21 @@ function GeoChart(props) {
     return value.toString();
   };
 
+  /**
+   * Handles the display of the label on the Y Slider
+   * @param value number | number[] Indicates the slider value
+   */
+  var handleSliderYValueDisplay = function handleSliderYValueDisplay(value) {
+    // Default
+    return value.toString();
+  };
+
   /** **************************************** EVENT HANDLERS SECTION END *********************************************** */
   /** ***************************************** USE EFFECT SECTION START ************************************************ */
 
   // Effect hook when the inputs change - coming from the parent component.
   useEffect(function () {
-    console.log('USE EFFECT PARENT INPUTS', parentInputs);
+    // console.log('USE EFFECT PARENT INPUTS', parentInputs);
 
     // Refresh the inputs in this component
     setInputs(parentInputs);
@@ -44662,7 +44712,7 @@ function GeoChart(props) {
 
   // Effect hook when the inputs change - coming from this component.
   useEffect(function () {
-    console.log('USE EFFECT INPUTS', inputs);
+    // console.log('USE EFFECT INPUTS', inputs);
 
     // If inputs is specified
     if (inputs) {
@@ -44673,7 +44723,7 @@ function GeoChart(props) {
 
   // Effect hook when the feature change - coming from this component.
   useEffect(function () {
-    console.log('USE EFFECT SELECTED DATASOURCE', selectedDatasource);
+    // console.log('USE EFFECT SELECTED DATASOURCE', selectedDatasource);
 
     // Clear any record filters
     setFilteredRecords(undefined);
@@ -44834,7 +44884,7 @@ function GeoChart(props) {
     // If inputs
     if (inputs && selectedDatasource) {
       var _inputs$geochart$ySli;
-      if ((_inputs$geochart$ySli = inputs.geochart.ySlider) !== null && _inputs$geochart$ySli !== void 0 && _inputs$geochart$ySli.display) {
+      if (inputs.chart === 'line' && (_inputs$geochart$ySli = inputs.geochart.ySlider) !== null && _inputs$geochart$ySli !== void 0 && _inputs$geochart$ySli.display) {
         // Need 100% height to occupy some space, otherwise it's crunched.
         return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: {
@@ -44845,7 +44895,9 @@ function GeoChart(props) {
             max: ySliderMax,
             value: ySliderValues,
             orientation: "vertical",
-            customOnChange: handleSliderYChange
+            customOnChange: handleSliderYChange,
+            onValueDisplay: handleSliderYValueDisplay,
+            onValueDisplayAriaLabel: handleSliderYValueDisplay
           })
         });
       }
