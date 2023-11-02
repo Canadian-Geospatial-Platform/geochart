@@ -16,11 +16,150 @@
     <script src="https://canadian-geospatial-platform.github.io/geoview/public/cgpv-main.js"></script>
 
     <script>
-      const DATA_INPUT_1 = {
+      const DATA_INPUT_LINE_1 = {
         chart: 'line',
-        title: 'The Title 1',
+        title: 'Line Chart with time on x and sliders',
         geochart: {
           featuresUsePalette: true,
+          borderWidth: 2,
+          xAxis: {
+            type: 'time',
+            unit: 'month',
+            property: 'CollectionStart_DebutPrelevement'
+          },
+          yAxis: {
+            property: 'Activity_Activite_mBqm3'
+          },
+          xSlider: {
+            display: true,
+          },
+          ySlider: {
+            display: true,
+          }
+        },
+        category: "Radionuclide_Radionucleide",
+        datasources: [{
+          display: "Feature 1",
+          items: [
+            {
+              Location_Emplacement: 'Victoria',
+              CollectionStart_DebutPrelevement: 1678320000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 2.7395,
+              OBJECTID: 56874
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Yellowknife',
+              CollectionStart_DebutPrelevement: 1679443200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.0166,
+              OBJECTID: 56876
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1678406400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.939,
+              OBJECTID: 56877
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1679011200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.1814,
+              OBJECTID: 56878
+            },
+            {
+              Location_Emplacement: 'Toronto',
+              CollectionStart_DebutPrelevement: 1677974400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.6715,
+              OBJECTID: 56879
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1668643200000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 3.2589,
+              OBJECTID: 56880
+            }]
+        },{
+          display: "Feature 2",
+          items: [
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1678320000000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 2.7395,
+              OBJECTID: 56874
+            },
+            {
+              Location_Emplacement: 'Toronto',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Yellowknife',
+              CollectionStart_DebutPrelevement: 1679443200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.0166,
+              OBJECTID: 56876
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1678406400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.939,
+              OBJECTID: 56877
+            },
+            {
+              Location_Emplacement: 'Victoria',
+              CollectionStart_DebutPrelevement: 1679011200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.1814,
+              OBJECTID: 56878
+            },
+            {
+              Location_Emplacement: 'Calgary',
+              CollectionStart_DebutPrelevement: 1677974400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.6715,
+              OBJECTID: 56879
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1668643200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 3.2589,
+              OBJECTID: 56880
+            }]
+        }],
+        chartjsOptions: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            }
+          }
+        }
+      };
+
+      const DATA_INPUT_LINE_2 = {
+        chart: 'line',
+        title: 'Line Chart with time on x and sliders and steps',
+        geochart: {
+          featuresUsePalette: true,
+          borderWidth: 2,
+          useSteps: "before",
           xAxis: {
             type: 'time',
             unit: 'month',
@@ -390,7 +529,8 @@
         </div>
         <div>
           <div>
-            <button onclick="importDataInputs(DATA_INPUT_1)">Import Data LINE w/ time w/sliders</button>
+            <button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Data LINE w/ time w/sliders</button>
+            <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Data LINE w/ time w/sliders w/steps</button>
             <button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button>
             <button onclick="importDataInputs(DATA_INPUT_3)">Import Data 'compressed' BAR</button>
           </div>
@@ -520,7 +660,7 @@
       }
 
       // Load data 1
-      importDataInputs(DATA_INPUT_1);
+      importDataInputs(DATA_INPUT_LINE_1);
       importDataParsed(DATA_NATIVE_1);
       importOptionsParsed(OPTIONS_NATIVE_1);
 

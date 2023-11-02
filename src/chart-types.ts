@@ -26,6 +26,7 @@ export type GeoChartOptions<TType extends ChartType> = {
   datasources: GeoChartDatasource[];
   geochart: {
     color_palette?: string[];
+    borderWidth?: number;
     featuresUsePalette?: boolean;
     labelsAreColors?: boolean;
     useSteps?: 'before' | 'after' | 'middle' | boolean;

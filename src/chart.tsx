@@ -487,7 +487,7 @@ export function GeoChart<
       if (inputs.chart === 'line' && inputs.geochart.ySlider?.display) {
         // Need 100% height to occupy some space, otherwise it's crunched.
         return (
-          <Box sx={{ height: '100%' }}>
+          <Box sx={{ height: '85%' }}>
             <Slider
               min={ySliderMin}
               max={ySliderMax}

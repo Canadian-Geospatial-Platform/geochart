@@ -93,15 +93,20 @@ function createDataset<TType extends ChartType, TData extends GeoDefaultDataPoin
     (theDataset as ChartDataset<'line', TData>).stepped = chartConfig.geochart.useSteps;
   }
 
+  // If chart is line or bar
   if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
+    // If features should use a color palette
     if (chartConfig.geochart.featuresUsePalette) {
       theDataset.backgroundColor = chartConfig.geochart.color_palette![creationIndex % chartConfig.geochart.color_palette!.length];
-      if (chartConfig.chart === 'line') {
-        theDataset.borderColor = chartConfig.geochart.color_palette![creationIndex % chartConfig.geochart.color_palette!.length];
-      }
+      theDataset.borderColor = chartConfig.geochart.color_palette![creationIndex % chartConfig.geochart.color_palette!.length];
+    }
+    // If the obrder width is set (applies to all datasets the same)
+    if (chartConfig.geochart.borderWidth) {
+      theDataset.borderWidth = chartConfig.geochart.borderWidth;
     }
   }
 
+  // If labels are colors (special case thing)
   if (attributes && chartConfig.geochart.labelsAreColors && chartConfig.geochart.xAxis?.property) {
     const labelColors = (attributes[chartConfig.geochart.xAxis!.property || 'label'] as string).split(';').map((x) => {
       return x.toLowerCase();
