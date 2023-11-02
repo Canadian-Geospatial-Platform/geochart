@@ -15,7 +15,7 @@ export interface TypeAppProps {
  * @returns {JSX.Element} the element that has the GeoChart
  */
 export function App(props: TypeAppProps): JSX.Element {
-  // Can't type the window object to a 'TypeWindow', because we don't have access to the cgpv library when this code runs.
+  // Can't type the window object to a 'TypeWindow', because we don't have access to the cgpv library when this line runs.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any;
   // Fetch the cgpv module
@@ -30,6 +30,8 @@ export function App(props: TypeAppProps): JSX.Element {
   const [data, setData] = useState();
   const [options, setOptions] = useState();
   const [action, setAction] = useState();
+  const [isLoadingChart, setIsLoadingChart] = useState();
+  const [isLoadingDatasource, setIsLoadingDatasource] = useState();
 
   /**
    * Handles when the Chart has to be loaded with data or options.
@@ -70,6 +72,15 @@ export function App(props: TypeAppProps): JSX.Element {
     window.dispatchEvent(new CustomEvent('chart/parsed', { detail: { chart: theChart, options: theOptions, data: theData } }));
   };
 
+  const handleChartLoading = (e: Event): void => {
+    const ev = e as CustomEvent;
+
+    setIsLoadingChart(false);
+    setIsLoadingDatasource(false);
+    if (ev.detail.state === 1) setIsLoadingChart(true);
+    if (ev.detail.state === 2) setIsLoadingDatasource(true);
+  };
+
   /**
    * Handles an error that happened in the Chart component.
    * @param dataErrors The data errors that happened (if any)
@@ -87,10 +98,8 @@ export function App(props: TypeAppProps): JSX.Element {
     if (dataErrors) msgs.push(dataErrors);
     const msgAll = SchemaValidator.parseValidatorResultsMessages(msgs);
 
-    // Show the error (actually, can't because the snackbar is linked to a map at the moment
-    // and geochart is standalone without a cgpv.init() at all)
-    // TODO: Refactor - Decide if we want the snackbar outside of a map or not and use showError or not
-    cgpv.api.utilities.showError('', msgAll);
+    // Show the error using an alert. We can't use the cgpv SnackBar as that component is attached to
+    // a map and we're not even running a cgpv.init() at all here.
     // eslint-disable-next-line no-alert
     alert(`There was an error parsing the Chart inputs.\n\n${msgAll}\n\nView console for details.`);
   };
@@ -101,22 +110,25 @@ export function App(props: TypeAppProps): JSX.Element {
   useEffect(() => {
     window.addEventListener('chart/load', handleChartLoad);
     window.addEventListener('chart/redraw', handleChartRedraw);
+    window.addEventListener('chart/isLoading', handleChartLoading);
     return () => {
       window.removeEventListener('chart/load', handleChartLoad);
       window.removeEventListener('chart/redraw', handleChartRedraw);
+      window.removeEventListener('chart/isLoading', handleChartLoading);
     };
   }, [chart, inputs, data, options]);
 
   // Render the Chart
   return (
     <GeoChart
-      style={{ width: 800 }}
       inputs={inputs}
       schemaValidator={schemaValidator}
       chart={chart}
       data={data}
       options={options}
       action={action}
+      isLoadingChart={isLoadingChart}
+      isLoadingDatasource={isLoadingDatasource}
       onParsed={handleParsed}
       onError={handleError}
     />

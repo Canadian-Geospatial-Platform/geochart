@@ -25,7 +25,14 @@
               {
                 "type": "array",
                 "items": {
-                  "type": "number"
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               {

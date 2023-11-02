@@ -32,7 +32,7 @@ export class SchemaValidator {
    * Validates the GeoChart input parameters.
    * @param data object the data json object to validate
    */
-  validateInputs = (data: object): ValidatorResult => {
+  validateInputs = (data: unknown): ValidatorResult => {
     // Redirect
     return this.validateJsonSchema(SCHEMA_INPUTS, data);
   };
@@ -41,7 +41,7 @@ export class SchemaValidator {
    * Validates the ChartJS data parameters.
    * @param data object the data json object to validate
    */
-  validateData = (data: object): ValidatorResult => {
+  validateData = (data: unknown): ValidatorResult => {
     // Redirect
     return this.validateJsonSchema(SCHEMA_DATA, data);
   };
@@ -50,7 +50,7 @@ export class SchemaValidator {
    * Validates the ChartJS options parameters.
    * @param options object the options json object to validate
    */
-  validateOptions = (options: object): ValidatorResult => {
+  validateOptions = (options: unknown): ValidatorResult => {
     // Redirect
     return this.validateJsonSchema(SCHEMA_OPTIONS, options);
   };
@@ -60,12 +60,12 @@ export class SchemaValidator {
    * @param schema object the schema validator json to validate the jsonObj with
    * @param jsonObj object the json object to validate
    */
-  validateJsonSchema = (schema: object, jsonObj: object): ValidatorResult => {
+  validateJsonSchema = (schema: object, anyObject: unknown): ValidatorResult => {
     // Compile
     const validate = this.ajv.compile(schema);
 
     // Validate
-    const valid = validate(jsonObj) as boolean;
+    const valid = validate(anyObject) as boolean;
 
     // Return a ValidatorResult
     return {
