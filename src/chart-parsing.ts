@@ -1,9 +1,8 @@
-import { ChartType, ChartData, ChartDataset, ChartOptions } from 'chart.js';
+import { ChartType, ChartData, ChartDataset, ChartOptions, Tick } from 'chart.js';
 import {
   GeoChartConfig,
   GeoChartXYData,
   GeoDefaultDataPoint,
-  GeoChartDatasource,
   TypeJsonObject,
   GeoChartCategoriesGroup,
   DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT,
@@ -12,6 +11,7 @@ import {
   DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE,
   DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT,
   DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE,
+  DATE_OPTIONS_AXIS,
 } from './chart-types';
 import { isNumber, getColorFromPalette } from './chart-util';
 
@@ -22,14 +22,18 @@ import { isNumber, getColorFromPalette } from './chart-util';
 function sortOnX<TType extends ChartType, TData = GeoDefaultDataPoint<TType>>(datasets: ChartDataset<TType, TData>[]): void {
   // For each dataset
   datasets.forEach((ds: ChartDataset<TType, TData>) => {
-    const dataInDataset = ds.data as { x: number | Date }[];
-    const dataOrdered = dataInDataset.sort((a: { x: number | Date }, b: { x: number | Date }) => {
+    const dataInDataset = ds.data as { x: number | string | Date | undefined }[];
+    const dataOrdered = dataInDataset.sort((a: { x: number | string | Date | undefined }, b: { x: number | string | Date | undefined }) => {
       if (a.x instanceof Date) {
         if ((a.x as Date) === (b.x as Date)) return 0;
         if ((a.x as Date) < (b.x as Date)) return -1;
         return 1;
       }
-      return (a.x as number) - (b.x as number);
+      if (isNumber(a.x) && isNumber(b.x)) return (a.x as number) - (b.x as number);
+      if (a.x && b.x) return (a.x as string).localeCompare(b.x as string);
+      if (!a.x) return -1;
+      if (!b.x) return 1;
+      return 0;
     });
 
     // Replace
@@ -39,7 +43,7 @@ function sortOnX<TType extends ChartType, TData = GeoDefaultDataPoint<TType>>(da
 }
 
 /**
- * Create a GeoChartXYData data value by reading attributes from a TypeJsonObject.
+ * Creates a GeoChartXYData data value by reading attributes from a TypeJsonObject.
  * The GeoChartXYData has x and y properties and functions similar to the DefaultDataPoint, like ChartJS supports, but with additional
  * support of Dates on the 'x' property.
  * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
@@ -47,16 +51,15 @@ function sortOnX<TType extends ChartType, TData = GeoDefaultDataPoint<TType>>(da
  * @returns The GeoChartXYData object
  */
 function createDataXYFormat<TType extends ChartType>(chartConfig: GeoChartConfig<TType>, attributes: TypeJsonObject): GeoChartXYData {
-  // Read the value in x
+  // Read the unknown value in x
   const valRawX: unknown = attributes[chartConfig.geochart.xAxis!.property];
 
   // If the value is expected to be a time
   let xVal: number | Date | string | unknown = valRawX;
   if (chartConfig.geochart.xAxis?.type === 'time') {
-    // Create a date!
+    // Make sure it's a date object
     if (valRawX instanceof Date) xVal = valRawX as Date;
     if (isNumber(valRawX)) xVal = new Date(valRawX as number);
-    // if (!xVal) throw Error('Unsupported date for x axis');
   }
 
   // Read the value in y, hopefully it's a number, that's what GeoChartXYPair supports for now (there's a TODO there)
@@ -70,7 +73,44 @@ function createDataXYFormat<TType extends ChartType>(chartConfig: GeoChartConfig
 }
 
 /**
- * Create a ChartDataset object, for ChartJS, based on the GeoChart configuration.
+ * Compresses the data for the given dataset in a data array format expected for the Pie/Doughnut charts. This function also
+ * considers the categorization when one must be done.
+ * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
+ * @param dataset ChartDataset<TType, TData> The current dataset being parsed
+ * @param labels string[] The current labels array for the whole Chart (all ChartDatasets) being parsed
+ * @param records TypeJsonObject[] The records for the whole Chart
+ * @returns The TData object representing the expected data array of expected dimension based on the labels array
+ */
+function createDataCompressedForPieDoughnut<
+  TType extends ChartType,
+  TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
+  TLabel extends string = string
+>(chartConfig: GeoChartConfig<TType>, dataset: ChartDataset<TType, TData>, labels: string[], records: TypeJsonObject[]): TData {
+  // Create a new data array of expected length containing only 'null' values
+  const newData: TData = Array.from({ length: labels.length }, () => null) as TData;
+
+  // If categorizing, filter on the current dataset label
+  let subRecords = records;
+  if (chartConfig.category) {
+    subRecords = records.filter((rec: TypeJsonObject) => {
+      return (rec[chartConfig.category!.property] as string as TLabel) === dataset.label;
+    });
+  }
+
+  // For each data to compress in the array
+  subRecords.forEach((rec: TypeJsonObject) => {
+    const valX: TLabel = rec[chartConfig.geochart.xAxis!.property] as string as TLabel;
+    // Find the index for that value
+    const labelIndex = labels!.indexOf(valX);
+    newData[labelIndex] = rec[chartConfig.geochart.yAxis!.property] as number;
+  });
+
+  // Return the compressed data
+  return newData;
+}
+
+/**
+ * Creates a ChartDataset object, for ChartJS, based on the GeoChart configuration.
  * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
  * @param creationIndex number The index of the ChartDataset being created (used for the loop in 'createDtasets')
  * @param label string The ChartDataset label
@@ -94,10 +134,12 @@ function createDataset<TType extends ChartType, TData extends GeoDefaultDataPoin
       data: [],
     };
 
-    // If useSets is defined, set it for each dataset
+    // If useSteps is defined, set it for each dataset
     if (chartConfig.geochart.useSteps) theDatasetLine.stepped = chartConfig.geochart.useSteps;
+
     // If tension is defined, set it for each dataset
     if (chartConfig.geochart.tension) theDatasetLine.tension = chartConfig.geochart.tension;
+
     // Switch to generic type
     theDatasetGeneric = theDatasetLine as ChartDataset<TType, TData>;
   } else {
@@ -120,7 +162,7 @@ function createDataset<TType extends ChartType, TData extends GeoDefaultDataPoin
 }
 
 /**
- * Create all ChartDataset objects for line chart types, for ChartJS, based on the GeoChart configuration.
+ * Creates all ChartDataset objects for line chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
  * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
  * @param datasource GeoChartDatasource The datasource to read to create the datasets with
@@ -131,7 +173,7 @@ function createDatasetsLineBar<
   TType extends ChartType = 'line' | 'bar',
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
   TLabel extends string = string
->(chartConfig: GeoChartConfig<TType>, datasource: GeoChartDatasource, records: TypeJsonObject[]): ChartData<TType, TData, TLabel> {
+>(chartConfig: GeoChartConfig<TType>, records: TypeJsonObject[]): ChartData<TType, TData, TLabel> {
   // Transform the TypeFeatureJson data to ChartData<TType, TData, string>
   const returnedChartData: ChartData<TType, TData, TLabel> = {
     labels: [],
@@ -143,27 +185,27 @@ function createDatasetsLineBar<
   if (chartConfig.category?.property) {
     // 1 category = 1 dataset
     const categoriesRead: GeoChartCategoriesGroup<TData> = {};
-    records.forEach((item: TypeJsonObject) => {
+    records.forEach((rec: TypeJsonObject) => {
       // Read the category as a string
-      const cat = item[chartConfig.category!.property] as string;
+      const catName = rec[chartConfig.category!.property] as string;
 
       // If new category
-      if (!Object.keys(categoriesRead).includes(cat)) {
+      if (!Object.keys(categoriesRead).includes(catName)) {
         // The colors to use
         const backgroundColor = getColorFromPalette(chartConfig.category!.paletteBackgrounds!, idx);
         const borderColor = getColorFromPalette(chartConfig.category!.paletteBorders!, idx);
 
         // Create dataset
-        const newDataset = createDataset<TType, TData>(chartConfig, backgroundColor, borderColor, cat);
-        categoriesRead[cat] = { index: idx++, data: newDataset.data };
+        const newDataset = createDataset<TType, TData>(chartConfig, backgroundColor, borderColor, catName);
+        categoriesRead[catName] = { index: idx++, data: newDataset.data };
         returnedChartData.datasets.push(newDataset);
       }
 
       // Parse data
-      const dataParsed = createDataXYFormat<TType>(chartConfig, item);
+      const dataParsed = createDataXYFormat<TType>(chartConfig, rec);
 
       // Find the data array and push in it.
-      categoriesRead[cat].data.push(dataParsed);
+      categoriesRead[catName].data.push(dataParsed);
     });
   } else {
     // 1 feature = 1 dataset
@@ -172,12 +214,13 @@ function createDatasetsLineBar<
     const borderColor = getColorFromPalette(chartConfig.geochart.xAxis!.paletteBorders!, 0);
 
     // Create dataset
-    const newDataset = createDataset<TType, TData>(chartConfig, backgroundColor, borderColor, 'ALL');
+    const newDataset = createDataset<TType, TData>(chartConfig, backgroundColor, borderColor, undefined);
     returnedChartData.datasets.push(newDataset);
 
-    records.forEach((item: TypeJsonObject) => {
+    // For each record
+    records.forEach((rec: TypeJsonObject) => {
       // Parse data
-      const dataParsed = createDataXYFormat<TType>(chartConfig, item);
+      const dataParsed = createDataXYFormat<TType>(chartConfig, rec);
       newDataset.data.push(dataParsed);
     });
   }
@@ -187,7 +230,7 @@ function createDatasetsLineBar<
 }
 
 /**
- * Create all ChartDataset objects for line and bar chart types, for ChartJS, based on the GeoChart configuration.
+ * Creates all ChartDataset objects for line and bar chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
  * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
  * @param datasource GeoChartDatasource The datasource to read to create the datasets with
@@ -198,7 +241,7 @@ function createDatasetsPieDoughnut<
   TType extends ChartType = 'pie' | 'doughnut',
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
   TLabel extends string = string
->(chartConfig: GeoChartConfig<TType>, datasource: GeoChartDatasource, records: TypeJsonObject[]): ChartData<TType, TData, TLabel> {
+>(chartConfig: GeoChartConfig<TType>, records: TypeJsonObject[]): ChartData<TType, TData, TLabel> {
   // Transform the TypeFeatureJson data to ChartData<TType, TData, string>
   const returnedChartData: ChartData<TType, TData, TLabel> = {
     labels: [],
@@ -206,9 +249,9 @@ function createDatasetsPieDoughnut<
   };
 
   // For Pie and Doughnut, all values for x axis will go in labels
-  records.forEach((item: TypeJsonObject) => {
+  records.forEach((rec: TypeJsonObject) => {
     // Read the value on x axis for each
-    const valX: TLabel = item[chartConfig.geochart.xAxis!.property] as string as TLabel;
+    const valX: TLabel = rec[chartConfig.geochart.xAxis!.property] as string as TLabel;
     if (!returnedChartData.labels!.includes(valX)) returnedChartData.labels!.push(valX);
   });
 
@@ -222,19 +265,19 @@ function createDatasetsPieDoughnut<
     // 1 category = 1 dataset
     const categoriesRead: GeoChartCategoriesGroup<TData> = {};
     let idx = 0;
-    records.forEach((item: TypeJsonObject) => {
+    records.forEach((rec: TypeJsonObject) => {
       // Read the category as a string
-      const cat = item[chartConfig.category!.property] as string;
+      const catName = rec[chartConfig.category!.property] as string;
 
       // If new category
-      if (!Object.keys(categoriesRead).includes(cat)) {
+      if (!Object.keys(categoriesRead).includes(catName)) {
         // The colors to use
         let borderColor;
         if (chartConfig.category!.paletteBorders) borderColor = getColorFromPalette(chartConfig.category!.paletteBorders!, idx);
 
         // Create dataset
-        const newDataset = createDataset<TType, TData>(chartConfig, colorPaletteForAll, borderColor, cat);
-        categoriesRead[cat] = { index: idx++, data: newDataset.data };
+        const newDataset = createDataset<TType, TData>(chartConfig, colorPaletteForAll, borderColor, catName);
+        categoriesRead[catName] = { index: idx++, data: newDataset.data };
         returnedChartData.datasets.push(newDataset);
       }
     });
@@ -243,24 +286,23 @@ function createDatasetsPieDoughnut<
 
     // For each dataset
     returnedChartData.datasets.forEach((chartDataset: ChartDataset<TType, TData>) => {
-      // Create a new data array of expected length
-      const newData: TData = Array.from({ length: returnedChartData.labels!.length }, () => null) as TData;
-
-      // For each data for that particular label
-      records
-        .filter((item: TypeJsonObject) => {
-          return (item[chartConfig.category!.property] as string as TLabel) === chartDataset.label;
-        })
-        .forEach((item: TypeJsonObject) => {
-          const valX: TLabel = item[chartConfig.geochart.xAxis!.property] as string as TLabel;
-          // Find the index for that value
-          const labelIndex = returnedChartData.labels!.indexOf(valX);
-          newData[labelIndex] = item[chartConfig.geochart.yAxis!.property] as number;
-        });
+      // Compress the data for the ChartDataset
+      const newData: TData = createDataCompressedForPieDoughnut(chartConfig, chartDataset, returnedChartData.labels!, records);
 
       // Find the data array and push in it.
       categoriesRead[chartDataset.label!].data.push(...newData);
     });
+  } else {
+    // 1 feature = 1 dataset
+    // Create dataset
+    const newDataset = createDataset<TType, TData>(chartConfig, colorPaletteForAll, undefined, undefined);
+    returnedChartData.datasets.push(newDataset);
+
+    // Compress the data for the ChartDataset
+    const newData: TData = createDataCompressedForPieDoughnut(chartConfig, newDataset, returnedChartData.labels!, records);
+
+    // Push the data
+    newDataset.data.push(...newData);
   }
 
   // Done
@@ -268,7 +310,7 @@ function createDatasetsPieDoughnut<
 }
 
 /**
- * Create all ChartDataset objects, for ChartJS, based on the GeoChart configuration.
+ * Creates all ChartDataset objects, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
  * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
  * @param datasource GeoChartDatasource The datasource to read to create the datasets with
@@ -279,13 +321,13 @@ function createDatasets<
   TType extends ChartType = ChartType,
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
   TLabel extends string = string
->(chartConfig: GeoChartConfig<TType>, datasource: GeoChartDatasource, records: TypeJsonObject[]): ChartData<TType, TData, TLabel> {
+>(chartConfig: GeoChartConfig<TType>, records: TypeJsonObject[]): ChartData<TType, TData, TLabel> {
   // Depending on the ChartType
   if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
-    return createDatasetsLineBar(chartConfig, datasource, records);
+    return createDatasetsLineBar(chartConfig, records);
   }
   if (chartConfig.chart === 'pie' || chartConfig.chart === 'doughnut') {
-    return createDatasetsPieDoughnut(chartConfig, datasource, records);
+    return createDatasetsPieDoughnut(chartConfig, records);
   }
   throw Error('Unsupported chart type');
 }
@@ -349,13 +391,15 @@ function createChartJSOptionsColorPalette<TType extends ChartType>(chartConfig: 
 
 /**
  * Creates the ChartJS Options object necessary for ChartJS process.
- * @param chartConfig The GeoChart Inputs to use to build the ChartJS ingestable information.
- * @param defaultOptions The default, basic, necessary Options for ChartJS.
+ * @param chartConfig GeoChartConfig<TType>The GeoChart Inputs to use to build the ChartJS ingestable information.
+ * @param defaultOptions ChartOptions<TType>The default, basic, necessary Options for ChartJS.
+ * @param language string The current language of the UI.
  * @returns The ChartJS ingestable Options properties
  */
 export function createChartJSOptions<TType extends ChartType>(
   chartConfig: GeoChartConfig<TType>,
-  defaultOptions: ChartOptions<TType>
+  defaultOptions: ChartOptions<TType>,
+  language: string
 ): ChartOptions<TType> {
   // The Chart JS Options as entered or the default options
   const options = (chartConfig.chartjsOptions || { ...defaultOptions }) as ChartOptions<TType>;
@@ -365,7 +409,9 @@ export function createChartJSOptions<TType extends ChartType>(
 
   // If line and using a time series
   if (chartConfig.chart === 'line' && chartConfig.geochart.xAxis?.type === 'time') {
-    (options as ChartOptions<'line'>).scales = {
+    const optionsLine = options as ChartOptions<'line'>;
+    optionsLine.scales = {
+      ...optionsLine.scales,
       x: {
         type: 'time',
         ticks: {
@@ -373,15 +419,37 @@ export function createChartJSOptions<TType extends ChartType>(
             enabled: true,
           },
           source: 'auto',
-          // TODO: Check the logic to use for the ticks. Leaving code commented here to come back to it later.
-          // callback: (tickValue: number | Date | string, index: number, ticks: unknown[]): string => {
-          //   // Hide every 2nd tick label
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          callback: (tickValue: number | Date | string, index: number, ticks: Tick[]): string => {
+            // Make it a date
+            const d = new Date(tickValue);
+            const label = d.toLocaleString(language, DATE_OPTIONS_AXIS);
 
-          //   // Make it a date
-          //   const d = new Date(tickValue).getMonth();
-          //   return d.toString();
-          // },
+            // Trick by keeping the previously calculated label in an extra property (for performance)
+            // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+            (ticks[index] as any).geoLabel = label;
+
+            // If the generated label is major or different than the one prior
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            if (ticks[index].major || (index > 0 && label !== (ticks[index - 1] as any).geoLabel)) {
+              return label;
+            }
+
+            // No label, redundant
+            return '';
+          },
         },
+      },
+    };
+  }
+
+  // If line and using a time series
+  if ((chartConfig.chart === 'line' || chartConfig.chart === 'bar') && chartConfig.geochart.yAxis?.type) {
+    const optionsLine = options as ChartOptions<'line' | 'bar'>;
+    optionsLine.scales = {
+      ...optionsLine.scales,
+      y: {
+        type: chartConfig.geochart.yAxis?.type,
       },
     };
   }
@@ -393,9 +461,9 @@ export function createChartJSOptions<TType extends ChartType>(
 /**
  * Creates the ChartJS Data object necessary for ChartJS process.
  * When the xAxis reprensents time, the datasets are sorted by date.
- * @param chartConfig The GeoChart Inputs to use to build the ChartJS ingestable information.
- * @param records The Records to build the data from.
- * @param defaultData The default, basic, necessary Data for ChartJS.
+ * @param chartConfig GeoChartConfig<TType>The GeoChart Inputs to use to build the ChartJS ingestable information.
+ * @param records TypeJsonObject[] | undefined The Records to build the data from.
+ * @param defaultData ChartData<TType, TData, TLabel>The default, basic, necessary Data for ChartJS.
  * @returns The ChartJS ingestable Data properties
  */
 export function createChartJSData<
@@ -404,19 +472,18 @@ export function createChartJSData<
   TLabel extends string = string
 >(
   chartConfig: GeoChartConfig<TType>,
-  datasource: GeoChartDatasource,
   records: TypeJsonObject[] | undefined,
   defaultData: ChartData<TType, TData, TLabel>
 ): ChartData<TType, TData, TLabel> {
   // If there's a data source, parse it to a GeoChart data
   let data: ChartData<TType, TData, TLabel> = { ...defaultData };
   if (records && records.length > 0) {
-    data = createDatasets(chartConfig, datasource, records);
+    data = createDatasets(chartConfig, records);
   }
 
   // If the x axis type is time
   if (chartConfig.geochart.xAxis?.type === 'time') {
-    // Make sure the data is sorted on X
+    // Make sure the datasets data are sorted on X
     sortOnX(data.datasets);
   }
 

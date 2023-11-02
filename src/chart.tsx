@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-// TODO: Remove the no-console eslint above when component development stabilizes
 import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
 import 'chartjs-adapter-moment';
@@ -8,15 +6,19 @@ import {
   GeoChartAction,
   GeoChartDefaultColors,
   GeoDefaultDataPoint,
+  GeoChartOptionsGeochart,
   GeoChartDatasource,
   TypeJsonObject,
+  StepsPossibilitiesConst,
+  DATE_OPTIONS_LONG,
 } from './chart-types';
 import { SchemaValidator, ValidatorResult } from './chart-schema-validator';
 import { createChartJSOptions, createChartJSData } from './chart-parsing';
 import { isNumber, extractColor } from './chart-util';
-
-// TEMPORARY VARIABLE FOR EASE OF DEBUGGING
-const LOGGING: number = 1;
+import { sxClasses } from './chart-style';
+import { log, LOG_LEVEL_MAXIMUM, LOG_LEVEL_MEDIUM, LOG_LEVEL_LOW } from './logger';
+import T_EN from '../locales/en/translation.json';
+import T_FR from '../locales/fr/translation.json';
 
 /**
  * Main props for the Chart
@@ -26,7 +28,8 @@ export interface TypeChartChartProps<
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
   TLabel = string
 > {
-  style?: unknown; // Will be casted as CSSProperties later via the imported cgpv react
+  sx?: unknown; // Will be casted as CSSProperties later via the imported cgpv react
+  language: string; // The language
   inputs?: GeoChartConfig<TType>; // The official way to work with all GeoChart features
   datasource?: GeoChartDatasource; // The selected datasource
   schemaValidator: SchemaValidator; // The schemas validator object
@@ -43,30 +46,9 @@ export interface TypeChartChartProps<
   onDatasetChanged?: (datasetIndex: number, datasetLabel: string | undefined, checked: boolean) => void;
   onSliderXChanged?: (value: number | number[]) => void;
   onSliderYChanged?: (value: number | number[]) => void;
-  onError?: (
-    inputErrors: ValidatorResult | undefined,
-    optionsErrors: ValidatorResult | undefined,
-    dataErrors: ValidatorResult | undefined
-  ) => void;
+  onStepSwitcherChanged?: (value: string) => void;
+  onError?: (validators: (ValidatorResult | undefined)[]) => void;
 }
-
-/**
- * SX Classes for the Chart
- */
-const sxClasses = {
-  chartError: {
-    fontStyle: 'italic',
-    color: 'red',
-  },
-  checkDatasetWrapper: {
-    display: 'inline-block',
-  },
-  checkDataset: {
-    display: 'inline-flex',
-    verticalAlign: 'middle',
-    marginRight: '20px !important',
-  },
-};
 
 /**
  * Create a customized Chart UI
@@ -87,10 +69,12 @@ export function GeoChart<
   const w = window as any;
   // Fetch the cgpv module
   const { cgpv } = w;
+  const { useTranslation } = cgpv;
   const { useEffect, useState, useRef, useCallback, CSSProperties } = cgpv.react;
   const { Box, Grid, Checkbox, Select, MenuItem, TypeMenuItemProps, Typography, SliderBase: Slider, CircularProgress } = cgpv.ui.elements;
   const {
-    style: elStyle,
+    sx: elStyle,
+    language,
     schemaValidator,
     inputs: parentInputs,
     datasource: parentDatasource,
@@ -107,21 +91,26 @@ export function GeoChart<
     onDatasetChanged,
     onSliderXChanged,
     onSliderYChanged,
+    onStepSwitcherChanged,
     onError,
   } = props;
 
+  // Translation
+  const { t, i18n } = useTranslation();
+
   // Cast the style
-  const style = elStyle as typeof CSSProperties;
+  const sx = elStyle as typeof CSSProperties;
 
   // Attribute the ChartJS default colors
   if (defaultColors?.backgroundColor) ChartJS.defaults.backgroundColor = defaultColors?.backgroundColor;
   if (defaultColors?.borderColor) ChartJS.defaults.borderColor = defaultColors?.borderColor;
   if (defaultColors?.color) ChartJS.defaults.color = defaultColors?.color;
 
-  /** ***************************************** USE STATE SECTION START ************************************************ */
+  /** ****************************************** USE STATE SECTION START ************************************************ */
 
-  // TODO: Refactor - Check why the useState coming from cgpv loses its generic property.
-  // TO.DO.CONT: Here's some crazy typing so that at least things remain typed instead of 'any'.
+  // TODO: Refactor - Check why the useState and useCallback coming from cgpv lose their generic capabilities.
+  // TO.DO.CONT: This is rather problematic. It forces the devs to explicitely use some "not so pretty" type assertions
+  // so that things remain typed instead of becoming 'any' when using functions such as 'useState', 'useCallback', 'useRef', etc.
 
   const [inputs, setInputs] = useState(parentInputs) as [
     GeoChartConfig<TType> | undefined,
@@ -141,26 +130,86 @@ export function GeoChart<
   const [filteredRecords, setFilteredRecords] = useState() as [TypeJsonObject[] | undefined, React.Dispatch<TypeJsonObject[] | undefined>];
   const [xSliderMin, setXSliderMin] = useState(0) as [number, React.Dispatch<number>];
   const [xSliderMax, setXSliderMax] = useState(0) as [number, React.Dispatch<number>];
+  const [xSliderSteps, setXSliderSteps] = useState(1) as [number, React.Dispatch<number>];
   const [xSliderValues, setXSliderValues] = useState(0) as [number | number[], React.Dispatch<number | number[]>];
   const [ySliderMin, setYSliderMin] = useState(0) as [number, React.Dispatch<number>];
   const [ySliderMax, setYSliderMax] = useState(0) as [number, React.Dispatch<number>];
+  const [ySliderSteps, setYSliderSteps] = useState(1) as [number, React.Dispatch<number>];
   const [ySliderValues, setYSliderValues] = useState(0) as [number | number[], React.Dispatch<number | number[]>];
   const [validatorInputs, setValidatorInputs] = useState() as [ValidatorResult | undefined, React.Dispatch<ValidatorResult | undefined>];
   const [validatorOptions, setValidatorOptions] = useState() as [ValidatorResult | undefined, React.Dispatch<ValidatorResult | undefined>];
   const [validatorData, setValidatorData] = useState() as [ValidatorResult | undefined, React.Dispatch<ValidatorResult | undefined>];
+  const [selectedStepSwitcher, setStepSwitcher] = useState() as [string | false, React.Dispatch<string | false>];
   const chartRef = useRef() as React.MutableRefObject<ChartJS<TType, TData>>;
 
-  /** ***************************************** USE STATE SECTION END ************************************************ */
-  /** ***************************************** CORE FUNCTIONS START ************************************************* */
+  /** ****************************************** USE STATE SECTION END ************************************************** */
+  /** ******************************************* CORE FUNCTIONS START ************************************************** */
 
   /**
-   * Filters the datasource based on 2 possible and independent axis.
-   * Ideally, we'd filter the data on the 2 independent axis individually and then grab the intersecting results,
-   * but, for performance reasons, the code cumulates the filtered data instead.
+   * Helper function to set the x and y axes based on the inputs and values.
+   * @param geochart GeoChartOptionsGeochart The Geochart options
+   * @param datasourceItems TypeJsonObject[] The Datasource items
    */
-  const calculateFiltering = (datasource: GeoChartDatasource, xValues: number | number[], yValues: number | number[]): void => {
+  const processAxes = (geochart: GeoChartOptionsGeochart, datasourceItems: TypeJsonObject[]): void => {
+    // If has a xSlider and property and numbers as property
+    if (geochart.xSlider?.display && geochart.xAxis?.property) {
+      // If using numbers as data value
+      if (datasourceItems && datasourceItems.length > 0 && isNumber(datasourceItems![0][geochart.xAxis?.property])) {
+        // If either min or max isn't preset
+        let minVal = geochart.xSlider!.min;
+        let maxVal = geochart.xSlider!.max;
+        if (minVal === undefined || maxVal === undefined) {
+          // Dynamically calculate them
+          const values = datasourceItems!.map((x: TypeJsonObject) => {
+            return x[geochart.xAxis!.property] as number;
+          });
+          minVal = minVal !== undefined ? minVal : Math.floor(Math.min(...values));
+          maxVal = maxVal !== undefined ? maxVal : Math.ceil(Math.max(...values));
+        }
+        setXSliderMin(minVal);
+        setXSliderMax(maxVal);
+
+        // If steps are determined by config
+        if (geochart.xSlider!.step) setXSliderSteps(geochart.xSlider!.step);
+        setXSliderValues([minVal, maxVal]);
+      }
+    }
+
+    // If has a ySlider and property
+    if (geochart.ySlider?.display && geochart.yAxis?.property) {
+      // If using numbers as data value
+      if (datasourceItems && datasourceItems.length > 0 && isNumber(datasourceItems![0][geochart.yAxis?.property])) {
+        // If either min or max isn't preset
+        let minVal = geochart.ySlider!.min;
+        let maxVal = geochart.ySlider!.max;
+        if (minVal === undefined || maxVal === undefined) {
+          // Dynamically calculate them
+          const values = datasourceItems!.map((x: TypeJsonObject) => {
+            return x[geochart.yAxis!.property] as number;
+          });
+          minVal = minVal !== undefined ? minVal : Math.floor(Math.min(...values));
+          maxVal = maxVal !== undefined ? maxVal : Math.ceil(Math.max(...values));
+        }
+        setYSliderMin(minVal);
+        setYSliderMax(maxVal);
+
+        // If steps are determined by config
+        if (geochart.ySlider!.step) setYSliderSteps(geochart.ySlider!.step);
+        setYSliderValues([minVal, maxVal]);
+      }
+    }
+  };
+
+  /**
+   * Helper function to filter datasource items based on 2 possible and independent axis.
+   * For performance reasons, the code cumulates the filtered data instead of treating the axes individually.
+   * @param datasourceItems TypeJsonObject[] The Datasource items
+   * @param xValues number | number[] The values in X to filter on
+   * @param yValues number | number[] The values in Y to filter on
+   */
+  const processFiltering = (datasourceItems: TypeJsonObject[], xValues: number | number[], yValues: number | number[]): void => {
     // If chart type is line
-    let resItemsFinal: TypeJsonObject[] = [...datasource.items!];
+    let resItemsFinal: TypeJsonObject[] = [...datasourceItems!];
     if (inputs?.chart === 'line') {
       // If filterings on x supported
       if (Array.isArray(xValues) && xValues.length === 2) {
@@ -170,8 +219,8 @@ export function GeoChart<
           const theDateFrom = new Date(xValues[0]);
           const theDateTo = new Date(xValues[1]);
 
-          // Filter the datasource.items
-          resItemsFinal = datasource.items!.filter((item: TypeJsonObject) => {
+          // Filter the datasourceItems
+          resItemsFinal = datasourceItems!.filter((item: TypeJsonObject) => {
             const d = new Date(item[inputs.geochart.xAxis!.property] as string);
             return theDateFrom <= d && d <= theDateTo;
           });
@@ -180,8 +229,8 @@ export function GeoChart<
           const from = xValues[0];
           const to = xValues[1];
 
-          // Filter the datasource.items
-          resItemsFinal = datasource.items!.filter((item: TypeJsonObject) => {
+          // Filter the datasourceItems
+          resItemsFinal = datasourceItems!.filter((item: TypeJsonObject) => {
             return from <= (item[inputs.geochart.xAxis!.property] as number) && (item[inputs.geochart.xAxis!.property] as number) <= to;
           });
         }
@@ -204,7 +253,19 @@ export function GeoChart<
   };
 
   /**
-   * Performs a redraw.
+   * Helper function checking for the valid states of a list of ValidatorResults. Returns true if there were no errors found.
+   * @param validators (ValidatorResult | undefined)[] The list of validator results to check for their valid states
+   * @returns true if there were no errors in the schema validations
+   */
+  const hasValidSchemas = (validators: (ValidatorResult | undefined)[]): boolean => {
+    const validatorsInvalid = validators.filter((valResult: ValidatorResult | undefined) => {
+      return valResult && !valResult.valid;
+    });
+    return validatorsInvalid.length === 0;
+  };
+
+  /**
+   * Performs a redraw by changing the 'redraw' property and changing it back after.
    */
   const performRedraw = (): void => {
     setRedraw(true);
@@ -218,9 +279,10 @@ export function GeoChart<
 
   /**
    * Handles when the Datasource changes
+   * @param e Event The Select change event
    * @param item MenuItem The selected MenuItem
    */
-  const handleDatasourceChanged = (e: unknown, item: typeof MenuItem): void => {
+  const handleDatasourceChanged = (e: Event, item: typeof MenuItem): void => {
     // Find the selected datasource reference based on the MenuItem
     const ds: GeoChartDatasource | undefined = inputs!.datasources.find((x) => {
       return (x.value || x.display) === item.props.value;
@@ -234,8 +296,23 @@ export function GeoChart<
   };
 
   /**
-   * Handles when a data was checked/unchecked (via the legend). This is only used by Pie and Doughnut Charts.
+   * Handles when a dataset was checked/unchecked (via the legend)
    * @param datasetIndex number Indicates the dataset index that was checked/unchecked
+   * @param datasetLabel string Indicates the dataset label that was checked/unchecked
+   * @param checked boolean Indicates the checked state
+   */
+  const handleDatasetChecked = (datasetIndex: number, datasetLabel: string | undefined, checked: boolean): void => {
+    // Toggle visibility of the dataset
+    chartRef.current.setDatasetVisibility(datasetIndex, checked);
+    chartRef.current.update();
+
+    // Callback
+    onDatasetChanged?.(datasetIndex, datasetLabel, checked);
+  };
+
+  /**
+   * Handles when a data was checked/unchecked (via the legend). This is only used by Pie and Doughnut Charts.
+   * @param dataIndex number Indicates the data index that was checked/unchecked
    * @param dataLabel string Indicates the data label that was checked/unchecked
    * @param checked boolean Indicates the checked state
    */
@@ -249,26 +326,12 @@ export function GeoChart<
   };
 
   /**
-   * Handles when a dataset was checked/unchecked (via the legend)
-   * @param datasetIndex number Indicates the dataset index that was checked/unchecked
-   * @param checked boolean Indicates the checked state
-   */
-  const handleDatasetChecked = (datasetIndex: number, datasetLabel: string | undefined, checked: boolean): void => {
-    // Toggle visibility of the dataset
-    chartRef.current.setDatasetVisibility(datasetIndex, checked);
-    chartRef.current.update();
-
-    // Callback
-    onDatasetChanged?.(datasetIndex, datasetLabel, checked);
-  };
-
-  /**
    * Handles when the X Slider changes
    * @param value number | number[] Indicates the slider value
    */
   const handleSliderXChange = (newValue: number | number[]): void => {
     // Calculate filterings
-    calculateFiltering(selectedDatasource!, newValue, ySliderValues);
+    processFiltering(selectedDatasource!.items!, newValue, ySliderValues);
 
     // Set the X State
     setXSliderValues(newValue);
@@ -283,7 +346,7 @@ export function GeoChart<
    */
   const handleSliderYChange = (newValue: number | number[]): void => {
     // Calculate filterings
-    calculateFiltering(selectedDatasource!, xSliderValues, newValue);
+    processFiltering(selectedDatasource!.items!, xSliderValues, newValue);
 
     // Set the Y State
     setYSliderValues(newValue);
@@ -299,7 +362,7 @@ export function GeoChart<
   const handleSliderXValueDisplay = (value: number): string => {
     // If current chart has time as xAxis
     if (inputs?.geochart?.xAxis?.type === 'time') {
-      return new Date(value).toDateString();
+      return new Date(value).toLocaleDateString(language, DATE_OPTIONS_LONG);
     }
 
     // Default
@@ -315,20 +378,34 @@ export function GeoChart<
     return value.toString();
   };
 
-  /** **************************************** EVENT HANDLERS SECTION END *********************************************** */
-  /** ***************************************** HOOKS SECTION START ************************************************ */
-
   /**
-   * Returns true if there were no errors in the schema validations
-   * @returns true if there were no errors in the schema validations of 'inputs', 'options' or 'chart'
+   * Handles when the Steps Switcher changes
+   * @param value string Indicates the steps value
    */
-  const hasValidSchemas = useCallback((): boolean => {
-    return (
-      (!validatorInputs || validatorInputs.valid) &&
-      (!validatorOptions || validatorOptions.valid) &&
-      (!validatorData || validatorData.valid)
-    );
-  }, [validatorData, validatorInputs, validatorOptions]);
+  const handleStepsSwitcherChanged = (e: unknown, item: typeof MenuItem): void => {
+    // Set the step switcher
+    setStepSwitcher(item.props.value);
+
+    // Adjust the configuration, live, for the next render
+    if (inputs) inputs.geochart.useSteps = item.props.value;
+
+    // Adjust the configuration, for the current render too
+    if (chartType === 'line' && chartData) {
+      chartData.datasets.forEach((ds: ChartDataset<TType, TData>) => {
+        // eslint-disable-next-line no-param-reassign
+        (ds as ChartDataset<'line', TData>).stepped = item.props.value;
+      });
+
+      // Update
+      setChartData({ ...chartData });
+    }
+
+    // Callback
+    onStepSwitcherChanged?.(item.props.value);
+  };
+
+  /** **************************************** EVENT HANDLERS SECTION END *********************************************** */
+  /** ******************************************* HOOKS SECTION START *************************************************** */
 
   /**
    * Essential function to load the records in the Chart.
@@ -336,30 +413,32 @@ export function GeoChart<
    * @param records TypeJsonObject[] The actual records to load in the Chart.
    */
   const processLoadingRecords = useCallback(
-    (datasource: GeoChartDatasource, records: TypeJsonObject[] | undefined): void => {
+    (theInputs: GeoChartConfig<TType>, theLanguage: string, records: TypeJsonObject[] | undefined): void => {
       // Parse the data
-      const parsedOptions = createChartJSOptions<TType>(inputs!, parentOptions!);
-      const parsedData = createChartJSData<TType, TData, TLabel>(inputs!, datasource, records, parentData!);
+      const parsedOptions = createChartJSOptions<TType>(theInputs, parentOptions!, theLanguage);
+      const parsedData = createChartJSData<TType, TData, TLabel>(theInputs, records, parentData!);
 
       // Callback
-      onParsed?.(inputs!.chart, parsedOptions, parsedData);
-
-      if (LOGGING >= 3) console.log('PARSED', inputs, parsedOptions, parsedData);
+      onParsed?.(theInputs!.chart, parsedOptions, parsedData);
 
       // Override
-      setChartType(inputs!.chart);
+      setChartType(theInputs!.chart);
       setChartOptions(parsedOptions);
       setChartData(parsedData);
     },
-    [inputs, onParsed, parentData, parentOptions]
-  );
+    [parentData, parentOptions, onParsed]
+  ) as (theInputs: GeoChartConfig<TType>, theLanguage: string, records: TypeJsonObject[] | undefined) => void;
 
   // Effect hook when the inputs change - coming from the parent component.
   useEffect(() => {
-    if (LOGGING >= 2) console.log('USE EFFECT PARENT INPUTS', parentInputs);
+    // Log
+    log(LOG_LEVEL_LOW, 'USE EFFECT PARENT INPUTS', parentInputs);
 
     // Refresh the inputs in this component
     setInputs(parentInputs);
+
+    // Clear the selected datasource, because we're cleaning house
+    setSelectedDatasource(undefined);
 
     // If parentInputs is specified
     if (parentInputs) {
@@ -368,148 +447,158 @@ export function GeoChart<
     }
 
     return () => {
-      if (LOGGING >= 5) console.log('USE EFFECT PARENT INPUTS - UNMOUNT', parentInputs);
-      setSelectedDatasource(undefined);
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT INPUTS - UNMOUNT', parentInputs);
     };
   }, [parentInputs, schemaValidator]);
 
   // Effect hook when the inputs change - coming from this component.
   useEffect(() => {
-    if (LOGGING >= 3) console.log('USE EFFECT INPUTS', inputs);
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT INPUTS', inputs);
 
     // Set the first datasource by default
     setSelectedDatasource(inputs?.datasources[0]);
 
+    // If using the steps switcher options
+    if (inputs?.ui?.stepsSwitcher) {
+      // False by default
+      let stepsSwitcher: string | false = false;
+      if (inputs!.geochart.useSteps) stepsSwitcher = inputs!.geochart.useSteps;
+      setStepSwitcher(stepsSwitcher);
+    }
+
     return () => {
-      if (LOGGING >= 5) console.log('USE EFFECT INPUTS - UNMOUNT', inputs);
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT INPUTS - UNMOUNT', inputs);
     };
   }, [inputs]);
 
   // Effect hook when the selected datasource changes - coming from parent component.
   useEffect(() => {
-    if (LOGGING >= 2) console.log('USE EFFECT PARENT DATASOURCE', parentDatasource);
+    // Log
+    log(LOG_LEVEL_LOW, 'USE EFFECT PARENT DATASOURCE', parentDatasource);
 
-    // Set the first datasource by default
+    // Set the datasource as provided
     setSelectedDatasource(parentDatasource);
 
     return () => {
-      if (LOGGING >= 5) console.log('USE EFFECT PARENT DATASOURCE - UNMOUNT', parentDatasource);
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT DATASOURCE - UNMOUNT', parentDatasource);
     };
   }, [parentDatasource]);
 
   // Effect hook when the selected datasource changes - coming from this component.
   useEffect(() => {
-    if (LOGGING >= 3) console.log('USE EFFECT SELECTED DATASOURCE', selectedDatasource);
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT SELECTED DATASOURCE', inputs, selectedDatasource);
 
     // Clear any record filters
     setFilteredRecords(undefined);
 
     // If selectedDatasource is specified
     if (selectedDatasource) {
-      // If has a xSlider and property and numbers as property
-      if (inputs!.geochart.xSlider?.display && inputs!.geochart.xAxis?.property) {
-        // If using numbers as data value
-        if (
-          selectedDatasource.items &&
-          selectedDatasource.items.length > 0 &&
-          isNumber(selectedDatasource.items![0][inputs!.geochart.xAxis?.property])
-        ) {
-          const values = selectedDatasource.items!.map((x: TypeJsonObject) => {
-            return x[inputs!.geochart.xAxis!.property] as number;
-          });
-          const minVal = Math.floor(Math.min(...values));
-          const maxVal = Math.ceil(Math.max(...values));
-          setXSliderMin(minVal);
-          setXSliderMax(maxVal);
-          setXSliderValues([minVal, maxVal]);
-        }
-      }
-
-      // If has a ySlider and property
-      if (inputs!.geochart.ySlider?.display && inputs!.geochart.yAxis?.property) {
-        // If using numbers as data value
-        if (
-          selectedDatasource.items &&
-          selectedDatasource.items.length > 0 &&
-          isNumber(selectedDatasource.items![0][inputs!.geochart.yAxis?.property])
-        ) {
-          const values = selectedDatasource.items!.map((x: TypeJsonObject) => {
-            return x[inputs!.geochart.yAxis!.property] as number;
-          });
-          const minVal = Math.floor(Math.min(...values));
-          const maxVal = Math.ceil(Math.max(...values));
-          setYSliderMin(minVal);
-          setYSliderMax(maxVal);
-          setYSliderValues([minVal, maxVal]);
-        }
-      }
-
-      // Process loading records
-      processLoadingRecords(selectedDatasource, selectedDatasource.items);
+      processAxes(inputs!.geochart, selectedDatasource!.items!);
+      processLoadingRecords(inputs!, language, selectedDatasource!.items);
     }
 
     return () => {
-      if (LOGGING >= 5) console.log('USE EFFECT SELECTED DATASOURCE - UNMOUNT', selectedDatasource);
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT SELECTED DATASOURCE - UNMOUNT', selectedDatasource);
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [processLoadingRecords, selectedDatasource]); // No need for 'inputs' to be a dependency here, because when 'inputs' change, it will reset the selected datasource anyways
+  }, [inputs, language, selectedDatasource, processLoadingRecords]);
 
   // Effect hook when the filtered records change - coming from this component.
   useEffect(() => {
-    if (LOGGING >= 3) console.log('USE EFFECT SELECTED DATASOURCE FILTERED RECORDS', selectedDatasource);
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT SELECTED DATASOURCE FILTERED RECORDS', selectedDatasource, filteredRecords);
 
-    // If filteredRecords is specified
-    if (filteredRecords) {
-      // Process loading records
-      processLoadingRecords(selectedDatasource!, filteredRecords);
-    }
+    // Process loading records
+    if (selectedDatasource) processLoadingRecords(inputs!, language, filteredRecords || selectedDatasource!.items);
 
     return () => {
-      if (LOGGING >= 5) console.log('USE EFFECT SELECTED DATASOURCE FILTERED RECORDS - UNMOUNT', selectedDatasource);
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT SELECTED DATASOURCE FILTERED RECORDS - UNMOUNT', selectedDatasource);
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [processLoadingRecords, filteredRecords]); // No need for 'selectedDatasource' to be a dependency here, because when 'selectedDatasource' changes, it will reset the filters anyways
+  }, [inputs, language, selectedDatasource, processLoadingRecords, filteredRecords]);
 
   // Effect hook when the main props about charttype, options and data change - coming from parent component.
   useEffect(() => {
-    if (LOGGING >= 2) console.log('USE EFFECT PARENT CHARTJS INPUTS');
+    // Log
+    log(LOG_LEVEL_LOW, 'USE EFFECT PARENT CHARTJS INPUTS');
 
     // Override
     setChartType(parentChart!);
     setChartOptions(parentOptions!);
     setChartData(parentData!);
+
+    return () => {
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT CHARTJS INPUTS - UNMOUNT');
+    };
   }, [parentChart, parentOptions, parentData]);
 
   // Effect hook when the chartOptions, chartData change - coming from this component.
   useEffect(() => {
-    if (LOGGING >= 3) console.log('USE EFFECT CHARTJS OPTIONS+DATA', chartOptions, chartData);
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT CHARTJS OPTIONS+DATA', chartOptions, chartData);
 
-    // Validate the parsing we did do follow ChartJS schema validating
-    setValidatorOptions(schemaValidator.validateOptions(chartOptions));
-    setValidatorData(schemaValidator.validateData(chartData));
+    // Validate the parsing we did do follow ChartJS options schema validating
+    if (chartOptions) setValidatorOptions(schemaValidator.validateOptions(chartOptions));
+    // Validate the parsing we did do follow ChartJS data schema validating
+    if (chartData) setValidatorData(schemaValidator.validateData(chartData));
 
     // Always perform a redraw (fixes some unfortunate ChartJS UI issues)
     performRedraw();
+
+    return () => {
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT CHARTJS OPTIONS+DATA - UNMOUNT');
+    };
   }, [chartOptions, chartData, schemaValidator]);
 
   // Effect hook to validate the schemas of inputs - coming from this component.
   useEffect(() => {
-    if (LOGGING >= 4) console.log('USE EFFECT VALIDATORS');
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT VALIDATORS INPUTS', hasValidSchemas([validatorInputs]));
 
     // If any error
-    if (!hasValidSchemas()) {
+    if (!hasValidSchemas([validatorInputs])) {
       // If a callback is defined
-      onError?.(validatorInputs, validatorOptions, validatorData);
+      onError?.([validatorInputs]);
       // eslint-disable-next-line no-console
-      console.error(validatorInputs, validatorOptions, validatorData);
+      console.error([validatorInputs]);
     }
-  }, [validatorInputs, validatorOptions, validatorData, hasValidSchemas, onError]);
+
+    return () => {
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT VALIDATORS INPUTS - UNMOUNT');
+    };
+  }, [validatorInputs, onError]);
+
+  // Effect hook to validate the schemas of inputs - coming from this component.
+  useEffect(() => {
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT VALIDATORS OPTIONS+DATA', hasValidSchemas([validatorOptions, validatorData]));
+
+    // If any error
+    if (!hasValidSchemas([validatorOptions, validatorData])) {
+      // If a callback is defined
+      onError?.([validatorOptions, validatorData]);
+      // eslint-disable-next-line no-console
+      console.error([validatorOptions, validatorData]);
+    }
+
+    return () => {
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT VALIDATORS OPTIONS+DATA - UNMOUNT');
+    };
+  }, [validatorOptions, validatorData, onError]);
 
   // Effect hook when an action needs to happen - coming from this component.
   useEffect(() => {
-    if (LOGGING >= 5) console.log('USE EFFECT ACTION');
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT ACTION');
 
     // If redraw is true, reset the property in the action, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
     // A bit funky, but only way I could find without having code in the Parent Component.
@@ -518,17 +607,51 @@ export function GeoChart<
       // Redraw
       performRedraw();
     }
+
+    return () => {
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT ACTION - UNMOUNT');
+    };
   }, [action]);
 
-  /** ******************************************* HOOKS SECTION END ************************************************** */
-  /** ****************************************** RENDER SECTION START ************************************************ */
+  // Effect hook to be executed when language changes
+  useEffect(() => {
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT CHANGE LANGUAGE');
+
+    // Change the language
+    i18n.changeLanguage(language);
+
+    return () => {
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT CHANGE LANGUAGE - UNMOUNT');
+    };
+  }, [language, i18n]);
+
+  // Effect hook to be executed with i18n
+  useEffect(() => {
+    // Log
+    log(LOG_LEVEL_MEDIUM, 'USE EFFECT ADD_RESOURCE_BUNDLE');
+
+    // Add CZS translations file
+    i18n.addResourceBundle('en', 'translation', T_EN);
+    i18n.addResourceBundle('fr', 'translation', T_FR);
+
+    return () => {
+      // Log
+      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT ADD_RESOURCE_BUNDLE - UNMOUNT');
+    };
+  }, [i18n]);
+
+  /** ********************************************* HOOKS SECTION END *************************************************** */
+  /** ******************************************** RENDER SECTION START ************************************************* */
 
   /**
    * Renders the Chart JSX.Element itself using Line as default
    * @returns The Chart JSX.Element itself using Line as default
    */
   const renderChart = (): JSX.Element => {
-    return <ChartReact ref={chartRef} type={chartType!} style={style} data={chartData} options={chartOptions} redraw={redraw} />;
+    return <ChartReact ref={chartRef} type={chartType!} data={chartData} options={chartOptions} redraw={redraw} />;
   };
 
   /**
@@ -540,10 +663,11 @@ export function GeoChart<
     if (inputs && selectedDatasource) {
       if (inputs.chart === 'line' && inputs.geochart.xSlider?.display) {
         return (
-          <Box>
+          <Box sx={sxClasses.xSliderWrapper}>
             <Slider
               min={xSliderMin}
               max={xSliderMax}
+              step={xSliderSteps}
               value={xSliderValues}
               customOnChange={handleSliderXChange}
               onValueDisplay={handleSliderXValueDisplay}
@@ -553,7 +677,8 @@ export function GeoChart<
         );
       }
     }
-    // None
+
+    // Empty
     return <Box />;
   };
 
@@ -565,12 +690,12 @@ export function GeoChart<
     // If inputs
     if (inputs && selectedDatasource) {
       if (inputs.chart === 'line' && inputs.geochart.ySlider?.display) {
-        // Need 100% height to occupy some space, otherwise it's crunched.
         return (
-          <Box sx={{ height: '85%' }}>
+          <Box sx={sxClasses.ySliderWrapper}>
             <Slider
               min={ySliderMin}
               max={ySliderMax}
+              step={ySliderSteps}
               value={ySliderValues}
               orientation="vertical"
               customOnChange={handleSliderYChange}
@@ -581,7 +706,8 @@ export function GeoChart<
         );
       }
     }
-    // None
+
+    // Empty
     return <Box />;
   };
 
@@ -599,6 +725,8 @@ export function GeoChart<
       return (
         <Box>
           <Select
+            sx={sxClasses.datasourceSelector}
+            label={t('geochart.feature')}
             onChange={handleDatasourceChanged}
             menuItems={menuItems}
             value={selectedDatasource?.value || selectedDatasource?.display || ''}
@@ -606,7 +734,8 @@ export function GeoChart<
         </Box>
       );
     }
-    // None
+
+    // Empty
     return <Box />;
   };
 
@@ -616,11 +745,42 @@ export function GeoChart<
    */
   const renderTitle = (): JSX.Element => {
     if (inputs) {
-      // TODO: Remove the marginTop once the Select marginBottom is fixed (there shouldn't be a margin-bottom 16px over in the Select component)
-      const marginTop = '-16px';
-      return <Box sx={{ padding: '10px', fontSize: 'larger', marginTop: { marginTop } }}>{inputs.title}</Box>;
+      return <Box sx={sxClasses.title}>{inputs.title}</Box>;
     }
-    // None
+
+    // Empty
+    return <Box />;
+  };
+
+  /**
+   * Renders the UI Options
+   * @returns The UI Options Element
+   */
+  const renderUIOptions = (): JSX.Element => {
+    if (inputs?.ui) {
+      // If steps switcher
+      if (inputs!.ui.stepsSwitcher) {
+        // Create the menu items
+        const menuItems: (typeof TypeMenuItemProps)[] = [];
+        StepsPossibilitiesConst.forEach((stepOption: string | boolean) => {
+          menuItems.push({ item: { value: stepOption }, content: <Box>{stepOption.toString()}</Box> });
+        });
+
+        return (
+          <Box sx={sxClasses.uiOptions}>
+            <Select
+              sx={sxClasses.uiOptionsStepsSelector}
+              label={t('geochart.steps')}
+              onChange={handleStepsSwitcherChanged}
+              menuItems={menuItems}
+              value={selectedStepSwitcher || false}
+            />
+          </Box>
+        );
+      }
+    }
+
+    // Empty
     return <Box />;
   };
 
@@ -632,11 +792,11 @@ export function GeoChart<
     if (chartData) {
       const { datasets } = chartData;
       if (datasets.length > 1) {
-        const label = chartType === 'pie' || chartType === 'doughnut' ? 'Category:' : '';
+        const label = chartType === 'pie' || chartType === 'doughnut' ? `${t('geochart.category')}:` : '';
         // The 9px padding here is because of alignment issues with the inner-padding used by the checkboxes components
         return (
           <Box>
-            <Typography sx={{ display: 'inline-block', padding: '9px', verticalAlign: 'middle' }}>{label}</Typography>
+            <Typography sx={sxClasses.checkDatasetWrapperLabel}>{label}</Typography>
             {datasets.map((ds: ChartDataset<TType, TData>, idx: number) => {
               let { color } = ChartJS.defaults;
               if (ds.borderColor) color = ds.borderColor! as string;
@@ -651,7 +811,7 @@ export function GeoChart<
                     }}
                     defaultChecked
                   />
-                  <Typography sx={{ ...sxClasses.checkDataset, ...{ color } }} noWrap>
+                  <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
                     {ds.label}
                   </Typography>
                 </Box>
@@ -662,7 +822,7 @@ export function GeoChart<
       }
     }
 
-    // None
+    // Empty
     return <Box />;
   };
 
@@ -673,7 +833,7 @@ export function GeoChart<
   const renderDataSelector = (): JSX.Element => {
     if (chartData) {
       const { labels, datasets } = chartData;
-      if ((chartType === 'pie' || chartType === 'doughnut') && labels && datasets && labels.length > 1 && datasets.length > 1) {
+      if ((chartType === 'pie' || chartType === 'doughnut') && labels && datasets && labels.length > 1 && datasets.length >= 1) {
         return (
           <Box>
             {labels.map((lbl: TLabel, idx: number) => {
@@ -689,7 +849,7 @@ export function GeoChart<
                     }}
                     defaultChecked
                   />
-                  <Typography sx={{ ...sxClasses.checkDataset, ...{ color } }} noWrap>
+                  <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
                     {lbl}
                   </Typography>
                 </Box>
@@ -700,7 +860,7 @@ export function GeoChart<
       }
     }
 
-    // None
+    // Empty
     return <Box />;
   };
 
@@ -711,20 +871,21 @@ export function GeoChart<
   const renderChartContainer = (): JSX.Element => {
     // If not loading
     if (chartOptions) {
-      // The 1, 11 and 12 used here are as documented online
+      // The xs: 1, 11 and 12 used here are as documented online
       return (
-        <Box>
-          <Grid container sx={style}>
+        <Box sx={{ ...sx, ...sxClasses.mainGeoChartContainer }}>
+          <Grid container>
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex;', alignItems: 'center;' }}>
+              <Box sx={sxClasses.header}>
                 {renderDatasourceSelector()}
                 {renderTitle()}
+                {renderUIOptions()}
               </Box>
               {renderDataSelector()}
               {renderDatasetSelector()}
             </Grid>
-            <Grid item sx={{ position: 'relative;' }} xs={11}>
-              {isLoadingDatasource && <CircularProgress sx={{ backgroundColor: 'transparent', zIndex: 0 }} />}
+            <Grid item sx={sxClasses.chartContent} xs={11}>
+              {isLoadingDatasource && <CircularProgress sx={sxClasses.loadingDatasource} />}
               {renderChart()}
             </Grid>
             <Grid item xs={1}>
@@ -737,6 +898,8 @@ export function GeoChart<
         </Box>
       );
     }
+
+    // Empty
     return <Box />;
   };
 
@@ -746,7 +909,7 @@ export function GeoChart<
    */
   const renderEverything = (): JSX.Element => {
     return (
-      <Box sx={{ minHeight: '400px' }}>
+      <Box sx={sxClasses.mainContainer}>
         {!isLoadingChart && renderChartContainer()}
         {isLoadingChart && <CircularProgress />}
       </Box>
@@ -762,7 +925,7 @@ export function GeoChart<
   };
 
   // If no errors
-  if (hasValidSchemas()) {
+  if (hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {
     // Render the chart
     return renderEverything();
   }
@@ -775,7 +938,7 @@ export function GeoChart<
  * React's default properties for the GeoChart
  */
 GeoChart.defaultProps = {
-  style: null,
+  sx: null,
   inputs: null,
   chart: 'line',
   options: {

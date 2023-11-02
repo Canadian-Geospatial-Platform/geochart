@@ -81,7 +81,7 @@ export class SchemaValidator {
    * Returns a string representation of the errors of all ValidatorResult objects.
    * @param valRes ValidatorResult[] the list of validation results to read and put to string
    */
-  public static parseValidatorResultsMessages = (valRes: ValidatorResult[]): string => {
+  public static parseValidatorResultsMessages = (valRes: (ValidatorResult | undefined)[]): string => {
     // Gather all error messages for data input
     let msg = '';
     valRes.forEach((v) => {
@@ -95,10 +95,10 @@ export class SchemaValidator {
    * Returns a string representation of the error in the ValidatorResult object.
    * @param valRes ValidatorResult the validation result to read and put to string
    */
-  public static parseValidatorResultMessage = (valRes: ValidatorResult): string => {
+  public static parseValidatorResultMessage = (valRes: ValidatorResult | undefined): string => {
     // Gather all error messages for data input
     let msg = '';
-    valRes.errors?.forEach((m: string) => {
+    valRes?.errors?.forEach((m: string) => {
       msg += `${m}\n`;
     });
     return msg.replace(/^\n+|\n+$/gm, '');

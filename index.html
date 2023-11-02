@@ -21,21 +21,26 @@
         title: 'Line Chart with time on x and sliders',
         geochart: {
           borderWidth: 2,
+          useSteps: "after",
           xAxis: {
             type: 'time',
-            unit: 'month',
             property: 'CollectionStart_DebutPrelevement',
             usePalette: false
           },
           yAxis: {
-            property: 'Activity_Activite_mBqm3'
+            type: 'linear',
+            property: 'Activity_Activite_mBqm3',
           },
           xSlider: {
             display: true,
           },
           ySlider: {
             display: true,
+            step: 0.1
           }
+        },
+        ui: {
+          stepsSwitcher: true
         },
         category: {
           property: 'Radionuclide_Radionucleide',
@@ -165,11 +170,11 @@
           tension: 0.3,
           xAxis: {
             type: 'time',
-            unit: 'month',
             property: 'CollectionStart_DebutPrelevement',
             usePalette: false
           },
           yAxis: {
+            type: 'logarithmic',
             property: 'Activity_Activite_mBqm3'
           },
           xSlider: {
@@ -177,6 +182,7 @@
           },
           ySlider: {
             display: true,
+            step: 0.1
           }
         },
         category: {
@@ -762,6 +768,13 @@
           GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span>
         </div>
         <div>
+          <span>Language: </span>
+          <select id="lang" onChange="languageChanged()">
+            <option selected value="en">English</option>
+            <option value="fr">Français</option>
+          </select>
+        </div>
+        <div>
           <div>
             <button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Data LINE w/ time w/sliders</button>
             <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Data LINE w/ time w/sliders w/steps|tension</button>
@@ -823,9 +836,9 @@
     <div id="root2aca7b6b288c" style="position: relative; width: 800px;"></div>
     <div>
       <button onclick="redrawChart()" style="padding:5px;"><strong>Looks weird? Redraw!</strong></button>
-      <button onclick="isLoadingChart()" style="padding:5px;"><strong>Sim. loading whole chart</strong></button>
-      <button onclick="isLoadingDatasource()" style="padding:5px;"><strong>Sim. lazy loading of datasource</strong></button>
-      <button onclick="isLoadingClear()" style="padding:5px;"><strong>Clear loading sim.</strong></button>
+      <button onclick="isLoadingState(1)" style="padding:5px;"><strong>Sim. loading whole chart</strong></button>
+      <button onclick="isLoadingState(2)" style="padding:5px;"><strong>Sim. lazy loading of datasource</strong></button>
+      <button onclick="isLoadingState(0)" style="padding:5px;"><strong>Clear loading sim.</strong></button>
     </div>
 
     <script>
@@ -890,19 +903,14 @@
         window.dispatchEvent(new CustomEvent("chart/redraw"));
       }
 
-      function isLoadingChart() {
-        // Emit a Chart Redraw event so the chart updates
-        window.dispatchEvent(new CustomEvent("chart/isLoading", { detail: { state: 1 } }));
+      function languageChanged() {
+        // Emit a Chart Language changed event so the chart updates
+        window.dispatchEvent(new CustomEvent("chart/language", { detail: { language: event.target.value } }));
       }
 
-      function isLoadingDatasource() {
+      function isLoadingState(state) {
         // Emit a Chart Redraw event so the chart updates
-        window.dispatchEvent(new CustomEvent("chart/isLoading", { detail: { state: 2 } }));
-      }
-
-      function isLoadingClear() {
-        // Emit a Chart Redraw event so the chart updates
-        window.dispatchEvent(new CustomEvent("chart/isLoading", { detail: { state: 0 } }));
+        window.dispatchEvent(new CustomEvent("chart/isLoading", { detail: { state: state } }));
       }
 
       function handleChartLoaded(e) {

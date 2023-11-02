@@ -6,7 +6,7 @@ import { extractColor } from './chart-util';
 export type * from 'chart.js';
 
 // Simulate the types in cgpv
-// TODO: Refactor - Think about it, should I fetch cgpv even in ts classes to get the type?
+// TODO: Refactor - Think about it, do we fetch cgpv, even in '.ts' classes!?
 export type TypeJsonValue = null | string | number | boolean | TypeJsonObject[] | { [key: string]: TypeJsonObject };
 export type TypeJsonObject = TypeJsonValue & { [key: string]: TypeJsonObject };
 
@@ -25,15 +25,8 @@ export type GeoChartOptions<TType extends ChartType> = {
   title: string;
   category?: GeoChartCategory;
   datasources: GeoChartDatasource[];
-  geochart: {
-    borderWidth?: number;
-    useSteps?: 'before' | 'after' | 'middle' | boolean;
-    tension?: number;
-    xSlider?: GeoChartOptionsSlider;
-    ySlider?: GeoChartOptionsSlider;
-    xAxis?: GeoChartOptionsAxis;
-    yAxis?: GeoChartOptionsAxis;
-  };
+  geochart: GeoChartOptionsGeochart;
+  ui?: GeoChartOptionsUI;
 };
 
 /**
@@ -46,6 +39,32 @@ export type GeoChartCategory = {
   paletteBackgrounds?: string[];
   // In the case of a line or bar chart, the palette is always specified. For a pie or doughnut, this might be unspecified for UI looks reasons.
   paletteBorders?: string[];
+};
+
+/**
+ * The steps possibilities explicitely typed.
+ */
+export const StepsPossibilitiesConst = ['before', 'after', 'middle', false] as const;
+export type StepsPossibilities = (typeof StepsPossibilitiesConst)[number];
+
+/**
+ * The Configuration about using GeoChart specific parameters.
+ */
+export type GeoChartOptionsGeochart = {
+  borderWidth?: number;
+  useSteps?: StepsPossibilities;
+  tension?: number;
+  xAxis?: GeoChartOptionsAxis;
+  yAxis?: GeoChartOptionsAxis;
+  xSlider?: GeoChartOptionsSlider;
+  ySlider?: GeoChartOptionsSlider;
+};
+
+/**
+ * The Configuration about using UI specific parameters.
+ */
+export type GeoChartOptionsUI = {
+  stepsSwitcher?: boolean;
 };
 
 /**
@@ -83,25 +102,26 @@ export type GeoChartDefaultColors = {
 };
 
 /**
+ * Options for the Slider Axis component
+ */
+export type GeoChartOptionsAxis = {
+  type: 'linear' | 'logarithmic' | 'category' | 'time' | 'timeseries' | undefined;
+  property: string;
+  usePalette?: boolean;
+  paletteBackgrounds: string[];
+  paletteBorders: string[];
+};
+
+/**
  * Options for the Slider component
  */
 export type GeoChartOptionsSlider = {
   display?: boolean;
   min?: number;
   max?: number;
+  step?: number;
   value?: number | number[];
   track?: 'normal' | 'inverted' | false;
-};
-
-/**
- * Options for the Slider Axis component
- */
-export type GeoChartOptionsAxis = {
-  type: 'linear' | 'logarithmic' | 'category' | 'time' | 'timeseries' | 'radialLinear' | undefined;
-  property: string;
-  usePalette?: boolean;
-  paletteBackgrounds: string[];
-  paletteBorders: string[];
 };
 
 /**
@@ -193,3 +213,21 @@ export const DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE: string[] = DEFAULT_COLOR_P
   // Extract the alpha-less color code for better output
   return extractColor(color)!;
 });
+
+/**
+ * The date formatting to show the dates on the Axis.
+ */
+export const DATE_OPTIONS_AXIS: Intl.DateTimeFormatOptions = {
+  month: 'short',
+  day: 'numeric',
+};
+
+/**
+ * The date formatting to show the dates on Slider.
+ */
+export const DATE_OPTIONS_LONG: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+};
