@@ -44653,6 +44653,9 @@ function GeoChart(props) {
     // Calculate filterings
     calculateFiltering(selectedDatasource, newValue, ySliderValues);
 
+    // Set the X State
+    setXSliderValues(newValue);
+
     // Callback
     onSliderXChanged === null || onSliderXChanged === void 0 || onSliderXChanged(newValue);
   };
@@ -44664,6 +44667,9 @@ function GeoChart(props) {
   var handleSliderYChange = function handleSliderYChange(newValue) {
     // Calculate filterings
     calculateFiltering(selectedDatasource, xSliderValues, newValue);
+
+    // Set the Y State
+    setYSliderValues(newValue);
 
     // Callback
     onSliderYChanged === null || onSliderYChanged === void 0 || onSliderYChanged(newValue);
