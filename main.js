@@ -44203,14 +44203,21 @@ function createDataset(chartConfig, creationIndex, label, attributes) {
   if (chartConfig.chart === 'line' && chartConfig.geochart.useSteps) {
     theDataset.stepped = chartConfig.geochart.useSteps;
   }
+
+  // If chart is line or bar
   if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
+    // If features should use a color palette
     if (chartConfig.geochart.featuresUsePalette) {
       theDataset.backgroundColor = chartConfig.geochart.color_palette[creationIndex % chartConfig.geochart.color_palette.length];
-      if (chartConfig.chart === 'line') {
-        theDataset.borderColor = chartConfig.geochart.color_palette[creationIndex % chartConfig.geochart.color_palette.length];
-      }
+      theDataset.borderColor = chartConfig.geochart.color_palette[creationIndex % chartConfig.geochart.color_palette.length];
+    }
+    // If the border width is set (applies to all datasets the same)
+    if (chartConfig.geochart.borderWidth) {
+      theDataset.borderWidth = chartConfig.geochart.borderWidth;
     }
   }
+
+  // If labels are colors (special case thing)
   if (attributes && chartConfig.geochart.labelsAreColors && (_chartConfig$geochart2 = chartConfig.geochart.xAxis) !== null && _chartConfig$geochart2 !== void 0 && _chartConfig$geochart2.property) {
     var labelColors = attributes[chartConfig.geochart.xAxis.property || 'label'].split(';').map(function (x) {
       return x.toLowerCase();
@@ -44894,7 +44901,7 @@ function GeoChart(props) {
         // Need 100% height to occupy some space, otherwise it's crunched.
         return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: {
-            height: '100%'
+            height: '85%'
           },
           children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
             min: ySliderMin,
