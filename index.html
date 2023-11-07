@@ -2,12 +2,12 @@
         chart: 'line',
         title: 'Line Chart with time on x and sliders',
         geochart: {
-          featuresUsePalette: true,
           borderWidth: 2,
           xAxis: {
             type: 'time',
             unit: 'month',
-            property: 'CollectionStart_DebutPrelevement'
+            property: 'CollectionStart_DebutPrelevement',
+            usePalette: false
           },
           yAxis: {
             property: 'Activity_Activite_mBqm3'
@@ -19,7 +19,10 @@
             display: true,
           }
         },
-        category: "Radionuclide_Radionucleide",
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
         datasources: [{
           display: "Feature 1",
           items: [
@@ -79,49 +82,49 @@
               Location_Emplacement: 'Montreal',
               CollectionStart_DebutPrelevement: 1678320000000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 2.7395,
+              Activity_Activite_mBqm3: 1.7395,
               OBJECTID: 56874
             },
             {
               Location_Emplacement: 'Toronto',
               CollectionStart_DebutPrelevement: 1669248000000,
               Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 0.83,
+              Activity_Activite_mBqm3: 7.83,
               OBJECTID: 56875
             },
             {
               Location_Emplacement: 'Yellowknife',
               CollectionStart_DebutPrelevement: 1679443200000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.0166,
+              Activity_Activite_mBqm3: 4.0166,
               OBJECTID: 56876
             },
             {
               Location_Emplacement: 'Vancouver',
               CollectionStart_DebutPrelevement: 1678406400000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.939,
+              Activity_Activite_mBqm3: 8.939,
               OBJECTID: 56877
             },
             {
               Location_Emplacement: 'Victoria',
               CollectionStart_DebutPrelevement: 1679011200000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.1814,
+              Activity_Activite_mBqm3: 8.1814,
               OBJECTID: 56878
             },
             {
               Location_Emplacement: 'Calgary',
               CollectionStart_DebutPrelevement: 1677974400000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.6715,
+              Activity_Activite_mBqm3: 4.6715,
               OBJECTID: 56879
             },
             {
               Location_Emplacement: 'Montreal',
               CollectionStart_DebutPrelevement: 1668643200000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 3.2589,
+              Activity_Activite_mBqm3: 1.2589,
               OBJECTID: 56880
             }]
         }],
@@ -137,15 +140,16 @@
 
       const DATA_INPUT_LINE_2 = {
         chart: 'line',
-        title: 'Line Chart with time on x and sliders and steps',
+        title: 'Line Chart with time on x and sliders and steps|tension',
         geochart: {
-          featuresUsePalette: true,
           borderWidth: 2,
-          useSteps: "before",
+          useSteps: false,
+          tension: 0.3,
           xAxis: {
             type: 'time',
             unit: 'month',
-            property: 'CollectionStart_DebutPrelevement'
+            property: 'CollectionStart_DebutPrelevement',
+            usePalette: false
           },
           yAxis: {
             property: 'Activity_Activite_mBqm3'
@@ -157,7 +161,10 @@
             display: true,
           }
         },
-        category: "Radionuclide_Radionucleide",
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
         datasources: [{
           display: "Feature 1",
           items: [
@@ -217,49 +224,49 @@
               Location_Emplacement: 'Montreal',
               CollectionStart_DebutPrelevement: 1678320000000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 2.7395,
+              Activity_Activite_mBqm3: 1.7395,
               OBJECTID: 56874
             },
             {
               Location_Emplacement: 'Toronto',
               CollectionStart_DebutPrelevement: 1669248000000,
               Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 0.83,
+              Activity_Activite_mBqm3: 7.83,
               OBJECTID: 56875
             },
             {
               Location_Emplacement: 'Yellowknife',
               CollectionStart_DebutPrelevement: 1679443200000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.0166,
+              Activity_Activite_mBqm3: 4.0166,
               OBJECTID: 56876
             },
             {
               Location_Emplacement: 'Vancouver',
               CollectionStart_DebutPrelevement: 1678406400000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.939,
+              Activity_Activite_mBqm3: 8.939,
               OBJECTID: 56877
             },
             {
               Location_Emplacement: 'Victoria',
               CollectionStart_DebutPrelevement: 1679011200000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.1814,
+              Activity_Activite_mBqm3: 8.1814,
               OBJECTID: 56878
             },
             {
               Location_Emplacement: 'Calgary',
               CollectionStart_DebutPrelevement: 1677974400000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.6715,
+              Activity_Activite_mBqm3: 4.6715,
               OBJECTID: 56879
             },
             {
               Location_Emplacement: 'Montreal',
               CollectionStart_DebutPrelevement: 1668643200000,
               Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 3.2589,
+              Activity_Activite_mBqm3: 1.2589,
               OBJECTID: 56880
             }]
         }],
@@ -275,11 +282,11 @@
 
       const DATA_INPUT_2 = {
         chart: 'bar',
-        title: 'The Title 2',
+        title: 'Bar Chart',
         geochart: {
-          featuresUsePalette: true,
           xAxis: {
-            property: 'Location_Emplacement'
+            property: 'Location_Emplacement',
+            usePalette: false
           },
           yAxis: {
             property: 'Activity_Activite_mBqm3'
@@ -291,7 +298,10 @@
             display: true,
           }
         },
-        category: 'Radionuclide_Radionucleide',
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
         datasources: [{
           value: "1",
           display: "Feature 1",
@@ -309,6 +319,13 @@
               Radionuclide_Radionucleide: '7Be',
               Activity_Activite_mBqm3: 0.83,
               OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 2,
+              OBJECTID: 56871
             },
             {
               Location_Emplacement: 'Yellowknife',
@@ -355,14 +372,188 @@
             }
           }
         }
-      }
-      
+      };
+
       const DATA_INPUT_3 = {
-        chart: 'bar',
-        title: 'The Title 3',
+        chart: 'pie',
+        title: 'Pie Chart',
         geochart: {
-          featuresUsePalette: true,
-          labelsAreColors: true,
+          xAxis: {
+            property: 'Location_Emplacement',
+            usePalette: false
+          },
+          yAxis: {
+            property: 'Activity_Activite_mBqm3'
+          }
+        },
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
+        datasources: [{
+          value: "1",
+          display: "Feature 1",
+          items: [
+            {
+              Location_Emplacement: 'Victoria',
+              CollectionStart_DebutPrelevement: 1678320000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 2.7395,
+              OBJECTID: 56874
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56871
+            },
+            {
+              Location_Emplacement: 'Yellowknife',
+              CollectionStart_DebutPrelevement: 1679443200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.0166,
+              OBJECTID: 56876
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1678406400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.939,
+              OBJECTID: 56877
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1679011200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.1814,
+              OBJECTID: 56878
+            },
+            {
+              Location_Emplacement: 'Toronto',
+              CollectionStart_DebutPrelevement: 1677974400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.6715,
+              OBJECTID: 56879
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1668643200000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 3.2589,
+              OBJECTID: 56880
+            }
+          ]
+        }],
+        chartjsOptions: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      };
+
+      const DATA_INPUT_4 = {
+        chart: 'doughnut',
+        title: 'Doughnut Chart',
+        geochart: {
+          xAxis: {
+            property: 'Location_Emplacement',
+            usePalette: false
+          },
+          yAxis: {
+            property: 'Activity_Activite_mBqm3'
+          }
+        },
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
+        datasources: [{
+          value: "1",
+          display: "Feature 1",
+          items: [
+            {
+              Location_Emplacement: 'Victoria',
+              CollectionStart_DebutPrelevement: 1678320000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 2.7395,
+              OBJECTID: 56874
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56875
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1669248000000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 0.83,
+              OBJECTID: 56871
+            },
+            {
+              Location_Emplacement: 'Yellowknife',
+              CollectionStart_DebutPrelevement: 1679443200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.0166,
+              OBJECTID: 56876
+            },
+            {
+              Location_Emplacement: 'Vancouver',
+              CollectionStart_DebutPrelevement: 1678406400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.939,
+              OBJECTID: 56877
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1679011200000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 1.1814,
+              OBJECTID: 56878
+            },
+            {
+              Location_Emplacement: 'Toronto',
+              CollectionStart_DebutPrelevement: 1677974400000,
+              Radionuclide_Radionucleide: '210Pb',
+              Activity_Activite_mBqm3: 0.6715,
+              OBJECTID: 56879
+            },
+            {
+              Location_Emplacement: 'Montreal',
+              CollectionStart_DebutPrelevement: 1668643200000,
+              Radionuclide_Radionucleide: '7Be',
+              Activity_Activite_mBqm3: 3.2589,
+              OBJECTID: 56880
+            }
+          ]
+        }],
+        chartjsOptions: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      };
+
+      const DATA_INPUT_5 = {
+        chart: 'bar',
+        title: 'The Title 5',
+        geochart: {
           xAxis: {
             property: 'label'
           },
@@ -376,21 +567,64 @@
             display: true,
           }
         },
+        category: {
+          property: 'location',
+          usePalette: false
+        },
         datasources: [{
-          format: 'compressed',
-          display: "Feature 1",
-          items: [
-          {
-            data: '92;43.54;12.3;66;75',
-            label: 'Red;Green;Blue;Yellow;Orange'
-          },
-          {
-            data: '553;54;32.553;5.43;55',
-            label: 'Red;Green;Blue;Yellow;Orange'
-          },
-          {
-            data: '155;55;255',
-            label: 'Red;Green;Blue'
+          display: "Feature",
+          items: [{
+            "data": 92,
+            "label": "Hockey",
+            "location": "Victoria"
+          },{
+            "data": 43.54,
+            "label": "Baseball",
+            "location": "Victoria"
+          },{
+            "data": 12.3,
+            "label": "Basketball",
+            "location": "Victoria"
+          },{
+            "data": 66,
+            "label": "Football",
+            "location": "Victoria"
+          },{
+            "data": 75,
+            "label": "Soccer",
+            "location": "Victoria"
+          },{
+            "data": 553,
+            "label": "Hockey",
+            "location": "Toronto"
+          },{
+            "data": 54,
+            "label": "Baseball",
+            "location": "Toronto"
+          },{
+            "data": 32.553,
+            "label": "Basketball",
+            "location": "Toronto"
+          },{
+            "data": 5.43,
+            "label": "Football",
+            "location": "Toronto"
+          },{
+            "data": 55,
+            "label": "Soccer",
+            "location": "Toronto"
+          },{
+            "data": 155,
+            "label": "Hockey",
+            "location": "Montreal"
+          },{
+            "data": 55,
+            "label": "Baseball",
+            "location": "Montreal"
+          },{
+            "data": 255,
+            "label": "Basketball",
+            "location": "Montreal"
           }]
         }],
         chartjsOptions: {
@@ -431,7 +665,7 @@
       };
 
       const DATA_NATIVE_1 = {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        labels: ['Hockey', 'Baseball', 'Baseketball', 'Football', 'Soccer', 'Curling'],
         datasets: [
           {
             data: [12, 19, 3, 5, 2, 3],
@@ -457,49 +691,49 @@
       };
 
       const DATA_NATIVE_2 = {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        labels: ['Hockey', 'Baseball', 'Baseketball', 'Football', 'Soccer', 'Curling'],
         datasets: [
           {
             label: 'Dataset 1',
             data: [12, 19, 3, 5, 2, 3],
-            borderColor: "rgba(255, 99, 132, 0.5)",
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: "rgb(53, 162, 235)",
+            backgroundColor: 'rgba(53, 162, 235, 0.5)',
           },
           {
             label: 'Dataset 2',
             data: [22, 29, 13, 15, 12, 13],
-            borderColor: "rgba(53, 162, 235, 0.5)",
-            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
           },
         ],
       };
 
       const DATA_NATIVE_3 = {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+        labels: ['Hockey', 'Baseball', 'Baseketball', 'Football', 'Soccer', 'Curling'],
         datasets: [
           {
             label: 'Dataset 1',
             data: [12, 19, 3, 5, 2, 3],
-            borderColor: "rgba(255, 99, 132, 0.5)",
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-            stepped: 'middle', 
+            borderColor: "rgb(53, 162, 235)",
+            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            stepped: 'middle',
           },
           {
             label: 'Dataset 2',
             data: [22, 29, 13, 15, 12, 13],
-            borderColor: "rgba(53, 162, 235, 0.5)",
-            backgroundColor: 'rgba(53, 162, 235, 0.5)',
-            stepped: 'middle', 
+            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            stepped: 'middle',
           },
         ],
       };
 
       const DATA_NATIVE_4 = {
-        labels: ['Red', 'Blue', 'Yellow'],
+        labels: ['Hockey', 'Baseball', 'Baseketball'],
         datasets: [{
           data: [{"x": 10, "y": 15}, {"x": 15, "y": 25}, {"x": 20, "y": 10}]
         }]
-      };</script><script defer="defer" src="main.js"></script></head><body><div style="text-align: center; height: 400px;"><div style="display:inline-block; background-color: lightgreen; width: 49%; height: 100%; vertical-align:top;"><div style="text-align: left;">GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span></div><div><div><button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Data LINE w/ time w/sliders</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Data LINE w/ time w/sliders w/steps</button> <button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button> <button onclick="importDataInputs(DATA_INPUT_3)">Import Data 'compressed' BAR</button></div><div><textarea id="CHARTDATAINPUTS" rows="20" style="width: 98%;"></textarea></div></div><div><button onclick="buildChartInputs()" style="padding:5px;"><strong>BUILD CHART FROM GEOCHART INPUTS</strong></button></div></div><div style="display:inline-block; background-color: aliceblue; width: 50%; height: 100%; vertical-align:top;"><div style="text-align: left;">CHART.JS PROPS <span style="font-size: small;">(these Chart.js native parameters are used to draw the actual chart itself)</span></div><div style="padding:10px;"><select id="CHARTTYPE"><option value="line" selected="selected">Line</option><option value="bar">Bar</option><option value="pie">Pie</option><option value="doughnut">Doughnut</option></select></div><div><div style="display:inline-block; width: 49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1)">Import Options (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options dummy scale</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea></div></div><div style="display:inline-block; width: 49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea></div></div></div><div><button onclick="buildChartNative()" style="padding:5px;"><strong>BUILD CHART FROM CHART.JS PROPS</strong></button></div></div></div><div id="root2aca7b6b288c"></div><div><button onclick="redrawChart()" style="padding:5px;"><strong>LOOKS WEIRD? REACT STATE BUG? REDRAW!</strong></button></div><script>function importDataInputs(inputs) {
+      };</script><script defer="defer" src="main.js"></script></head><body><div style="text-align: center; height: 400px;"><div style="display:inline-block; background-color: lightgreen; width: 49%; height: 100%; vertical-align:top;"><div style="text-align: left;">GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span></div><div><div><button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Data LINE w/ time w/sliders</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Data LINE w/ time w/sliders w/steps|tension</button> <button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button> <button onclick="importDataInputs(DATA_INPUT_3)">Import Data PIE</button> <button onclick="importDataInputs(DATA_INPUT_4)">Import Data DOUGHNUT</button> <button onclick="importDataInputs(DATA_INPUT_5)">Import Data BAR simple</button></div><div><textarea id="CHARTDATAINPUTS" rows="20" style="width: 98%;"></textarea></div></div><div><button onclick="buildChartInputs()" style="padding:5px;"><strong>BUILD CHART FROM GEOCHART INPUTS</strong></button></div></div><div style="display:inline-block; background-color: aliceblue; width: 50%; height: 100%; vertical-align:top;"><div style="text-align: left;">CHART.JS PROPS <span style="font-size: small;">(these Chart.js native parameters are used to draw the actual chart itself)</span></div><div style="padding:10px;"><select id="CHARTTYPE"><option value="line" selected="selected">Line</option><option value="bar">Bar</option><option value="pie">Pie</option><option value="doughnut">Doughnut</option></select></div><div><div style="display:inline-block; width: 49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1)">Import Options (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options dummy scale</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea></div></div><div style="display:inline-block; width: 49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea></div></div></div><div><button onclick="buildChartNative()" style="padding:5px;"><strong>BUILD CHART FROM CHART.JS PROPS</strong></button></div></div></div><div id="root2aca7b6b288c" style="position: relative; width: 800px;"></div><div><button onclick="redrawChart()" style="padding:5px;"><strong>Looks weird? Redraw!</strong></button> <button onclick="isLoadingChart()" style="padding:5px;"><strong>Sim. loading whole chart</strong></button> <button onclick="isLoadingDatasource()" style="padding:5px;"><strong>Sim. lazy loading of datasource</strong></button> <button onclick="isLoadingClear()" style="padding:5px;"><strong>Clear loading sim.</strong></button></div><script>function importDataInputs(inputs) {
         document.getElementById('CHARTDATAINPUTS').value = JSON.stringify(inputs, null, 2);
       }
 
@@ -510,10 +744,10 @@
       function importOptionsParsed(options) {
         document.getElementById('CHARTOPTIONSPARSED').value = JSON.stringify(options, null, 2);
       }
-      
+
       function buildChartInputs() {
         let chartInputs = null;
-        
+
         try {
           if (document.getElementById('CHARTDATAINPUTS').value)
             chartInputs = JSON.parse(document.getElementById('CHARTDATAINPUTS').value);
@@ -522,17 +756,17 @@
           alert('Failed to create JSON from input data text area.');
           console.error(ex);
         }
-        
+
         // Emit a Chart Changed event so the chart updates
         // This is not using the conventional way to communicate with the Chart.
         window.dispatchEvent(new CustomEvent("chart/load", { detail: { inputs: chartInputs } }));
       }
-      
+
       function buildChartNative() {
         let chartType = document.getElementById('CHARTTYPE').value || 'line';
         let chartData = null;
         let chartOptions = null;
-        
+
         try {
           if (document.getElementById('CHARTDATAPARSED').value)
             chartData = JSON.parse(document.getElementById('CHARTDATAPARSED').value);
@@ -557,8 +791,22 @@
 
       function redrawChart() {
         // Emit a Chart Redraw event so the chart updates
-        // This is not using the conventional way to communicate with the Chart.
         window.dispatchEvent(new CustomEvent("chart/redraw"));
+      }
+
+      function isLoadingChart() {
+        // Emit a Chart Redraw event so the chart updates
+        window.dispatchEvent(new CustomEvent("chart/isLoading", { detail: { state: 1 } }));
+      }
+
+      function isLoadingDatasource() {
+        // Emit a Chart Redraw event so the chart updates
+        window.dispatchEvent(new CustomEvent("chart/isLoading", { detail: { state: 2 } }));
+      }
+
+      function isLoadingClear() {
+        // Emit a Chart Redraw event so the chart updates
+        window.dispatchEvent(new CustomEvent("chart/isLoading", { detail: { state: 0 } }));
       }
 
       function handleChartLoaded(e) {
