@@ -704,7 +704,7 @@ export function GeoChart<
       // Create the menu items
       const menuItems: (typeof TypeMenuItemProps)[] = [];
       inputs!.datasources.forEach((s: GeoChartDatasource) => {
-        menuItems.push({ item: { value: s.value || s.display }, content: <Box>{s.display || s.value}</Box> });
+        menuItems.push({ key: s.value || s.display, item: { value: s.value || s.display, children: s.display || s.value } });
       });
       return (
         <Box>
@@ -747,7 +747,7 @@ export function GeoChart<
         // Create the menu items
         const menuItems: (typeof TypeMenuItemProps)[] = [];
         StepsPossibilitiesConst.forEach((stepOption: string | boolean) => {
-          menuItems.push({ item: { value: stepOption }, content: <Box>{stepOption.toString()}</Box> });
+          menuItems.push({ key: stepOption, item: { value: stepOption, children: stepOption.toString() } });
         });
 
         return (
