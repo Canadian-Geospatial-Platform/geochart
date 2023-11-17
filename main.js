@@ -45612,12 +45612,11 @@ function GeoChart(props) {
       var menuItems = [];
       inputs.datasources.forEach(function (s) {
         menuItems.push({
+          key: s.value || s.display,
           item: {
-            value: s.value || s.display
-          },
-          content: /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+            value: s.value || s.display,
             children: s.display || s.value
-          })
+          }
         });
       });
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
@@ -45663,12 +45662,11 @@ function GeoChart(props) {
         var menuItems = [];
         StepsPossibilitiesConst.forEach(function (stepOption) {
           menuItems.push({
+            key: stepOption,
             item: {
-              value: stepOption
-            },
-            content: /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+              value: stepOption,
               children: stepOption.toString()
-            })
+            }
           });
         });
         return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
