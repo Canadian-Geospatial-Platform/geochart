@@ -1,137 +1,83 @@
 <!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Charts</title><link rel="shortcut icon" href="./favicon.ico"/><link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons"/><script src="https://canadian-geospatial-platform.github.io/geoview/public/cgpv-main.js"></script><script>const DATA_INPUT_LINE_1 = {
         chart: 'line',
         title: 'Line Chart with time on x and sliders',
+        query: {
+          type: "esriRegular",
+          url: "https://maps-cartes.services.geo.ca/server_serveur/rest/services/HC/airborne_radioactivity_en/MapServer/3",
+          queryOptions: {
+            whereClauses: [
+              {
+                field: "Location_Emplacement",
+                prefix: "'",
+                valueFrom: "Location_Emplacement",
+                suffix: "'"
+              }],
+              orderByField: "CollectionStart_DebutPrelevement"
+          }
+        },
         geochart: {
           borderWidth: 2,
           useSteps: "after",
           xAxis: {
             type: 'time',
             property: 'CollectionStart_DebutPrelevement',
+            label: 'Collected date',
             usePalette: false
           },
           yAxis: {
             type: 'linear',
             property: 'Activity_Activite_mBqm3',
-          },
+            label: 'Activity mBqm3',
+            tooltipSuffix: "mBqm3"
+          }
+        },
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
+        ui: {
           xSlider: {
             display: true,
           },
           ySlider: {
             display: true,
             step: 0.1
-          }
-        },
-        ui: {
-          stepsSwitcher: true
-        },
-        category: {
-          property: 'Radionuclide_Radionucleide',
-          usePalette: false
+          },
+          stepsSwitcher: true,
+          resetStates: true,
+          description: 'This is a description text',
+          download: true
         },
         datasources: [{
-          display: "Feature 1",
-          items: [
-            {
-              Location_Emplacement: 'Victoria',
-              CollectionStart_DebutPrelevement: 1678320000000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 2.7395,
-              OBJECTID: 56874
-            },
-            {
-              Location_Emplacement: 'Vancouver',
-              CollectionStart_DebutPrelevement: 1669248000000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 0.83,
-              OBJECTID: 56875
-            },
-            {
-              Location_Emplacement: 'Yellowknife',
-              CollectionStart_DebutPrelevement: 1679443200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.0166,
-              OBJECTID: 56876
-            },
-            {
-              Location_Emplacement: 'Vancouver',
-              CollectionStart_DebutPrelevement: 1678406400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.939,
-              OBJECTID: 56877
-            },
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1679011200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.1814,
-              OBJECTID: 56878
-            },
-            {
-              Location_Emplacement: 'Toronto',
-              CollectionStart_DebutPrelevement: 1677974400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.6715,
-              OBJECTID: 56879
-            },
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1668643200000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 3.2589,
-              OBJECTID: 56880
-            }]
+          display: "Saskatoon",
+          sourceItem: {
+            Location_Emplacement: "Saskatoon"
+          }
         },{
-          display: "Feature 2",
-          items: [
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1678320000000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.7395,
-              OBJECTID: 56874
-            },
-            {
-              Location_Emplacement: 'Toronto',
-              CollectionStart_DebutPrelevement: 1669248000000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 7.83,
-              OBJECTID: 56875
-            },
-            {
-              Location_Emplacement: 'Yellowknife',
-              CollectionStart_DebutPrelevement: 1679443200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 4.0166,
-              OBJECTID: 56876
-            },
-            {
-              Location_Emplacement: 'Vancouver',
-              CollectionStart_DebutPrelevement: 1678406400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 8.939,
-              OBJECTID: 56877
-            },
-            {
-              Location_Emplacement: 'Victoria',
-              CollectionStart_DebutPrelevement: 1679011200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 8.1814,
-              OBJECTID: 56878
-            },
-            {
-              Location_Emplacement: 'Calgary',
-              CollectionStart_DebutPrelevement: 1677974400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 4.6715,
-              OBJECTID: 56879
-            },
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1668643200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.2589,
-              OBJECTID: 56880
-            }]
+          display: "Vancouver",
+          sourceItem: {
+            Location_Emplacement: "Vancouver"
+          }
+        },{
+          display: "Regina",
+          sourceItem: {
+            Location_Emplacement: "Regina"
+          }
+        },{
+          display: "Ottawa",
+          sourceItem: {
+            Location_Emplacement: "Ottawa"
+          }
+        },{
+          display: "Montreal",
+          sourceItem: {
+            Location_Emplacement: "Montreal"
+          }
+        },{
+          display: "Quebec",
+          sourceItem: {
+            Location_Emplacement: "Quebec"
+          }
         }],
         chartjsOptions: {
           responsive: true,
@@ -146,6 +92,20 @@
       const DATA_INPUT_LINE_2 = {
         chart: 'line',
         title: 'Line Chart with time on x and sliders and steps|tension',
+        query: {
+          type: "esriRegular",
+          url: "https://maps-cartes.services.geo.ca/server_serveur/rest/services/HC/airborne_radioactivity_en/MapServer/3",
+          queryOptions: {
+            whereClauses: [
+              {
+                field: "Location_Emplacement",
+                prefix: "'",
+                valueFrom: "Location_Emplacement",
+                suffix: "'"
+              }],
+              orderByField: "CollectionStart_DebutPrelevement"
+          }
+        },
         geochart: {
           borderWidth: 2,
           useSteps: false,
@@ -153,12 +113,20 @@
           xAxis: {
             type: 'time',
             property: 'CollectionStart_DebutPrelevement',
+            label: 'Collected date',
             usePalette: false
           },
           yAxis: {
             type: 'logarithmic',
-            property: 'Activity_Activite_mBqm3'
-          },
+            property: 'Activity_Activite_mBqm3',
+            label: 'Activity (mBqm3)'
+          }
+        },
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
+        ui: {
           xSlider: {
             display: true,
           },
@@ -167,114 +135,74 @@
             step: 0.1
           }
         },
-        category: {
-          property: 'Radionuclide_Radionucleide',
-          usePalette: false
+        datasources: [{
+          display: "Vancouver",
+          sourceItem: {
+            Location_Emplacement: "Vancouver"
+          }
+        },{
+          display: "Regina",
+          sourceItem: {
+            Location_Emplacement: "Regina"
+          }
+        },{
+          display: "Ottawa",
+          sourceItem: {
+            Location_Emplacement: "Ottawa"
+          }
+        },{
+          display: "Montreal",
+          sourceItem: {
+            Location_Emplacement: "Montreal"
+          }
+        },{
+          display: "Quebec",
+          sourceItem: {
+            Location_Emplacement: "Quebec"
+          }
+        }],
+        chartjsOptions: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: false,
+            }
+          }
+        }
+      };
+
+      const DATA_INPUT_LINE_3 = {
+        chart: 'bar',
+        title: 'Bar Chart with OGC Features',
+        query: {
+          type: "ogcAPIFeatures",
+          url: "https://demo.pygeoapi.io/master/collections/lakes",
+          queryOptions: {
+            whereClauses: [
+              {
+                field: "name",
+                prefix: "'",
+                valueIs: "L. Ontario",
+                suffix: "'"
+              }]
+          }
+        },
+        geochart: {
+          xAxis: {
+            property: 'name',
+          },
+          yAxis: {
+            property: 'id'
+          }
+        },
+        ui: {
+          resetStates: true,
+          download: true
         },
         datasources: [{
-          display: "Feature 1",
-          items: [
-            {
-              Location_Emplacement: 'Victoria',
-              CollectionStart_DebutPrelevement: 1678320000000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 2.7395,
-              OBJECTID: 56874
-            },
-            {
-              Location_Emplacement: 'Vancouver',
-              CollectionStart_DebutPrelevement: 1669248000000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 0.83,
-              OBJECTID: 56875
-            },
-            {
-              Location_Emplacement: 'Yellowknife',
-              CollectionStart_DebutPrelevement: 1679443200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.0166,
-              OBJECTID: 56876
-            },
-            {
-              Location_Emplacement: 'Vancouver',
-              CollectionStart_DebutPrelevement: 1678406400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.939,
-              OBJECTID: 56877
-            },
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1679011200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.1814,
-              OBJECTID: 56878
-            },
-            {
-              Location_Emplacement: 'Toronto',
-              CollectionStart_DebutPrelevement: 1677974400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 0.6715,
-              OBJECTID: 56879
-            },
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1668643200000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 3.2589,
-              OBJECTID: 56880
-            }]
-        },{
-          display: "Feature 2",
-          items: [
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1678320000000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.7395,
-              OBJECTID: 56874
-            },
-            {
-              Location_Emplacement: 'Toronto',
-              CollectionStart_DebutPrelevement: 1669248000000,
-              Radionuclide_Radionucleide: '7Be',
-              Activity_Activite_mBqm3: 7.83,
-              OBJECTID: 56875
-            },
-            {
-              Location_Emplacement: 'Yellowknife',
-              CollectionStart_DebutPrelevement: 1679443200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 4.0166,
-              OBJECTID: 56876
-            },
-            {
-              Location_Emplacement: 'Vancouver',
-              CollectionStart_DebutPrelevement: 1678406400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 8.939,
-              OBJECTID: 56877
-            },
-            {
-              Location_Emplacement: 'Victoria',
-              CollectionStart_DebutPrelevement: 1679011200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 8.1814,
-              OBJECTID: 56878
-            },
-            {
-              Location_Emplacement: 'Calgary',
-              CollectionStart_DebutPrelevement: 1677974400000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 4.6715,
-              OBJECTID: 56879
-            },
-            {
-              Location_Emplacement: 'Montreal',
-              CollectionStart_DebutPrelevement: 1668643200000,
-              Radionuclide_Radionucleide: '210Pb',
-              Activity_Activite_mBqm3: 1.2589,
-              OBJECTID: 56880
-            }]
+          display: "Lake info 1",
+        }, {
+          display: "Lake info 2",
         }],
         chartjsOptions: {
           responsive: true,
@@ -292,21 +220,27 @@
         geochart: {
           xAxis: {
             property: 'Location_Emplacement',
+            label: 'Location',
             usePalette: false
           },
           yAxis: {
-            property: 'Activity_Activite_mBqm3'
-          },
-          xSlider: {
-            display: true,
-          },
-          ySlider: {
-            display: true,
+            property: 'Activity_Activite_mBqm3',
+            label: 'Activity (mBqm3)',
           }
         },
         category: {
           property: 'Radionuclide_Radionucleide',
           usePalette: false
+        },
+        ui: {
+          xSlider: {
+            display: true,
+          },
+          ySlider: {
+            display: true,
+          },
+          resetStates: true,
+          download: true
         },
         datasources: [{
           value: "1",
@@ -396,6 +330,10 @@
           property: 'Radionuclide_Radionucleide',
           usePalette: false
         },
+        ui: {
+          resetStates: true,
+          download: true
+        },
         datasources: [{
           value: "1",
           display: "Feature 1",
@@ -484,6 +422,10 @@
           property: 'Radionuclide_Radionucleide',
           usePalette: false
         },
+        ui: {
+          resetStates: true,
+          download: true
+        },
         datasources: [{
           value: "1",
           display: "Feature 1",
@@ -566,16 +508,20 @@
           yAxis: {
             property: 'data'
           },
+        },
+        category: {
+          property: 'location',
+          usePalette: false
+        },
+        ui: {
           xSlider: {
             display: true,
           },
           ySlider: {
             display: true,
-          }
-        },
-        category: {
-          property: 'location',
-          usePalette: false
+          },
+          resetStates: true,
+          download: true
         },
         datasources: [{
           display: "Feature",
@@ -739,7 +685,7 @@
         datasets: [{
           data: [{"x": 10, "y": 15}, {"x": 15, "y": 25}, {"x": 20, "y": 10}]
         }]
-      };</script><script defer="defer" src="main.js"></script></head><body><div style="text-align: center; height: 400px;"><div style="display:inline-block; background-color: lightgreen; width: 49%; height: 100%; vertical-align:top;"><div style="text-align: left;">GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span></div><div><span>Language: </span><select id="lang" onchange="languageChanged()"><option selected="selected" value="en">English</option><option value="fr">Français</option></select></div><div><div><button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Data LINE w/ time w/sliders</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Data LINE w/ time w/sliders w/steps|tension</button> <button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button> <button onclick="importDataInputs(DATA_INPUT_3)">Import Data PIE</button> <button onclick="importDataInputs(DATA_INPUT_4)">Import Data DOUGHNUT</button> <button onclick="importDataInputs(DATA_INPUT_5)">Import Data BAR simple</button></div><div><textarea id="CHARTDATAINPUTS" rows="20" style="width: 98%;"></textarea></div></div><div><button onclick="buildChartInputs()" style="padding:5px;"><strong>BUILD CHART FROM GEOCHART INPUTS</strong></button></div></div><div style="display:inline-block; background-color: aliceblue; width: 50%; height: 100%; vertical-align:top;"><div style="text-align: left;">CHART.JS PROPS <span style="font-size: small;">(these Chart.js native parameters are used to draw the actual chart itself)</span></div><div style="padding:10px;"><select id="CHARTTYPE"><option value="line" selected="selected">Line</option><option value="bar">Bar</option><option value="pie">Pie</option><option value="doughnut">Doughnut</option></select></div><div><div style="display:inline-block; width: 49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1)">Import Options (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options dummy scale</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea></div></div><div style="display:inline-block; width: 49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea></div></div></div><div><button onclick="buildChartNative()" style="padding:5px;"><strong>BUILD CHART FROM CHART.JS PROPS</strong></button></div></div></div><div id="root2aca7b6b288c" style="position: relative; width: 800px;"></div><div><button onclick="redrawChart()" style="padding:5px;"><strong>Looks weird? Redraw!</strong></button> <button onclick="isLoadingState(1)" style="padding:5px;"><strong>Sim. loading whole chart</strong></button> <button onclick="isLoadingState(2)" style="padding:5px;"><strong>Sim. lazy loading of datasource</strong></button> <button onclick="isLoadingState(0)" style="padding:5px;"><strong>Clear loading sim.</strong></button></div><script>function importDataInputs(inputs) {
+      };</script><script defer="defer" src="main.js"></script></head><body><div style="text-align: center; height: 400px;"><div style="display:inline-block; background-color: lightgreen; width: 49%; height: 100%; vertical-align:top;"><div style="text-align: left;">GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span></div><div><span>Language: </span><select id="lang" onchange="languageChanged()"><option selected="selected" value="en">English</option><option value="fr">Français</option></select></div><div><div><button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Chart w/ time w/steps</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Chart w/ time logar. w/tension</button> <button onclick="importDataInputs(DATA_INPUT_LINE_3)">Import Chart w/ OGC Features simple</button><br/><button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button> <button onclick="importDataInputs(DATA_INPUT_3)">Import Data PIE</button> <button onclick="importDataInputs(DATA_INPUT_4)">Import Data DOUGHNUT</button> <button onclick="importDataInputs(DATA_INPUT_5)">Import Data BAR simple</button></div><div><textarea id="CHARTDATAINPUTS" rows="18" style="width: 98%;"></textarea></div></div><div><button onclick="buildChartInputs()" style="padding:5px;"><strong>BUILD CHART FROM GEOCHART INPUTS</strong></button></div></div><div style="display:inline-block; background-color: aliceblue; width: 50%; height: 100%; vertical-align:top;"><div style="text-align: left;">CHART.JS PROPS <span style="font-size: small;">(these Chart.js native parameters are used to draw the actual chart itself)</span></div><div style="padding:10px;"><select id="CHARTTYPE"><option value="line" selected="selected">Line</option><option value="bar">Bar</option><option value="pie">Pie</option><option value="doughnut">Doughnut</option></select></div><div><div style="display:inline-block; width: 49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1)">Import Options (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options dummy scale</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea></div></div><div style="display:inline-block; width: 49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea></div></div></div><div><button onclick="buildChartNative()" style="padding:5px;"><strong>BUILD CHART FROM CHART.JS PROPS</strong></button></div></div></div><div id="root2aca7b6b288c" style="position: relative; width: 800px;"></div><div><button onclick="redrawChart()" style="padding:5px;"><strong>Looks weird? Redraw!</strong></button> <button onclick="isLoadingState(1)" style="padding:5px;"><strong>Sim. loading whole chart</strong></button> <button onclick="isLoadingState(2)" style="padding:5px;"><strong>Sim. lazy loading of datasource</strong></button> <button onclick="isLoadingState(0)" style="padding:5px;"><strong>Clear loading sim.</strong></button></div><script>function importDataInputs(inputs) {
         document.getElementById('CHARTDATAINPUTS').value = JSON.stringify(inputs, null, 2);
       }
 
