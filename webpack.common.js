@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -58,12 +59,9 @@ const config = {
       filename: 'index.html',
     }),
     new CopyWebpackPlugin({
-      patterns: [
-        { from: './public/locales', to: 'locales', noErrorOnMissing: true },
-        { from: './favicon.ico' },
-      ],
+      patterns: [{ from: './public/locales', to: 'locales', noErrorOnMissing: true }, { from: './favicon.ico' }],
     }),
-  ]
+  ],
 };
 
 module.exports = config;
