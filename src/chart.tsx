@@ -1,4 +1,4 @@
-import { I18nextProvider, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables, ChartConfiguration, Plugin } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
 import 'chartjs-adapter-moment';
@@ -20,10 +20,10 @@ import {
   StepsPossibilities,
   DATE_OPTIONS_LONG,
   GeoChartDatasetOption,
-} from './chart-types';
+} from './types';
 import { SchemaValidator, ValidatorResult } from './chart-schema-validator';
 import { createChartJSOptions, createChartJSData, fetchItemsViaQueryForDatasource, setColorPalettes } from './chart-parsing';
-import { isNumber, downloadJson, getColorFromPalette } from './chart-util';
+import { isNumber, downloadJson, getColorFromPalette } from './utils';
 import { sxClasses } from './chart-style';
 import { logHigh, logUseEffectMount, logUseEffectUnmount } from './logger';
 
@@ -71,6 +71,9 @@ export interface TypeChartChartProps<
 
   // State indicating that the GeoChart is in 'loading datasource' state
   isLoadingDatasource?: boolean;
+
+  // Language of the GeoChart
+  language?: string;
 
   // Callback executed when the data source changes (the selected value in the dropdown on top left corner of the ui)
   onDatasourceChanged?: (value: GeoChartDatasource | undefined, language: string) => void;
@@ -154,6 +157,7 @@ export function GeoChart<
     defaultColors,
     isLoadingChart,
     isLoadingDatasource: parentLoadingDatasource,
+    language,
     onDatasourceChanged,
     onDataChanged,
     onDatasetChanged,
@@ -169,7 +173,7 @@ export function GeoChart<
   } = props;
 
   // Translation
-  const { t, i18n } = useTranslation();
+  const { i18n: i18nReact } = useTranslation();
 
   // Cast the style
   const sx = elStyle as typeof CSSProperties;
@@ -226,6 +230,8 @@ export function GeoChart<
   const [colorPaletteCategoryBorderIndex, setColorPaletteCategoryBorderIndex] = useState(0) as [number, React.Dispatch<number>];
   const [colorPaletteAxisBackgroundIndex, setColorPaletteAxisBackgroundIndex] = useState(0) as [number, React.Dispatch<number>];
   const [colorPaletteAxisBorderIndex, setColorPaletteAxisBorderIndex] = useState(0) as [number, React.Dispatch<number>];
+  const [i18n, seti18n] = useState(i18nReact);
+  const { t } = i18n;
 
   const chartRef = useRef() as React.MutableRefObject<ChartJS<TType, TData, TLabel>>;
 
@@ -361,7 +367,7 @@ export function GeoChart<
    */
   const fetchDatasourceItems = async (
     chartQuery: GeoChartQuery,
-    language: string,
+    theLanguage: string,
     sourceItem: TypeJsonObject | undefined,
     errorCallback: ((error: string, exception: unknown | undefined) => void) | undefined
   ): Promise<TypeJsonObject[]> => {
@@ -370,7 +376,7 @@ export function GeoChart<
       setIsLoadingDatasource(true);
 
       // Fetch the items for the data source in question
-      return await fetchItemsViaQueryForDatasource(chartQuery, language, sourceItem);
+      return await fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
     } catch (ex) {
       // Error
       errorCallback?.('Failed to fetch the data', ex);
@@ -856,6 +862,26 @@ export function GeoChart<
     };
   }, [parentAction]);
 
+  // Effect hook when i18n changes - coming from parent component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - i18n';
+    logUseEffectMount(USE_EFFECT_FUNC);
+
+    // We have to clone i18n, because otherwise the i18n is shared across all GeoCharts (so we can't have GeoChart simultaneously in diff languages per application).
+    // I also couldn't make it work with changeLanguage either, so it's just re-cloning when the language changes.
+    const newi18n = i18nReact.cloneInstance({
+      lng: language,
+      fallbackLng: language,
+    });
+    seti18n(newi18n);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [i18nReact, language]);
+
   // #endregion
 
   // #region HOOKS USE EFFECT CURRENT COMP SECTION *********************************************************************************
@@ -878,10 +904,14 @@ export function GeoChart<
     logUseEffectMount(USE_EFFECT_FUNC, inputs);
 
     // Async function to fetch data from within a sync useEffect :|
-    const fetchAndSetSelectedDatasource = async (query: GeoChartQuery, language: string, datasource: GeoChartDatasource): Promise<void> => {
+    const fetchAndSetSelectedDatasource = async (
+      query: GeoChartQuery,
+      theLanguage: string,
+      datasource: GeoChartDatasource
+    ): Promise<void> => {
       // Perform the fetch
       // eslint-disable-next-line no-param-reassign
-      datasource.items = await fetchDatasourceItems(query, language, datasource.sourceItem, onError);
+      datasource.items = await fetchDatasourceItems(query, theLanguage, datasource.sourceItem, onError);
 
       // Set the datasource
       setSelectedDatasource(datasource);
@@ -1652,12 +1682,10 @@ export function GeoChart<
    */
   const renderEverything = (): JSX.Element => {
     return (
-      <I18nextProvider i18n={i18n} defaultNS="translation">
-        <Box sx={sxClasses.mainContainer}>
-          {!isLoadingChart && renderChartContainer()}
-          {isLoadingChart && <CircularProgress />}
-        </Box>
-      </I18nextProvider>
+      <Box sx={sxClasses.mainContainer}>
+        {!isLoadingChart && renderChartContainer()}
+        {isLoadingChart && <CircularProgress />}
+      </Box>
     );
   };
 

@@ -3,7 +3,7 @@ import { SchemaValidator } from './chart-schema-validator';
 
 // Export the types from the package
 export * from './i18n';
-export * from './chart-types';
+export * from './types';
 export * from './chart-parsing';
 export * from './chart-schema-validator';
 export * from './chart';

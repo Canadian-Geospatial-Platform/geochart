@@ -16,8 +16,8 @@ import {
   DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT,
   DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE,
   DATE_OPTIONS_AXIS,
-} from './chart-types';
-import { isNumber } from './chart-util';
+} from './types';
+import { isNumber } from './utils';
 
 /**
  * Sorts all ChartDatasets based on the X values of their data.

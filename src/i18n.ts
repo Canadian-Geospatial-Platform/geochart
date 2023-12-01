@@ -24,11 +24,6 @@ i18n
         translation: translationFr,
       },
     },
-    // special options for react-i18next
-    // learn more: https://react.i18next.com/components/i18next-instance
-    react: {
-      useSuspense: true,
-    },
   });
 
 export default i18n;

@@ -1,6 +1,6 @@
 import { ChartType, ChartOptions, ChartTypeRegistry } from 'chart.js';
 import { DistributiveArray } from 'chart.js/dist/types/utils';
-import { extractColor } from './chart-util';
+import { extractColor } from './utils';
 
 // Export all ChartJS types
 export type * from 'chart.js';

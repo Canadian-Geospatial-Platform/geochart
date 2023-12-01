@@ -1,6 +1,5 @@
-import { useTranslation } from 'react-i18next';
 import { GeoChart } from './chart';
-import { GeoChartConfig, ChartType, ChartOptions, ChartData, GeoChartAction, DefaultDataPoint } from './chart-types';
+import { GeoChartConfig, ChartType, ChartOptions, ChartData, GeoChartAction, DefaultDataPoint } from './types';
 import { SchemaValidator } from './chart-schema-validator';
 
 /**
@@ -26,9 +25,6 @@ export function App(props: TypeAppProps): JSX.Element {
   const { Box } = ui.elements;
   const { schemaValidator } = props;
 
-  // Translation
-  const { i18n } = useTranslation();
-
   // #region USE STATE SECTION ****************************************************************************************
 
   const [inputs, setInputs] = useState() as [
@@ -42,6 +38,7 @@ export function App(props: TypeAppProps): JSX.Element {
   ];
   const [options, setOptions] = useState() as [ChartOptions | undefined, React.Dispatch<React.SetStateAction<ChartOptions> | undefined>];
   const [action, setAction] = useState() as [GeoChartAction, React.Dispatch<React.SetStateAction<GeoChartAction>>];
+  const [language, setLanguage] = useState() as [string, React.Dispatch<React.SetStateAction<string>>];
   const [isLoadingChart, setIsLoadingChart] = useState() as [boolean, React.Dispatch<React.SetStateAction<boolean>>];
   const [isLoadingDatasource, setIsLoadingDatasource] = useState() as [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 
@@ -124,13 +121,10 @@ export function App(props: TypeAppProps): JSX.Element {
   /**
    * Handles when the Chart language is changed.
    */
-  const handleChartLanguage = useCallback(
-    (e: Event): void => {
-      const ev = e as CustomEvent;
-      i18n.changeLanguage(ev.detail.language);
-    },
-    [i18n]
-  );
+  const handleChartLanguage = useCallback((e: Event): void => {
+    const ev = e as CustomEvent;
+    setLanguage(ev.detail.language);
+  }, []);
 
   // Effect hook to add and remove event listeners.
   // Using window.addEventListener is unconventional here, but this is strictly for the 'app' logic with the index.html.
@@ -162,6 +156,7 @@ export function App(props: TypeAppProps): JSX.Element {
         data={data}
         options={options}
         action={action}
+        language={language}
         isLoadingChart={isLoadingChart}
         isLoadingDatasource={isLoadingDatasource}
         onParsed={handleParsed}
