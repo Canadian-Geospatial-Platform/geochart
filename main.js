@@ -45696,7 +45696,7 @@ function GeoChart(props) {
   if (defaultColors !== null && defaultColors !== void 0 && defaultColors.borderColor) Chart.defaults.borderColor = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.borderColor;
   if (defaultColors !== null && defaultColors !== void 0 && defaultColors.color) Chart.defaults.color = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.color;
 
-  /** ****************************************** USE STATE SECTION START ************************************************ */
+  // #region USE STATE SECTION ****************************************************************************************
 
   // TODO: Refactor - Check why the useState and useCallback coming from cgpv lose their generic capabilities.
   // TO.DO.CONT: This is rather problematic. It forces the devs to explicitely use some "not so pretty" type assertions
@@ -45798,8 +45798,9 @@ function GeoChart(props) {
     setIsLoadingDatasource = _ref46[1];
   var chartRef = useRef();
 
-  /** ****************************************** USE STATE SECTION END ************************************************** */
-  /** ******************************************* CORE FUNCTIONS START ************************************************** */
+  // #endregion
+
+  // #region CORE FUNCTIONS *******************************************************************************************
 
   /**
    * Helper function to set the x and y axes based on the inputs and values.
@@ -45954,8 +45955,9 @@ function GeoChart(props) {
     });
   };
 
-  /** ******************************************* CORE FUNCTIONS END **************************************************** */
-  /** *************************************** EVENT HANDLERS SECTION START ********************************************** */
+  // #endregion
+
+  // #region EVENT HANDLERS SECTION ***********************************************************************************
 
   /**
    * Handles when the Datasource changes
@@ -46164,8 +46166,9 @@ function GeoChart(props) {
     downloadJson(data, 'chart-data.json');
   };
 
-  /** **************************************** EVENT HANDLERS SECTION END *********************************************** */
-  /** ******************************************* HOOKS SECTION START *************************************************** */
+  // #endregion
+
+  // #region HOOKS SECTION ********************************************************************************************
 
   /**
    * Helper function to filter datasource items based on 2 possible and independent axis.
@@ -46323,7 +46326,6 @@ function GeoChart(props) {
 
     // Callback
     onParsed === null || onParsed === void 0 || onParsed(theInputs.chart, parsedOptions, parsedData);
-    console.log('PARSED', parsedData);
 
     // Override
     setChartType(theInputs.chart);
@@ -46640,8 +46642,9 @@ function GeoChart(props) {
     };
   }, [parentLoadingDatasource]);
 
-  /** ********************************************* HOOKS SECTION END *************************************************** */
-  /** ******************************************** RENDER SECTION START ************************************************* */
+  // #endregion
+
+  // #region RENDER SECTION *******************************************************************************************
 
   /**
    * Renders the Chart JSX.Element itself using Line as default
@@ -47017,6 +47020,8 @@ function GeoChart(props) {
       children: [t('geochart.parsingError'), " ", t('geochart.viewConsoleDetails')]
     });
   };
+
+  // #endregion
 
   // If no errors
   if (hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {
