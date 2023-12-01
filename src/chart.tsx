@@ -1,6 +1,9 @@
-import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables } from 'chart.js';
+import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables, ChartConfiguration, Plugin } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
 import 'chartjs-adapter-moment';
+// Keeping the import line commented, until we decide to use it or code an equivalent.
+// So that a dev can locally install it to work. This package is pretty useful to track this GeoChart Component.
+// import { useWhatChanged, setUseWhatChange } from '@simbathesailor/use-what-changed';
 import {
   GeoChartConfig,
   GeoChartAction,
@@ -10,47 +13,101 @@ import {
   GeoChartOptionsUI,
   GeoChartQuery,
   GeoChartDatasource,
-  GeoChartSelectedDatasets,
+  GeoChartSelectedDataset,
   TypeJsonObject,
   StepsPossibilitiesConst,
   StepsPossibilities,
   DATE_OPTIONS_LONG,
+  GeoChartDatasetOption,
 } from './chart-types';
 import { SchemaValidator, ValidatorResult } from './chart-schema-validator';
-import { createChartJSOptions, createChartJSData, fetchItemsViaQueryForDatasource } from './chart-parsing';
-import { isNumber, extractColor, downloadJson } from './chart-util';
+import { createChartJSOptions, createChartJSData, fetchItemsViaQueryForDatasource, setColorPalettes } from './chart-parsing';
+import { isNumber, downloadJson, getColorFromPalette } from './chart-util';
 import { sxClasses } from './chart-style';
-import { log, LOG_LEVEL_MAXIMUM, LOG_LEVEL_HIGH, LOG_LEVEL_MEDIUM, LOG_LEVEL_LOW } from './logger';
+import { logHigh, logUseEffectMount, logUseEffectUnmount } from './logger';
 import T_EN from '../locales/en/translation.json';
 import T_FR from '../locales/fr/translation.json';
 
+// Activate useWhatChanged in development (leaving the code commented, see header of file for reason)
+// setUseWhatChange(process.env.NODE_ENV === 'development');
+
 /**
- * Main props for the Chart
+ * Main props for the Chart.
+ * There are 2 main ways to create a chart:
+ * (1) Using the 'inputs' parameter which configures an elaborated GeoChart or;
+ * (2) Using the 'chart'+'options'+'data' parameters which creates a basic GeoChart with essential ChartJS parameters.
  */
 export interface TypeChartChartProps<
   TType extends ChartType = ChartType,
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
   TLabel = string
 > {
-  sx?: unknown; // Will be casted as CSSProperties later via the imported cgpv react
-  inputs?: GeoChartConfig<TType>; // The official way to work with all GeoChart features
-  datasource?: GeoChartDatasource; // The selected datasource
-  schemaValidator: SchemaValidator; // The schemas validator object
-  chart?: TType; // When no inputs is specified, the GeoChart will use this chart props to work directly with ChartJS
-  options?: ChartOptions<TType>; // When no inputs is specified, the GeoChart will use these options props to work directly with ChartJS
-  data?: ChartData<TType, TData, TLabel>; // When no inputs is specified, the GeoChart will use this data props to work directly with ChartJS
-  action?: GeoChartAction; // Indicate an action, user interface related, to be performed by the component
+  // The schemas validator object
+  schemaValidator: SchemaValidator;
+
+  // Will be casted as CSSProperties later via the imported cgpv react
+  sx?: unknown;
+
+  // The official way to work with all GeoChart features
+  inputs?: GeoChartConfig<TType>;
+
+  // The selected datasource (the selected value in the dropdown on top left corner of the ui)
+  datasource?: GeoChartDatasource;
+
+  // When no inputs is specified, the GeoChart will use this chart props to work directly with ChartJS
+  chart?: TType;
+  // When no inputs is specified, the GeoChart will use this options props to work directly with ChartJS
+  options?: ChartOptions<TType>;
+  // When no inputs is specified, the GeoChart will use this data props to work directly with ChartJS
+  data?: ChartData<TType, TData, TLabel>;
+
+  // Indicate an action, user interface related, to be performed by the component
+  action?: GeoChartAction;
+
+  // The default colors to apply to the Chart look (essentially redirected to ChartJS)
   defaultColors?: GeoChartDefaultColors;
+
+  // State indicating that the GeoChart is in 'loading' state
   isLoadingChart?: boolean;
+
+  // State indicating that the GeoChart is in 'loading datasource' state
   isLoadingDatasource?: boolean;
-  onParsed?: (chart: TType, options: ChartOptions<TType>, data: ChartData<TType, TData>) => void;
+
+  // Callback executed when the data source changes (the selected value in the dropdown on top left corner of the ui)
   onDatasourceChanged?: (value: GeoChartDatasource | undefined, language: string) => void;
-  onDataChanged?: (dataIndex: number, dataLabel: string, checked: boolean) => void;
+
+  // Callback executed when the checked dataset (legend) changes
   onDatasetChanged?: (datasetIndex: number, datasetLabel: string | undefined, checked: boolean) => void;
+
+  // Callback executed, for the pie/doughnut chart only, when the checked data changes
+  onDataChanged?: (dataIndex: number, dataLabel: string, checked: boolean) => void;
+
+  // Callback executed when user has changed the value on the slider on X axis
   onSliderXChanged?: (value: number | number[]) => void;
+
+  // Callback executed when the value display for the X axis wants to show up
+  onSliderXValueDisplaying?: (value: number) => string;
+
+  // Callback executed when user has changed the value on the slider on Y axis
   onSliderYChanged?: (value: number | number[]) => void;
+
+  // Callback executed when the value display for the Y axis wants to show up
+  onSliderYValueDisplaying?: (value: number) => string;
+
+  // Callback executed when the use has clicked the download button
+  onDownloadClicked?: (value: GeoChartDatasource, index: number) => string;
+
+  // Callback executed when user has selected another steps value from the ui (top right corner in the ui at the time of writing)
   onStepSwitcherChanged?: (value: string) => void;
-  onError?: (validators: (ValidatorResult | undefined)[]) => void;
+
+  // Callback executed when user has clicked the reset states button (top right corner in the ui at the time of writing)
+  onResetStates?: () => void;
+
+  // Callback executed when the data coming from the inputs parameters have been parsed and is ready to redirect to ChartJS for rendering
+  onParsed?: (chart: TType, options: ChartOptions<TType>, data: ChartData<TType, TData>) => void;
+
+  // Callback executed when an error has happened
+  onError?: (error: string, exception: unknown | undefined) => void;
 }
 
 /**
@@ -99,13 +156,17 @@ export function GeoChart<
     defaultColors,
     isLoadingChart,
     isLoadingDatasource: parentLoadingDatasource,
-    onParsed,
     onDatasourceChanged,
     onDataChanged,
     onDatasetChanged,
     onSliderXChanged,
+    onSliderXValueDisplaying,
     onSliderYChanged,
+    onSliderYValueDisplaying,
+    onDownloadClicked,
     onStepSwitcherChanged,
+    onResetStates,
+    onParsed,
     onError,
   } = props;
 
@@ -115,35 +176,37 @@ export function GeoChart<
   // Cast the style
   const sx = elStyle as typeof CSSProperties;
 
-  // Attribute the ChartJS default colors
-  if (defaultColors?.backgroundColor) ChartJS.defaults.backgroundColor = defaultColors?.backgroundColor;
-  if (defaultColors?.borderColor) ChartJS.defaults.borderColor = defaultColors?.borderColor;
-  if (defaultColors?.color) ChartJS.defaults.color = defaultColors?.color;
-
   // #region USE STATE SECTION ****************************************************************************************
 
   // TODO: Refactor - Check why the useState and useCallback coming from cgpv lose their generic capabilities.
   // TO.DO.CONT: This is rather problematic. It forces the devs to explicitely use some "not so pretty" type assertions
   // so that things remain typed instead of becoming 'any' when using functions such as 'useState', 'useCallback', 'useRef', etc.
 
+  // Inner component states attached to the parent component
   const [inputs, setInputs] = useState(parentInputs) as [
     GeoChartConfig<TType> | undefined,
     React.Dispatch<GeoChartConfig<TType> | undefined>
   ];
   const [chartType, setChartType] = useState(parentChart!) as [TType, React.Dispatch<TType>];
-  const [selectedDatasource, setSelectedDatasource] = useState(parentDatasource) as [
-    GeoChartDatasource | undefined,
-    React.Dispatch<GeoChartDatasource | undefined>
-  ];
-  const [chartOptions, setChartOptions] = useState(parentOptions!) as [ChartOptions<TType>, React.Dispatch<ChartOptions<TType>>];
   const [chartData, setChartData] = useState(parentData!) as [
     ChartData<TType, TData, TLabel>,
     React.Dispatch<ChartData<TType, TData, TLabel>>
   ];
-  const [action, setAction] = useState() as [GeoChartAction, React.Dispatch<GeoChartAction>];
-  const [selectedDatasets, setSelectedDatasets] = useState({}) as [GeoChartSelectedDatasets, React.Dispatch<GeoChartSelectedDatasets>];
-  const [selectedDatas, setSelectedDatas] = useState({}) as [GeoChartSelectedDatasets, React.Dispatch<GeoChartSelectedDatasets>];
+  const [chartOptions, setChartOptions] = useState(parentOptions!) as [
+    ChartOptions<TType> | undefined,
+    React.Dispatch<ChartOptions<TType> | undefined>
+  ];
+  const [selectedDatasource, setSelectedDatasource] = useState(parentDatasource) as [
+    GeoChartDatasource | undefined,
+    React.Dispatch<GeoChartDatasource | undefined>
+  ];
   const [redraw, setRedraw] = useState(parentAction?.shouldRedraw) as [boolean | undefined, React.Dispatch<boolean | undefined>];
+  const [isLoadingDatasource, setIsLoadingDatasource] = useState(parentLoadingDatasource) as [boolean, React.Dispatch<boolean>];
+
+  // Inner component states unrelated to the parent component
+  const [action, setAction] = useState() as [GeoChartAction, React.Dispatch<GeoChartAction>];
+  const [datasetRegistry, setDatasetRegistry] = useState({}) as [GeoChartSelectedDataset, React.Dispatch<GeoChartSelectedDataset>];
+  const [datasRegistry, setDatasRegistry] = useState({}) as [GeoChartSelectedDataset, React.Dispatch<GeoChartSelectedDataset>];
   const [filteredRecords, setFilteredRecords] = useState() as [TypeJsonObject[] | undefined, React.Dispatch<TypeJsonObject[] | undefined>];
   const [xSliderMin, setXSliderMin] = useState(0) as [number, React.Dispatch<number>];
   const [xSliderMax, setXSliderMax] = useState(0) as [number, React.Dispatch<number>];
@@ -156,17 +219,29 @@ export function GeoChart<
   const [validatorInputs, setValidatorInputs] = useState() as [ValidatorResult | undefined, React.Dispatch<ValidatorResult | undefined>];
   const [validatorOptions, setValidatorOptions] = useState() as [ValidatorResult | undefined, React.Dispatch<ValidatorResult | undefined>];
   const [validatorData, setValidatorData] = useState() as [ValidatorResult | undefined, React.Dispatch<ValidatorResult | undefined>];
-
-  let stepsSwitcher: StepsPossibilities = false; // False by default
-  if (inputs && inputs!.geochart.useSteps) stepsSwitcher = inputs!.geochart.useSteps;
-  const [selectedSteps, setSelectedSteps] = useState(stepsSwitcher) as [
-    StepsPossibilities | undefined,
-    React.Dispatch<StepsPossibilities | undefined>
+  const [selectedSteps, setSelectedSteps] = useState(inputs?.geochart.useSteps || false) as [
+    StepsPossibilities,
+    React.Dispatch<StepsPossibilities>
   ];
+  const [plugins, setPlugins] = useState() as [Plugin<TType, unknown>[] | undefined, React.Dispatch<Plugin<TType, unknown>[] | undefined>];
+  const [colorPaletteCategoryBackgroundIndex, setColorPaletteCategoryBackgroundIndex] = useState(0) as [number, React.Dispatch<number>];
+  const [colorPaletteCategoryBorderIndex, setColorPaletteCategoryBorderIndex] = useState(0) as [number, React.Dispatch<number>];
+  const [colorPaletteAxisBackgroundIndex, setColorPaletteAxisBackgroundIndex] = useState(0) as [number, React.Dispatch<number>];
+  const [colorPaletteAxisBorderIndex, setColorPaletteAxisBorderIndex] = useState(0) as [number, React.Dispatch<number>];
 
-  const [isLoadingDatasource, setIsLoadingDatasource] = useState(parentLoadingDatasource) as [boolean, React.Dispatch<boolean>];
+  const chartRef = useRef() as React.MutableRefObject<ChartJS<TType, TData, TLabel>>;
 
-  const chartRef = useRef() as React.MutableRefObject<ChartJS<TType, TData>>;
+  // #endregion
+
+  // #region DEFAULTS SECTION *****************************************************************************************
+
+  // Attribute the ChartJS default colors
+  if (defaultColors?.backgroundColor) ChartJS.defaults.backgroundColor = defaultColors?.backgroundColor;
+  if (defaultColors?.borderColor) ChartJS.defaults.borderColor = defaultColors?.borderColor;
+  if (defaultColors?.color) ChartJS.defaults.color = defaultColors?.color;
+
+  // Attribute the color palettes
+  setColorPalettes(inputs);
 
   // #endregion
 
@@ -180,18 +255,22 @@ export function GeoChart<
   const processAxes = (
     geochart: GeoChartOptionsGeochart,
     uiOptions: GeoChartOptionsUI | undefined,
-    datasourceItems: TypeJsonObject[]
+    datasourceItems: TypeJsonObject[] | undefined
   ): (number | undefined)[] => {
     // If has a xSlider and property and numbers as property
     let xMinVal = uiOptions?.xSlider?.min;
     let xMaxVal = uiOptions?.xSlider?.max;
     if (uiOptions?.xSlider?.display) {
       // If using numbers as data value
-      if (datasourceItems && datasourceItems.length > 0 && isNumber(datasourceItems![0][geochart.xAxis.property])) {
+      if (datasourceItems && datasourceItems.length > 0) {
         // If either min or max isn't preset
         if (xMinVal === undefined || xMaxVal === undefined) {
           // Dynamically calculate them
           const values = datasourceItems!.map((x: TypeJsonObject) => {
+            // If date
+            if (geochart.xAxis.type === 'time' || geochart.xAxis.type === 'timeseries') {
+              return new Date(x[geochart.xAxis.property] as string).getTime();
+            }
             return x[geochart.xAxis.property] as number;
           });
           xMinVal = xMinVal !== undefined ? xMinVal : Math.floor(Math.min(...values));
@@ -241,35 +320,40 @@ export function GeoChart<
    * @param theYSliderValues number[] | undefined
    */
   const processAxesValues = (
+    uiOptions: GeoChartOptionsUI | undefined,
     xMinVal: number | undefined,
     xMaxVal: number | undefined,
     yMinVal: number | undefined,
     yMaxVal: number | undefined,
     theXSliderValues: number[] | undefined,
     theYSliderValues: number[] | undefined
-  ): [boolean, number[]] => {
+  ): [boolean, (number | undefined)[]] => {
     // If still not set
     let valuesComeFromState: boolean = false;
-    if (xMaxVal && !theXSliderValues) {
-      // Set the values for x axis to min/max
-      setXSliderValues([xMinVal!, xMaxVal!]);
-    } else if (theXSliderValues) {
-      // eslint-disable-next-line no-param-reassign
-      [xMinVal, xMaxVal] = theXSliderValues;
-      valuesComeFromState = true;
+    if (uiOptions?.xSlider?.display) {
+      if (xMaxVal && !theXSliderValues) {
+        // Set the values for x axis to min/max
+        setXSliderValues([xMinVal!, xMaxVal!]);
+      } else if (theXSliderValues) {
+        // eslint-disable-next-line no-param-reassign
+        [xMinVal, xMaxVal] = theXSliderValues;
+        valuesComeFromState = true;
+      }
     }
     // If still not set
-    if (yMaxVal && !theYSliderValues) {
-      // Set the state
-      setYSliderValues([yMinVal!, yMaxVal!]);
-    } else if (theYSliderValues) {
-      // eslint-disable-next-line no-param-reassign
-      [yMinVal, yMaxVal] = theYSliderValues;
-      valuesComeFromState = true;
+    if (uiOptions?.ySlider?.display) {
+      if (yMaxVal && !theYSliderValues) {
+        // Set the state
+        setYSliderValues([yMinVal!, yMaxVal!]);
+      } else if (theYSliderValues) {
+        // eslint-disable-next-line no-param-reassign
+        [yMinVal, yMaxVal] = theYSliderValues;
+        valuesComeFromState = true;
+      }
     }
 
     // Return if the values were set
-    return [valuesComeFromState, [xMinVal!, xMaxVal!, yMinVal!, yMaxVal!]];
+    return [valuesComeFromState, [xMinVal, xMaxVal, yMinVal, yMaxVal]];
   };
 
   /**
@@ -279,15 +363,20 @@ export function GeoChart<
    */
   const fetchDatasourceItems = async (
     chartQuery: GeoChartQuery,
-    sourceItem: TypeJsonObject,
-    language: string
+    language: string,
+    sourceItem: TypeJsonObject | undefined,
+    errorCallback: ((error: string, exception: unknown | undefined) => void) | undefined
   ): Promise<TypeJsonObject[]> => {
     try {
       // Loading
       setIsLoadingDatasource(true);
 
       // Fetch the items for the data source in question
-      return await fetchItemsViaQueryForDatasource(chartQuery, sourceItem, language);
+      return await fetchItemsViaQueryForDatasource(chartQuery, language, sourceItem);
+    } catch (ex) {
+      // Error
+      errorCallback?.('Failed to fetch the data', ex);
+      return Promise.resolve([]);
     } finally {
       // Done
       setIsLoadingDatasource(false);
@@ -321,6 +410,732 @@ export function GeoChart<
 
   // #endregion
 
+  // #region HOOKS USE CALLBACK GEOCHART SECTION **********************************************************************
+
+  /**
+   * Updates the selected datasets object in synch with the actual datasets read from the data.
+   * @param theChartData ChartData<TType, TData, TLabel>
+   */
+  const processDatasets = useCallback(
+    (
+      items: TypeJsonObject[] | undefined,
+      catPropertyName: string | undefined,
+      paletteBackgrounds: string[] | undefined,
+      paletteBorders: string[] | undefined
+    ): void => {
+      // Check
+      if (!items || !catPropertyName) return;
+
+      // Loop on the items
+      let oneSelectedDatasetUpdated = false;
+      const catNames: string[] = [];
+      let backgroundIndex = colorPaletteCategoryBackgroundIndex;
+      let borderIndex = colorPaletteCategoryBorderIndex;
+      items?.forEach((item: TypeJsonObject) => {
+        // Read the category as a string
+        const catName = item[catPropertyName] as string;
+
+        // Build list
+        if (!catNames.includes(catName)) catNames.push(catName);
+
+        // If not set
+        if (datasetRegistry[catName] === undefined) {
+          // eslint-disable-next-line no-param-reassign
+          datasetRegistry[catName] = {
+            visible: true,
+            checked: true,
+            backgroundColor: getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
+            borderColor: getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
+          };
+          backgroundIndex++;
+          borderIndex++;
+          oneSelectedDatasetUpdated = true;
+        }
+
+        // If not visible, make sure it's visible
+        if (!datasetRegistry[catName].visible) {
+          // eslint-disable-next-line no-param-reassign
+          datasetRegistry[catName].visible = true;
+          oneSelectedDatasetUpdated = true;
+        }
+      });
+      setColorPaletteCategoryBackgroundIndex(backgroundIndex);
+      setColorPaletteCategoryBorderIndex(borderIndex);
+
+      // For any categories that weren't found, make sure they're invisible
+      Object.keys(datasetRegistry).forEach((catName: string) => {
+        if (!catNames.includes(catName) && datasetRegistry[catName].visible) {
+          // eslint-disable-next-line no-param-reassign
+          datasetRegistry[catName].visible = false;
+          oneSelectedDatasetUpdated = true;
+        }
+      });
+
+      // If at least one dataset was updated (prevents loopback)
+      if (oneSelectedDatasetUpdated) {
+        setDatasetRegistry({ ...datasetRegistry });
+      }
+    },
+    [datasetRegistry, colorPaletteCategoryBackgroundIndex, colorPaletteCategoryBorderIndex]
+  ) as (
+    items: TypeJsonObject[] | undefined,
+    catPropertyName: string | undefined,
+    paletteBackgrounds: string[] | undefined,
+    paletteBorders: string[] | undefined
+  ) => void;
+
+  /**
+   * Updates the selected data object in synch with the actual labels read from the data.
+   * @param theChartData ChartData<TType, TData, TLabel>
+   */
+  const processLabels = useCallback(
+    (
+      theChartType: string,
+      items: TypeJsonObject[] | undefined,
+      labelPropertyName: string | undefined,
+      paletteBackgrounds: string[] | undefined,
+      paletteBorders: string[] | undefined
+    ): void => {
+      // Check
+      if (!items || !labelPropertyName) return;
+
+      // Only working on pie or doughnut
+      if (theChartType === 'pie' || theChartType === 'doughnut') {
+        // Loop on the items
+        let oneSelectedDataUpdated = false;
+        const labelNames: string[] = [];
+        let backgroundIndex = colorPaletteAxisBackgroundIndex;
+        let borderIndex = colorPaletteAxisBorderIndex;
+        items?.forEach((item: TypeJsonObject) => {
+          // Read the label as a string
+          const labelName = item[labelPropertyName] as string;
+
+          // Build list
+          if (!labelNames.includes(labelName)) labelNames.push(labelName);
+
+          // If not set
+          if (datasRegistry[labelName] === undefined) {
+            // eslint-disable-next-line no-param-reassign
+            datasRegistry[labelName] = {
+              visible: true,
+              checked: true,
+              backgroundColor: getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
+              borderColor: getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
+            };
+            backgroundIndex++;
+            borderIndex++;
+            oneSelectedDataUpdated = true;
+          }
+
+          // If not visible, make sure it's visible
+          if (!datasRegistry[labelName].visible) {
+            // eslint-disable-next-line no-param-reassign
+            datasRegistry[labelName].visible = true;
+            oneSelectedDataUpdated = true;
+          }
+        });
+
+        // For any categories that weren't found, make sure they're invisible
+        Object.keys(datasRegistry).forEach((labelName: string) => {
+          if (!labelNames.includes(labelName) && datasRegistry[labelName].visible) {
+            // eslint-disable-next-line no-param-reassign
+            datasRegistry[labelName].visible = false;
+            oneSelectedDataUpdated = true;
+          }
+        });
+
+        // If at least one dataset was updated (prevents loopback)
+        if (oneSelectedDataUpdated) {
+          setDatasRegistry({ ...datasRegistry });
+        }
+        setColorPaletteAxisBackgroundIndex(backgroundIndex);
+        setColorPaletteAxisBorderIndex(borderIndex);
+      }
+    },
+    [datasRegistry, colorPaletteAxisBackgroundIndex, colorPaletteAxisBorderIndex]
+  ) as (
+    theChartType: string,
+    items: TypeJsonObject[] | undefined,
+    labelPropertyName: string | undefined,
+    paletteBackgrounds: string[] | undefined,
+    paletteBorders: string[] | undefined
+  ) => void;
+
+  /**
+   * Updates the chart dataset visibility based on the currently selected datasets.
+   * @param theChartData ChartData<TType, TData, TLabel>
+   * @param theSelectedDatasets GeoChartSelectedDatasets
+   */
+  const updateDatasetVisibilityUsingState = useCallback(
+    (theChartRef: ChartJS<TType, TData, TLabel>, theDatasetRegistry: GeoChartSelectedDataset): void => {
+      if (!theChartRef) return;
+
+      // Get the current dataset labels
+      const dsLabels = theChartRef.data.datasets.map((x: ChartDataset<TType, TData>) => {
+        return x.label!;
+      });
+
+      // Make sure the datasets visibility follow the state
+      Object.keys(theDatasetRegistry).forEach((value: string) => {
+        const idx = dsLabels.indexOf(value);
+        if (idx >= 0) theChartRef.setDatasetVisibility(idx, theDatasetRegistry[value]?.checked);
+      });
+
+      // Update visibility
+      theChartRef.update();
+    },
+    []
+  ) as (theChartRef: ChartJS<TType, TData, TLabel>, theDatasetRegistry: GeoChartSelectedDataset) => void;
+
+  /**
+   * Updates the chart data visibility based on the currently selected data.
+   * @param theChartData ChartData<TType, TData, TLabel>
+   * @param theSelectedData GeoChartSelectedDatasets
+   */
+  const updateDataVisibilityUsingState = useCallback(
+    (theChartRef: ChartJS<TType, TData, TLabel>, theDatasRegistry: GeoChartSelectedDataset): void => {
+      // Check
+      if (!theChartRef) return;
+
+      // The Config
+      const chartConf = theChartRef.config as ChartConfiguration<TType, TData, TLabel>;
+
+      // Only working on pie or doughnut
+      if (chartConf.type === 'pie' || chartConf.type === 'doughnut') {
+        // Make sure the datas visibility follow the state
+        theChartRef.data.labels?.forEach((value: TLabel) => {
+          const idx = theChartRef.data.labels!.indexOf(value);
+          const currVis = theChartRef.getDataVisibility(idx);
+          if (theDatasRegistry[value]?.checked !== currVis) {
+            theChartRef.toggleDataVisibility(idx);
+          }
+        });
+
+        // Update visibility
+        theChartRef.update();
+      }
+    },
+    []
+  ) as (theChartRef: ChartJS<TType, TData, TLabel>, theDatasRegistry: GeoChartSelectedDataset) => void;
+
+  /**
+   * Essential function to load the records in the Chart.
+   * @param datasource GeoChartDatasource The Datasource on which the records were grabbed
+   * @param records TypeJsonObject[] The actual records to load in the Chart.
+   */
+  const processLoadingRecords = useCallback(
+    (
+      theInputs: GeoChartConfig<TType>,
+      theDatasetRegistry: GeoChartSelectedDataset,
+      theDatasRegistry: GeoChartSelectedDataset,
+      theLanguage: string,
+      theSteps: StepsPossibilities,
+      records: TypeJsonObject[] | undefined
+    ): void => {
+      // Parse the data
+      const parsedOptions = createChartJSOptions<TType>(theInputs, parentOptions!, theLanguage);
+      const parsedData = createChartJSData<TType, TData, TLabel>(
+        theInputs,
+        theDatasetRegistry,
+        theDatasRegistry,
+        theSteps,
+        records,
+        parentData!
+      );
+
+      // Callback
+      onParsed?.(theInputs!.chart, parsedOptions, parsedData);
+
+      // Override
+      setChartType(theInputs!.chart);
+      setChartOptions(parsedOptions);
+      setChartData(parsedData);
+
+      // If the resulting datasets array is empty, force a redraw action, otherwise ChartJS hangs on the last shown graphic
+      if (parsedData.datasets?.length === 0) setAction({ shouldRedraw: true });
+    },
+    // NO REACT for 'onParsed' (explicitely excluding it here instead of relying on
+    // the parent component to have used useCallback as they should have)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [parentOptions, parentData]
+  ) as (
+    theInputs: GeoChartConfig<TType>,
+    theDatasetRegistry: GeoChartSelectedDataset,
+    theDatasRegistry: GeoChartSelectedDataset,
+    theLanguage: string,
+    theSteps: StepsPossibilities,
+    records: TypeJsonObject[] | undefined
+  ) => void;
+
+  /**
+   * Helper function to filter datasource items based on 2 possible and independent axis.
+   * For performance reasons, the code cumulates the filtered data instead of treating the axes individually.
+   * @param datasourceItems TypeJsonObject[] The Datasource items
+   * @param xValues number | number[] The values in X to filter on
+   * @param yValues number | number[] The values in Y to filter on
+   */
+  const processLoadingRecordsFilteringFirst = useCallback(
+    (
+      theInputs: GeoChartConfig<TType>,
+      theDatasetRegistry: GeoChartSelectedDataset,
+      theDatasRegistry: GeoChartSelectedDataset,
+      theLanguage: string,
+      theSteps: StepsPossibilities,
+      records: TypeJsonObject[] | undefined,
+      xValues: number | number[],
+      yValues: number | number[]
+    ): void => {
+      // If chart type is line
+      let resItemsFinal: TypeJsonObject[] = records ? [...records] : [];
+      if (theInputs?.chart === 'line') {
+        // If filterings on x supported
+        if (Array.isArray(xValues) && xValues.length === 2) {
+          // If filtering on time values
+          if (theInputs?.geochart?.xAxis.type === 'time' || theInputs?.geochart?.xAxis.type === 'timeseries') {
+            // Grab the filters
+            const theDateFrom = new Date(xValues[0]);
+            const theDateTo = new Date(xValues[1]);
+
+            // Filter the datasourceItems
+            resItemsFinal = records!.filter((item: TypeJsonObject) => {
+              const d = new Date(item[theInputs.geochart.xAxis.property] as string);
+              return theDateFrom <= d && d <= theDateTo;
+            });
+          } else {
+            // Default filtering on number values
+            const from = xValues[0];
+            const to = xValues[1];
+
+            // Filter the datasourceItems
+            resItemsFinal = records!.filter((item: TypeJsonObject) => {
+              return (
+                from <= (item[theInputs.geochart.xAxis.property] as number) && (item[theInputs.geochart.xAxis.property] as number) <= to
+              );
+            });
+          }
+        }
+
+        // If more filterings on y, cumulate it
+        if (Array.isArray(yValues) && yValues.length === 2) {
+          const from = yValues[0];
+          const to = yValues[1];
+
+          // Filter the rest of the items using the reminding items
+          resItemsFinal = resItemsFinal.filter((item: TypeJsonObject) => {
+            return from <= (item[theInputs.geochart.yAxis.property] as number) && (item[theInputs.geochart.yAxis.property] as number) <= to;
+          });
+        }
+      }
+
+      // Filter
+      processLoadingRecords(theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, resItemsFinal);
+
+      // Set new filtered inputs
+      setFilteredRecords(resItemsFinal);
+    },
+    [processLoadingRecords]
+  ) as (
+    theInputs: GeoChartConfig<TType>,
+    theDatasetRegistry: GeoChartSelectedDataset,
+    theDatasRegistry: GeoChartSelectedDataset,
+    theLanguage: string,
+    theSteps: StepsPossibilities,
+    records: TypeJsonObject[] | undefined,
+    xValues: number | number[],
+    yValues: number | number[]
+  ) => void;
+
+  // #endregion
+
+  // #region HOOKS USE CALLBACK CHARTJS SECTION ***********************************************************************
+
+  /**
+   * Handles when the ChartJS has finished initializing and before it started drawing data.
+   * @param chart ChartJS<TType, TData, TLabel> The ChartJS reference.
+   */
+  const handleChartJSAfterInit = useCallback(
+    (chart: ChartJS<TType, TData, TLabel>): void => {
+      // Log
+      logHigh('CHARTJS AFTER INIT', chart, datasetRegistry);
+
+      // Make sure the UI fits with the registry state before the first render is made. Mostly useful for pie/doughnut charts.
+      updateDatasetVisibilityUsingState(chart, datasetRegistry);
+      updateDataVisibilityUsingState(chart, datasRegistry);
+    },
+    [datasRegistry, datasetRegistry, updateDataVisibilityUsingState, updateDatasetVisibilityUsingState]
+  );
+
+  // #endregion
+
+  // #region HOOKS USE EFFECT PARENT COMP SECTION *********************************************************************************
+
+  // Effect hook when the inputs change - coming from parent component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - INPUTS';
+    logUseEffectMount(USE_EFFECT_FUNC, parentInputs);
+
+    // Refresh the inputs in this component
+    setInputs(parentInputs);
+
+    // Clear dependency states because we're cleaning house and until the selected datasource is
+    // property reset, inputs might be unrelated to the selected datasource in the other useEffects.
+    setSelectedDatasource(undefined);
+    setChartData(GeoChart.defaultProps.data as ChartData<TType, TData, TLabel>);
+    setChartOptions(GeoChart.defaultProps.options as ChartOptions<TType>);
+
+    // If parentInputs is specified
+    if (parentInputs) {
+      // Validate the schema of the received inputs
+      setValidatorInputs(schemaValidator.validateInputs(parentInputs));
+    }
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC, parentInputs);
+    };
+  }, [parentInputs, schemaValidator]);
+
+  // Effect hook when the main props about charttype, options and data change - coming from parent component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - CHARTJS INPUTS';
+    logUseEffectMount(USE_EFFECT_FUNC);
+
+    // Override
+    setChartType(parentChart!);
+    setChartOptions(parentOptions!);
+    setChartData(parentData!);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [parentChart, parentOptions, parentData]);
+
+  // Effect hook when the selected datasource changes - coming from parent component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - DATASOURCE';
+    logUseEffectMount(USE_EFFECT_FUNC, parentDatasource);
+
+    // Set the datasource as provided
+    setSelectedDatasource(parentDatasource);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC, parentDatasource);
+    };
+  }, [parentDatasource]);
+
+  // Effect hook to be executed with loading datasource - coming from parent component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - LOADING DATASOURCE';
+    logUseEffectMount(USE_EFFECT_FUNC, parentLoadingDatasource);
+
+    // If defined, update the state
+    if (parentLoadingDatasource !== undefined) setIsLoadingDatasource(parentLoadingDatasource);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [parentLoadingDatasource]);
+
+  // Effect hook when an action needs to happen - coming from parent component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - ACTION';
+    logUseEffectMount(USE_EFFECT_FUNC, parentAction);
+
+    // Set action for the component
+    if (parentAction) setAction(parentAction);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [parentAction]);
+
+  // #endregion
+
+  // #region HOOKS USE EFFECT CURRENT COMP SECTION *********************************************************************************
+
+  // Effect hook ran once when initializing
+  useEffect(() => {
+    const plugin = {
+      id: 'geochart-chartjs-plugin',
+      afterInit: (chartEvent: unknown): void => handleChartJSAfterInit(chartEvent as ChartJS<TType, TData, TLabel>),
+    };
+
+    // Register
+    setPlugins([plugin]);
+  }, [handleChartJSAfterInit]);
+
+  // Effect hook when the inputs change - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - INPUTS';
+    logUseEffectMount(USE_EFFECT_FUNC, inputs);
+
+    // Async function to fetch data from within a sync useEffect :|
+    const fetchAndSetSelectedDatasource = async (query: GeoChartQuery, language: string, datasource: GeoChartDatasource): Promise<void> => {
+      // Perform the fetch
+      // eslint-disable-next-line no-param-reassign
+      datasource.items = await fetchDatasourceItems(query, language, datasource.sourceItem, onError);
+
+      // Set the datasource
+      setSelectedDatasource(datasource);
+    };
+
+    // If no steps switcher, reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
+    if (!inputs?.ui?.stepsSwitcher) setSelectedSteps(inputs?.geochart.useSteps || false);
+
+    // If no datasources on the inputs, create a default one
+    if (inputs && inputs.datasources && inputs.datasources.length > 0) {
+      // The datasource to load on start
+      const ds = inputs.datasources[0];
+
+      // Init the datasource items for the first record and sets it
+      if (!ds.items && inputs.query) {
+        // Must fetch straight away
+        fetchAndSetSelectedDatasource(inputs.query, i18n.language, ds);
+      } else setSelectedDatasource(ds);
+    } else setSelectedDatasource(undefined);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC, inputs);
+    };
+    // NO REACT for 'onError' (explicitely excluding it here instead of relying on
+    // the parent component to have used useCallback as they should have)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inputs, i18n.language]);
+
+  // Effect hook when the selected datasource changes - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - PROCESS DATA - REGISTRY';
+    logUseEffectMount(USE_EFFECT_FUNC, inputs, selectedDatasource);
+
+    // If selectedDatasource is specified
+    if (inputs && selectedDatasource) {
+      // Update the Datasets Registry based on the chart information
+      processDatasets(
+        selectedDatasource.items,
+        inputs.category?.property,
+        inputs.category?.paletteBackgrounds,
+        inputs.category?.paletteBorders
+      );
+
+      // Update the Datas/Labels Registry based on the chart information
+      processLabels(
+        inputs.chart,
+        selectedDatasource.items,
+        inputs.geochart.xAxis.property,
+        inputs.geochart.xAxis.paletteBackgrounds,
+        inputs.geochart.xAxis.paletteBorders
+      );
+    }
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
+    };
+  }, [inputs, selectedDatasource, processDatasets, processLabels]);
+
+  // Effect hook when the selected datasource changes - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - PROCESS DATA - DATA';
+    logUseEffectMount(USE_EFFECT_FUNC, inputs, selectedDatasource);
+
+    // If selectedDatasource is specified
+    if (inputs && selectedDatasource) {
+      // Process the axes
+      let [xMinVal, xMaxVal, yMinVal, yMaxVal] = processAxes(inputs.geochart, inputs.ui, selectedDatasource.items);
+
+      // Process the axes values
+      let valuesComeFromState = false;
+      [valuesComeFromState, [xMinVal, xMaxVal, yMinVal, yMaxVal]] = processAxesValues(
+        inputs!.ui,
+        xMinVal,
+        xMaxVal,
+        yMinVal,
+        yMaxVal,
+        xSliderValues as number[],
+        ySliderValues as number[]
+      );
+
+      // If using the state, filter right away
+      if (valuesComeFromState) {
+        // Load records with filtering
+        processLoadingRecordsFilteringFirst(
+          inputs,
+          datasetRegistry,
+          datasRegistry,
+          i18n.language,
+          selectedSteps,
+          selectedDatasource.items,
+          [xMinVal!, xMaxVal!],
+          [yMinVal!, yMaxVal!]
+        );
+      } else {
+        // Load records without filtering for nothing
+        processLoadingRecords(inputs, datasetRegistry, datasRegistry, i18n.language, selectedSteps, selectedDatasource.items);
+      }
+    }
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
+    };
+  }, [
+    inputs,
+    selectedDatasource,
+    datasRegistry,
+    datasetRegistry,
+    i18n.language,
+    selectedSteps,
+    xSliderValues,
+    ySliderValues,
+    processLoadingRecordsFilteringFirst,
+    processLoadingRecords,
+  ]);
+
+  // Effect hook when the chartOptions, chartData change - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - CHARTJS OPTIONS+DATA';
+    logUseEffectMount(USE_EFFECT_FUNC, chartOptions, chartData);
+
+    // If chart options. Validate the parsing we did do follow ChartJS options schema validating
+    if (chartOptions) setValidatorOptions(schemaValidator.validateOptions(chartOptions));
+
+    // If chart data. Validate the parsing we did do follow ChartJS data schema validating
+    if (chartData) setValidatorData(schemaValidator.validateData(chartData));
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [chartOptions, chartData, schemaValidator]);
+
+  // Effect hook when the datasetRegistry change - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - SELECTED DATASETS';
+    logUseEffectMount(USE_EFFECT_FUNC);
+
+    // Make sure the visibility of the chart aligns with the selected datasets
+    updateDatasetVisibilityUsingState(chartRef.current, datasetRegistry);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [datasetRegistry, updateDatasetVisibilityUsingState]);
+
+  // Effect hook when the datasRegistry change - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - SELECTED DATAS';
+    logUseEffectMount(USE_EFFECT_FUNC);
+
+    // Make sure the visibility of the chart aligns with the selected datas
+    updateDataVisibilityUsingState(chartRef.current, datasRegistry);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [datasRegistry, updateDataVisibilityUsingState]);
+
+  // Effect hook to validate the schemas of inputs - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - VALIDATORS - INPUTS';
+    logUseEffectMount(USE_EFFECT_FUNC, hasValidSchemas([validatorInputs]));
+
+    // If any error
+    if (!hasValidSchemas([validatorInputs])) {
+      // Gather error messages
+      const error = SchemaValidator.parseValidatorResultsMessages([validatorInputs]);
+      // If a callback is defined
+      onError?.(`${t('geochart.parsingError')}\n\n${error}`, undefined);
+    }
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+    // NO REACT for 'onError' (explicitely excluding it here instead of relying on
+    // the parent component to have used useCallback as they should have)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validatorInputs, t]);
+
+  // Effect hook to validate the schemas of inputs - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - VALIDATORS - OPTIONS+DATA';
+    logUseEffectMount(USE_EFFECT_FUNC, hasValidSchemas([validatorOptions, validatorData]));
+
+    // If any error
+    if (!hasValidSchemas([validatorOptions, validatorData])) {
+      // Gather error messages
+      const error = SchemaValidator.parseValidatorResultsMessages([validatorOptions, validatorData]);
+      // If a callback is defined
+      onError?.(`${t('geochart.parsingError')}\n\n${error}`, undefined);
+    }
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+    // NO REACT for 'onError' (explicitely excluding it here instead of relying on
+    // the parent component to have used useCallback as they should have)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [validatorOptions, validatorData, t]);
+
+  // Effect hook when an action needs to happen - coming from this component.
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - ACTION';
+    logUseEffectMount(USE_EFFECT_FUNC, action);
+
+    // If redraw is true, reset the property in the action, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
+    // A bit funky, but only way I could find without having code the logic within the Parent Component.
+    if (action?.shouldRedraw) {
+      action!.shouldRedraw = false;
+      // Redraw
+      performRedraw();
+    }
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [action]);
+
+  // Effect hook to be executed with i18n
+  useEffect(() => {
+    // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - i18n';
+    logUseEffectMount(USE_EFFECT_FUNC);
+
+    // Add GeoChart translations file
+    i18n.addResourceBundle('en', 'translation', T_EN);
+    i18n.addResourceBundle('fr', 'translation', T_FR);
+
+    return () => {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [i18n]);
+
+  // #endregion
+
   // #region EVENT HANDLERS SECTION ***********************************************************************************
 
   /**
@@ -330,14 +1145,14 @@ export function GeoChart<
    */
   const handleDatasourceChanged = async (e: Event, item: typeof MenuItem): Promise<void> => {
     // Find the selected datasource reference based on the MenuItem
-    const ds: GeoChartDatasource | undefined = inputs!.datasources.find((x) => {
-      return (x.value || x.display) === item.props.value;
+    const ds: GeoChartDatasource | undefined = inputs!.datasources.find((datasource: GeoChartDatasource) => {
+      return (datasource.value || datasource.display) === item.props.value;
     });
     if (!ds) return;
 
     // If the data source has no items
     if (!ds.items) {
-      ds.items = await fetchDatasourceItems(inputs!.query!, ds.sourceItem, i18n.language);
+      ds.items = await fetchDatasourceItems(inputs!.query!, i18n.language, ds.sourceItem, onError);
     }
 
     // Set the selected datasource
@@ -355,10 +1170,10 @@ export function GeoChart<
    */
   const handleDatasetChecked = (datasetIndex: number, datasetLabel: string | undefined, checked: boolean): void => {
     // Keep track
-    selectedDatasets[datasetLabel!] = checked;
+    datasetRegistry[datasetLabel!].checked = checked;
 
-    // Update
-    setSelectedDatasets({ ...selectedDatasets });
+    // Update the registry
+    setDatasetRegistry({ ...datasetRegistry });
 
     // Callback
     onDatasetChanged?.(datasetIndex, datasetLabel, checked);
@@ -372,10 +1187,10 @@ export function GeoChart<
    */
   const handleDataChecked = (dataIndex: number, dataLabel: string, checked: boolean): void => {
     // Keep track
-    selectedDatas[dataLabel] = checked;
+    datasRegistry[dataLabel].checked = checked;
 
-    // Update
-    setSelectedDatas({ ...selectedDatas });
+    // Update the registry
+    setDatasRegistry({ ...datasRegistry });
 
     // Callback
     onDataChanged?.(dataIndex, dataLabel, checked);
@@ -422,21 +1237,24 @@ export function GeoChart<
    */
   const handleResetStates = (): void => {
     // Reset all selected datasets to true
-    Object.keys(selectedDatasets).forEach((dataset: string) => {
-      selectedDatasets[dataset] = true;
+    Object.keys(datasetRegistry).forEach((dataset: string) => {
+      datasetRegistry[dataset].checked = true;
     });
 
     // Reset all selected datasets to true
-    Object.keys(selectedDatas).forEach((data: string) => {
-      selectedDatas[data] = true;
+    Object.keys(datasRegistry).forEach((data: string) => {
+      datasRegistry[data].checked = true;
     });
 
     // Clear all states
-    setSelectedDatasets({ ...selectedDatasets });
-    setSelectedDatas({ ...selectedDatas });
-    setSelectedSteps(false);
+    setDatasetRegistry({ ...datasetRegistry });
+    setDatasRegistry({ ...datasRegistry });
+    setSelectedSteps(inputs?.geochart.useSteps || false);
     setXSliderValues([xSliderMin, xSliderMax]);
     setYSliderValues([ySliderMin, ySliderMax]);
+
+    // Callback
+    onResetStates?.();
   };
 
   /**
@@ -444,12 +1262,17 @@ export function GeoChart<
    * @param value number | number[] Indicates the slider value
    */
   const handleSliderXValueDisplay = (value: number): string => {
+    // Callback in case we're overriding this behavior
+    const val = onSliderXValueDisplaying?.(value);
+    if (val) return val;
+
+    // Default behavior
     // If current chart has time as xAxis
     if (inputs?.geochart?.xAxis.type === 'time' || inputs?.geochart?.xAxis.type === 'timeseries') {
       return new Date(value).toLocaleDateString(i18n.language, DATE_OPTIONS_LONG);
     }
 
-    // Default
+    // Default value as is
     return value.toString();
   };
 
@@ -458,539 +1281,61 @@ export function GeoChart<
    * @param value number | number[] Indicates the slider value
    */
   const handleSliderYValueDisplay = (value: number): string => {
-    // Default
+    // Callback in case we're overriding this behavior
+    const val = onSliderYValueDisplaying?.(value);
+    if (val) return val;
+
+    // Default value as is
     return value.toString();
   };
 
   /**
    * Handles when the download button is clicked
-   * @param value number Indicates the button drop down selection when it was clicked
+   * @param value number Indicates the button drop down selection index when it was clicked
    */
   const handleDownloadClick = (index: number): void => {
     // Get the data
-    const data = { ...selectedDatasource! };
+    const data = { ...selectedDatasource! } as GeoChartDatasource;
 
     // If only the filtered information
     if (index === 0) {
-      data.items = filteredRecords;
+      // Get either the actually filtered records (via the sliders) or the data.items
+      data.items = filteredRecords || data.items;
 
       // If using categories
       if (inputs?.category) {
-        // The selected datasets strings
-        const selDatasetsStrings = Object.keys(selectedDatasets).filter((ds) => {
-          return selectedDatasets[ds];
+        // The checked datasets strings
+        const checkedDatasetsStrings = Object.keys(datasetRegistry).filter((ds) => {
+          return datasetRegistry[ds].checked;
         });
 
         // Also filter on the selected datasets
         data.items = data.items?.filter((value: TypeJsonObject) => {
-          return selDatasetsStrings.includes(value[inputs!.category!.property] as string);
+          return checkedDatasetsStrings.includes(value[inputs.category!.property] as string);
         });
 
         // In case of pie/doughnut
         if (chartType === 'pie' || chartType === 'doughnut') {
-          // The selected datas strings
-          const selDatasStrings = Object.keys(selectedDatas).filter((ds) => {
-            return selectedDatas[ds];
+          // The checked datas strings
+          const checkedDatasStrings = Object.keys(datasRegistry).filter((ds) => {
+            return datasRegistry[ds].checked;
           });
 
           // Also filter on selected datas
           data.items = data.items?.filter((value: TypeJsonObject) => {
-            return selDatasStrings.includes(value[inputs!.geochart.xAxis.property] as string);
+            return checkedDatasStrings.includes(value[inputs.geochart.xAxis.property] as string);
           });
         }
       }
     }
+
+    // Callback
+    let fileName = onDownloadClicked?.(data, index);
+    if (!fileName) fileName = 'chart-data.json';
 
     // Download the data as json
-    downloadJson(data, 'chart-data.json');
+    downloadJson(data, fileName);
   };
-
-  // #endregion
-
-  // #region HOOKS SECTION ********************************************************************************************
-
-  /**
-   * Helper function to filter datasource items based on 2 possible and independent axis.
-   * For performance reasons, the code cumulates the filtered data instead of treating the axes individually.
-   * @param datasourceItems TypeJsonObject[] The Datasource items
-   * @param xValues number | number[] The values in X to filter on
-   * @param yValues number | number[] The values in Y to filter on
-   */
-  const processFiltering = useCallback(
-    (theInputs: GeoChartConfig<TType>, datasourceItems: TypeJsonObject[], xValues: number | number[], yValues: number | number[]): void => {
-      // If chart type is line
-      let resItemsFinal: TypeJsonObject[] = [...datasourceItems!];
-      if (theInputs?.chart === 'line') {
-        // If filterings on x supported
-        if (Array.isArray(xValues) && xValues.length === 2) {
-          // If filtering on time values
-          if (theInputs?.geochart?.xAxis.type === 'time' || theInputs?.geochart?.xAxis.type === 'timeseries') {
-            // Grab the filters
-            const theDateFrom = new Date(xValues[0]);
-            const theDateTo = new Date(xValues[1]);
-
-            // Filter the datasourceItems
-            resItemsFinal = datasourceItems!.filter((item: TypeJsonObject) => {
-              const d = new Date(item[theInputs.geochart.xAxis.property] as string);
-              return theDateFrom <= d && d <= theDateTo;
-            });
-          } else {
-            // Default filtering on number values
-            const from = xValues[0];
-            const to = xValues[1];
-
-            // Filter the datasourceItems
-            resItemsFinal = datasourceItems!.filter((item: TypeJsonObject) => {
-              return (
-                from <= (item[theInputs.geochart.xAxis.property] as number) && (item[theInputs.geochart.xAxis.property] as number) <= to
-              );
-            });
-          }
-        }
-
-        // If more filterings on y, cumulate it
-        if (Array.isArray(yValues) && yValues.length === 2) {
-          const from = yValues[0];
-          const to = yValues[1];
-
-          // Filter the rest of the items using the reminding items
-          resItemsFinal = resItemsFinal.filter((item: TypeJsonObject) => {
-            return from <= (item[theInputs.geochart.yAxis.property] as number) && (item[theInputs.geochart.yAxis.property] as number) <= to;
-          });
-        }
-      }
-
-      // Set new filtered inputs
-      setFilteredRecords(resItemsFinal);
-    },
-    []
-  ) as (
-    theInputs: GeoChartConfig<TType>,
-    datasourceItems: TypeJsonObject[],
-    xValues: number | number[],
-    yValues: number | number[]
-  ) => void;
-
-  /**
-   * Updates the selected datasets object in synch with the actual datasets read from the data.
-   * @param theChartData ChartData<TType, TData, TLabel>
-   */
-  const processLoadingRecordsUpdateDatasets = useCallback((theChartData: ChartData<TType, TData, TLabel>): void => {
-    // Get the dataset labels for the new data
-    let oneSelectedDatasetNew = false;
-    theChartData.datasets
-      .map((x: ChartDataset<TType, TData>) => {
-        return x.label!;
-      })
-      .forEach((label: string) => {
-        // If not set
-        if (selectedDatasets[label] === undefined) {
-          selectedDatasets[label] = true;
-          oneSelectedDatasetNew = true;
-        }
-      });
-
-    // If at least one dataset was new
-    if (oneSelectedDatasetNew) setSelectedDatasets({ ...selectedDatasets });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) as (theChartData: ChartData<TType, TData, TLabel>) => void; // No need for the selectedDatasets dependency (for performance)
-
-  /**
-   * Updates the selected data object in synch with the actual labels read from the data.
-   * @param theChartData ChartData<TType, TData, TLabel>
-   */
-  const processLoadingRecordsUpdateLabels = useCallback((theChartData: ChartData<TType, TData, TLabel>): void => {
-    // Get the labels for the new data
-    let oneSelectedDataNew = false;
-    theChartData.labels?.forEach((label: string) => {
-      // If not set
-      if (selectedDatas[label] === undefined) {
-        selectedDatas[label] = true;
-        oneSelectedDataNew = true;
-      }
-    });
-
-    // If at least one dataset was new
-    if (oneSelectedDataNew) setSelectedDatas({ ...selectedDatas });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) as (theChartData: ChartData<TType, TData, TLabel>) => void; // No need for the selectedDatas dependency (for performance)
-
-  /**
-   * Updates the chart dataset visibility based on the currently selected datasets.
-   * @param theChartData ChartData<TType, TData, TLabel>
-   * @param theSelectedDatasets GeoChartSelectedDatasets
-   */
-  const updateDatasetVisibilityUsingState = useCallback(
-    (theChartData: ChartData<TType, TData, TLabel>, theSelectedDatasets: GeoChartSelectedDatasets): void => {
-      // Log
-      if (!chartRef.current) return;
-
-      // Get the current dataset labels
-      const dsLabels = theChartData.datasets.map((x: ChartDataset<TType, TData>) => {
-        return x.label!;
-      });
-
-      // Make sure the datasets visibility follow the state
-      Object.keys(theSelectedDatasets).forEach((value: string) => {
-        chartRef.current.setDatasetVisibility(dsLabels.indexOf(value), theSelectedDatasets[value]);
-      });
-
-      // Update visibility
-      chartRef.current.update();
-    },
-    []
-  ) as (theChartData: ChartData<TType, TData, TLabel>, theSelectedDatasets: GeoChartSelectedDatasets) => void;
-
-  /**
-   * Updates the chart data visibility based on the currently selected data.
-   * @param theChartData ChartData<TType, TData, TLabel>
-   * @param theSelectedData GeoChartSelectedDatasets
-   */
-  const updateDataVisibilityUsingState = useCallback(
-    (theChartType: TType, theChartData: ChartData<TType, TData, TLabel>, theSelectedDatas: GeoChartSelectedDatasets): void => {
-      // Log
-      if (!chartRef.current) return;
-      if (theChartType !== 'pie' && theChartType !== 'doughnut') return;
-
-      // Make sure the datas visibility follow the state
-      theChartData.labels?.forEach((value: TLabel) => {
-        const idx = theChartData.labels!.indexOf(value);
-        const currVis = chartRef.current.getDataVisibility(idx);
-        if (theSelectedDatas[value] !== currVis) {
-          chartRef.current.toggleDataVisibility(idx);
-        }
-      });
-
-      // Update visibility
-      chartRef.current.update();
-    },
-    []
-  ) as (theChartType: TType, theChartData: ChartData<TType, TData, TLabel>, theSelectedDatas: GeoChartSelectedDatasets) => void;
-
-  /**
-   * Essential function to load the records in the Chart.
-   * @param datasource GeoChartDatasource The Datasource on which the records were grabbed
-   * @param records TypeJsonObject[] The actual records to load in the Chart.
-   */
-  const processLoadingRecords = useCallback(
-    (theInputs: GeoChartConfig<TType>, theLanguage: string, theSteps: StepsPossibilities, records: TypeJsonObject[] | undefined): void => {
-      // Parse the data
-      const parsedOptions = createChartJSOptions<TType>(theInputs, parentOptions!, theLanguage);
-      const parsedData = createChartJSData<TType, TData, TLabel>(theInputs, theSteps, records, parentData!);
-
-      // Callback
-      onParsed?.(theInputs!.chart, parsedOptions, parsedData);
-
-      // Override
-      setChartType(theInputs!.chart);
-      setChartOptions(parsedOptions);
-      setChartData(parsedData);
-
-      // Update the selected datasets
-      processLoadingRecordsUpdateDatasets(parsedData);
-      processLoadingRecordsUpdateLabels(parsedData);
-
-      // If the resulting datasets array is empty, force a redraw action, otherwise ChartJS hands on the last shown graphic
-      if (parsedData.datasets?.length === 0) setAction({ shouldRedraw: true });
-    },
-    [parentData, parentOptions, onParsed, processLoadingRecordsUpdateDatasets, processLoadingRecordsUpdateLabels]
-  ) as (theInputs: GeoChartConfig<TType>, theLanguage: string, theSteps: StepsPossibilities, records: TypeJsonObject[] | undefined) => void;
-
-  /**
-   * Makes sure the datasource items are initialized correctly for the first load of the Chart.
-   * @param datasource GeoChartDatasource The Datasource on which the records were grabbed
-   * @param records TypeJsonObject[] The actual records to load in the Chart.
-   */
-  const initDatasourceItems = useCallback(
-    async (chartQuery: GeoChartQuery | undefined, ds: GeoChartDatasource, language: string): Promise<void> => {
-      // If no items
-      const datasourceToLoad = ds;
-      if (!ds.items) {
-        // Must fetch straight away
-        datasourceToLoad.items = await fetchDatasourceItems(chartQuery!, ds.sourceItem, language);
-      }
-
-      // Set the datasource
-      setSelectedDatasource(datasourceToLoad);
-    },
-    []
-  ) as (chartQuery: GeoChartQuery | undefined, ds: GeoChartDatasource, language: string) => Promise<void>;
-
-  // Effect hook when the inputs change - coming from parent component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_LOW, 'USE EFFECT PARENT INPUTS', parentInputs);
-
-    // Refresh the inputs in this component
-    setInputs(parentInputs);
-
-    // Clear the selected datasource, because we're cleaning house
-    setSelectedDatasource(undefined);
-
-    // If parentInputs is specified
-    if (parentInputs) {
-      // Validate the schema of the received inputs
-      setValidatorInputs(schemaValidator.validateInputs(parentInputs));
-    }
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT INPUTS - UNMOUNT', parentInputs);
-    };
-  }, [parentInputs, schemaValidator]);
-
-  // Effect hook when the inputs change - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT INPUTS', inputs);
-
-    // Reset selected datasets (leave the code there, tentatively for now)
-    // setSelectedDatasets({});
-
-    // If no datasources on the inputs, create a default one
-    if (inputs) {
-      // Init the datasource items for the first record and sets it
-      initDatasourceItems(inputs!.query, inputs!.datasources[0], i18n.language);
-    } else setSelectedDatasource(undefined);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT INPUTS - UNMOUNT', inputs);
-    };
-  }, [inputs, i18n.language, initDatasourceItems]);
-
-  // Effect hook when the selected datasource changes - coming from parent component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_LOW, 'USE EFFECT PARENT DATASOURCE', parentDatasource);
-
-    // Set the datasource as provided
-    setSelectedDatasource(parentDatasource);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT DATASOURCE - UNMOUNT', parentDatasource);
-    };
-  }, [parentDatasource]);
-
-  // Effect hook when the selected datasource changes - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT PROCESS DATA', inputs, selectedDatasource);
-
-    // Clear any record filters
-    setFilteredRecords(undefined);
-
-    // If selectedDatasource is specified
-    if (selectedDatasource) {
-      // Process the axes
-      let [xMinVal, xMaxVal, yMinVal, yMaxVal] = processAxes(inputs!.geochart, inputs!.ui, selectedDatasource!.items!);
-
-      // If any sliders
-      let valuesComeFromState = false;
-      [valuesComeFromState, [xMinVal, xMaxVal, yMinVal, yMaxVal]] = processAxesValues(
-        xMinVal,
-        xMaxVal,
-        yMinVal,
-        yMaxVal,
-        xSliderValues as number[],
-        ySliderValues as number[]
-      );
-
-      // If using the state, filter right away
-      if (valuesComeFromState) {
-        // Load data with filters
-        processFiltering(inputs!, selectedDatasource!.items!, [xMinVal!, xMaxVal!], [yMinVal!, yMaxVal!]);
-      } else {
-        // Load records without filtering for nothing
-        processLoadingRecords(inputs!, i18n.language, selectedSteps!, selectedDatasource!.items);
-      }
-    }
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PROCESS DATA - UNMOUNT', selectedDatasource);
-    };
-  }, [inputs, i18n.language, selectedDatasource, selectedSteps, xSliderValues, ySliderValues, processLoadingRecords, processFiltering]);
-
-  // Effect hook when the filtered records change - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT PROCESS DATA FILTERED RECORDS', selectedDatasource, filteredRecords, selectedSteps);
-
-    // Process loading records
-    if (selectedDatasource) processLoadingRecords(inputs!, i18n.language, selectedSteps!, filteredRecords || selectedDatasource!.items);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PROCESS DATA FILTERED RECORDS - UNMOUNT', selectedDatasource);
-    };
-  }, [inputs, i18n.language, selectedDatasource, filteredRecords, selectedSteps, processLoadingRecords]);
-
-  // Effect hook when the main props about charttype, options and data change - coming from parent component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_LOW, 'USE EFFECT PARENT CHARTJS INPUTS');
-
-    // Override
-    setChartType(parentChart!);
-    setChartOptions(parentOptions!);
-    setChartData(parentData!);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT CHARTJS INPUTS - UNMOUNT');
-    };
-  }, [parentChart, parentOptions, parentData]);
-
-  // Effect hook when the chartOptions, chartData change - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT CHARTJS OPTIONS+DATA', chartOptions, chartData);
-
-    // If chart options. Validate the parsing we did do follow ChartJS options schema validating
-    if (chartOptions) setValidatorOptions(schemaValidator.validateOptions(chartOptions));
-
-    // If chart data. Validate the parsing we did do follow ChartJS data schema validating
-    if (chartData) setValidatorData(schemaValidator.validateData(chartData));
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT CHARTJS OPTIONS+DATA - UNMOUNT');
-    };
-  }, [chartOptions, chartData, schemaValidator]);
-
-  // Effect hook when the selectedDatasets change - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT SELECTED DATASETS', selectedDatasets);
-
-    // Make sure the visibility of the chart aligns with the selected datasets
-    updateDatasetVisibilityUsingState(chartData, selectedDatasets);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT SELECTED DATASETS - UNMOUNT');
-    };
-  }, [chartData, selectedDatasets, updateDatasetVisibilityUsingState]);
-
-  // Effect hook when the selectedDatas change - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT SELECTED DATAS', selectedDatas);
-
-    // Make sure the visibility of the chart aligns with the selected datas
-    updateDataVisibilityUsingState(chartType, chartData, selectedDatas);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT SELECTED DATAS - UNMOUNT');
-    };
-  }, [chartType, chartData, selectedDatas, updateDataVisibilityUsingState]);
-
-  // Effect hook to validate the schemas of inputs - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_HIGH, 'USE EFFECT VALIDATORS INPUTS', hasValidSchemas([validatorInputs]));
-
-    // If any error
-    if (!hasValidSchemas([validatorInputs])) {
-      // If a callback is defined
-      onError?.([validatorInputs]);
-      // eslint-disable-next-line no-console
-      console.error([validatorInputs]);
-    }
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT VALIDATORS INPUTS - UNMOUNT');
-    };
-  }, [validatorInputs, onError]);
-
-  // Effect hook to validate the schemas of inputs - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_HIGH, 'USE EFFECT VALIDATORS OPTIONS+DATA', hasValidSchemas([validatorOptions, validatorData]));
-
-    // If any error
-    if (!hasValidSchemas([validatorOptions, validatorData])) {
-      // If a callback is defined
-      onError?.([validatorOptions, validatorData]);
-      // eslint-disable-next-line no-console
-      console.error([validatorOptions, validatorData]);
-    }
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT VALIDATORS OPTIONS+DATA - UNMOUNT');
-    };
-  }, [validatorOptions, validatorData, onError]);
-
-  // Effect hook when an action needs to happen - coming from parent component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT PARENT ACTION', parentAction);
-
-    // Set action for the component
-    if (parentAction) setAction(parentAction);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT ACTION - UNMOUNT');
-    };
-  }, [parentAction]);
-
-  // Effect hook when an action needs to happen - coming from this component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT ACTION', action);
-
-    // If redraw is true, reset the property in the action, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
-    // A bit funky, but only way I could find without having code in the Parent Component.
-    if (action?.shouldRedraw) {
-      action!.shouldRedraw = false;
-      // Redraw
-      performRedraw().then(() => {
-        // Readjust visibility, because redraw resets all datasets visibility to true
-        updateDatasetVisibilityUsingState(chartData, selectedDatasets);
-        updateDataVisibilityUsingState(chartType, chartData, selectedDatas);
-      });
-    }
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT ACTION - UNMOUNT');
-    };
-  }, [chartType, chartData, action, selectedDatasets, selectedDatas, updateDatasetVisibilityUsingState, updateDataVisibilityUsingState]);
-
-  // Effect hook to be executed with i18n
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT ADD_RESOURCE_BUNDLE');
-
-    // Add GeoChart translations file
-    i18n.addResourceBundle('en', 'translation', T_EN);
-    i18n.addResourceBundle('fr', 'translation', T_FR);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT ADD_RESOURCE_BUNDLE - UNMOUNT');
-    };
-  }, [i18n]);
-
-  // Effect hook to be executed with loading datasource - coming from parent component.
-  useEffect(() => {
-    // Log
-    log(LOG_LEVEL_MEDIUM, 'USE EFFECT PARENT LOADING DATASOURCE', parentLoadingDatasource);
-
-    // If defined, update the state
-    if (parentLoadingDatasource !== undefined) setIsLoadingDatasource(parentLoadingDatasource);
-
-    return () => {
-      // Log
-      log(LOG_LEVEL_MAXIMUM, 'USE EFFECT PARENT LOADING DATASOURCE - UNMOUNT');
-    };
-  }, [parentLoadingDatasource]);
 
   // #endregion
 
@@ -1001,7 +1346,7 @@ export function GeoChart<
    * @returns The Chart JSX.Element itself using Line as default
    */
   const renderChart = (): JSX.Element => {
-    return <ChartReact ref={chartRef} type={chartType!} data={chartData} options={chartOptions} redraw={redraw} />;
+    return <ChartReact ref={chartRef} type={chartType!} data={chartData} options={chartOptions} plugins={plugins} redraw={redraw} />;
   };
 
   /**
@@ -1113,7 +1458,7 @@ export function GeoChart<
     if (inputs) {
       // Create the menu items
       const menuItems: (typeof TypeMenuItemProps)[] = [];
-      inputs!.datasources.forEach((s: GeoChartDatasource) => {
+      inputs.datasources.forEach((s: GeoChartDatasource) => {
         menuItems.push({ key: s.value || s.display, item: { value: s.value || s.display, children: s.display || s.value } });
       });
       return (
@@ -1138,7 +1483,7 @@ export function GeoChart<
    * @returns The Ttile Element
    */
   const renderTitle = (): JSX.Element => {
-    if (inputs) {
+    if (inputs && inputs.title) {
       return <Box sx={sxClasses.title}>{inputs.title}</Box>;
     }
 
@@ -1196,32 +1541,34 @@ export function GeoChart<
    * @returns The Dataset selector Element
    */
   const renderDatasetSelector = (): JSX.Element => {
-    if (chartData) {
-      const { datasets } = chartData;
-      if (datasets.length > 1) {
+    if (inputs && chartData && inputs.category) {
+      if (Object.keys(datasetRegistry).length > 1) {
         const label = chartType === 'pie' || chartType === 'doughnut' ? `${t('geochart.category')}:` : '';
         return (
           <Box>
             <Typography sx={sxClasses.checkDatasetWrapperLabel}>{label}</Typography>
-            {datasets.map((ds: ChartDataset<TType, TData>, idx: number) => {
-              let { color } = ChartJS.defaults;
-              if (ds.borderColor) color = ds.borderColor! as string;
-              else if ((chartType === 'line' || chartType === 'bar') && ds.backgroundColor) color = ds.backgroundColor! as string;
+            {Object.entries(datasetRegistry)
+              .filter(([, dsOption]: [string, GeoChartDatasetOption]) => {
+                return dsOption.visible;
+              })
+              .map(([dsLabel, dsOption]: [string, GeoChartDatasetOption], idx: number) => {
+                let color;
+                if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor as string;
 
-              return (
-                <Box sx={sxClasses.checkDatasetWrapper} key={ds.label || idx}>
-                  <Checkbox
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-                      handleDatasetChecked(idx, ds.label, e.target?.checked);
-                    }}
-                    checked={selectedDatasets[ds.label!] !== undefined ? selectedDatasets[ds.label!] : true}
-                  />
-                  <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
-                    {ds.label}
-                  </Typography>
-                </Box>
-              );
-            })}
+                return (
+                  <Box sx={sxClasses.checkDatasetWrapper} key={dsLabel || idx}>
+                    <Checkbox
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+                        handleDatasetChecked(idx, dsLabel, e.target?.checked);
+                      }}
+                      checked={datasetRegistry[dsLabel].checked !== undefined ? datasetRegistry[dsLabel].checked : true}
+                    />
+                    <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
+                      {dsLabel}
+                    </Typography>
+                  </Box>
+                );
+              })}
           </Box>
         );
       }
@@ -1236,31 +1583,35 @@ export function GeoChart<
    * @returns The Data selector Element
    */
   const renderDataSelector = (): JSX.Element => {
-    if (chartData) {
-      const { labels, datasets } = chartData;
-      if ((chartType === 'pie' || chartType === 'doughnut') && labels && datasets && labels.length > 1 && datasets.length >= 1) {
-        return (
-          <Box>
-            {labels.map((lbl: TLabel, idx: number) => {
-              let { color } = ChartJS.defaults;
-              if (Array.isArray(datasets[0].backgroundColor)) color = extractColor(datasets[0].backgroundColor[idx])!;
+    if (inputs && chartData) {
+      if (chartType === 'pie' || chartType === 'doughnut') {
+        if (Object.keys(datasRegistry).length > 1) {
+          return (
+            <Box>
+              {Object.entries(datasRegistry)
+                .filter(([, dsOption]: [string, GeoChartDatasetOption]) => {
+                  return dsOption.visible;
+                })
+                .map(([dsLabel, dsOption]: [string, GeoChartDatasetOption], idx: number) => {
+                  const color = dsOption.borderColor;
 
-              return (
-                <Box sx={sxClasses.checkDatasetWrapper} key={lbl || idx}>
-                  <Checkbox
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
-                      handleDataChecked(idx, lbl, e.target?.checked);
-                    }}
-                    checked={selectedDatas[lbl] !== undefined ? selectedDatas[lbl] : true}
-                  />
-                  <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
-                    {lbl}
-                  </Typography>
-                </Box>
-              );
-            })}
-          </Box>
-        );
+                  return (
+                    <Box sx={sxClasses.checkDatasetWrapper} key={dsLabel || idx}>
+                      <Checkbox
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
+                          handleDataChecked(idx, dsLabel, e.target?.checked);
+                        }}
+                        checked={datasRegistry[dsLabel].checked !== undefined ? datasRegistry[dsLabel].checked : true}
+                      />
+                      <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
+                        {dsLabel}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+            </Box>
+          );
+        }
       }
     }
 
@@ -1273,47 +1624,41 @@ export function GeoChart<
    * @returns The Chart container JSX.Element or an empty box
    */
   const renderChartContainer = (): JSX.Element => {
-    // If not loading
-    if (chartOptions) {
-      // The xs: 1, 11 and 12 used here are as documented online
-      return (
-        <Box sx={{ ...sx, ...sxClasses.mainGeoChartContainer }}>
-          <Grid container>
-            <Grid item xs={12}>
-              <Box sx={sxClasses.header}>
-                {renderDatasourceSelector()}
-                {renderTitle()}
-                {renderUIOptions()}
-              </Box>
-              {renderDataSelector()}
-              {renderDatasetSelector()}
-            </Grid>
-            <Grid item xs={1}>
-              {renderYAxisLabel()}
-            </Grid>
-            <Grid item sx={sxClasses.chartContent} xs={10}>
-              {isLoadingDatasource && <CircularProgress sx={sxClasses.loadingDatasource} />}
-              {renderChart()}
-            </Grid>
-            <Grid item xs={1}>
-              {renderYSlider()}
-            </Grid>
-            <Grid item xs={1} />
-            <Grid item xs={10}>
-              {renderXAxisLabel()}
-              {renderXSlider()}
-            </Grid>
-            <Grid item xs={12}>
-              {renderDescription()}
-              {renderDownload()}
-            </Grid>
+    // The xs: 1, 11 and 12 used here are as documented online
+    return (
+      <Box sx={{ ...sx, ...sxClasses.mainGeoChartContainer }}>
+        <Grid container>
+          <Grid item xs={12}>
+            <Box sx={sxClasses.header}>
+              {renderDatasourceSelector()}
+              {renderTitle()}
+              {renderUIOptions()}
+            </Box>
+            {renderDataSelector()}
+            {renderDatasetSelector()}
           </Grid>
-        </Box>
-      );
-    }
-
-    // Empty
-    return <Box />;
+          <Grid item xs={1}>
+            {renderYAxisLabel()}
+          </Grid>
+          <Grid item sx={sxClasses.chartContent} xs={10}>
+            {isLoadingDatasource && <CircularProgress sx={sxClasses.loadingDatasource} />}
+            {renderChart()}
+          </Grid>
+          <Grid item xs={1}>
+            {renderYSlider()}
+          </Grid>
+          <Grid item xs={1} />
+          <Grid item xs={10}>
+            {renderXAxisLabel()}
+            {renderXSlider()}
+          </Grid>
+          <Grid item xs={12}>
+            {renderDescription()}
+            {renderDownload()}
+          </Grid>
+        </Grid>
+      </Box>
+    );
   };
 
   /**
@@ -1343,6 +1688,7 @@ export function GeoChart<
 
   // #endregion
 
+  // TODO: Add a check if there's a 'current error', not just a 'valid schemas' error
   // If no errors
   if (hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {
     // Render the chart
@@ -1369,12 +1715,4 @@ GeoChart.defaultProps = {
     },
   } as ChartOptions<ChartType>,
   data: { datasets: [], labels: [] },
-  defaultColors: null,
-  action: null,
-  onParsed: null,
-  onDatasourceChanged: null,
-  onDatasetChanged: null,
-  onSliderXChanged: null,
-  onSliderYChanged: null,
-  onError: null,
 };

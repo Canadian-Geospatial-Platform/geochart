@@ -13,21 +13,15 @@ export type TypeJsonObject = TypeJsonValue & { [key: string]: TypeJsonObject };
 /**
  * The Main GeoChart Configuration used by the GeoChart Component
  */
-export type GeoChartConfig<TType extends ChartType> = GeoChartOptions<TType> & {
-  chartjsOptions: ChartOptions<ChartType>;
-};
-
-/**
- * The Main GeoChart Options Configuration used by the GeoChart Component
- */
-export type GeoChartOptions<TType extends ChartType> = {
+export type GeoChartConfig<TType extends ChartType> = {
   chart: TType;
-  title: string;
-  query?: GeoChartQuery;
   geochart: GeoChartOptionsGeochart;
+  datasources: GeoChartDatasource[];
+  title?: string;
+  query?: GeoChartQuery;
   category?: GeoChartCategory;
   ui?: GeoChartOptionsUI;
-  datasources: GeoChartDatasource[];
+  chartjsOptions?: ChartOptions<TType>;
 };
 
 /**
@@ -105,9 +99,9 @@ export type GeoChartOptionsUI = {
  * The Datasource object to hold the data, as supported by GeoChart.
  */
 export type GeoChartDatasource = {
-  value?: string;
   display: string;
-  sourceItem: TypeJsonObject; // Associated source item linking back to the source of the data
+  sourceItem?: TypeJsonObject; // Associated source item linking back to the source of the data
+  value?: string;
   items?: TypeJsonObject[];
 };
 
@@ -183,23 +177,46 @@ export type GeoChartAction = {
 };
 
 /**
- * Helper type to work with the Selected Datasets state.
+ * Helper type to work with the Datasets and their states.
  */
-export type GeoChartSelectedDatasets = {
-  [label: string]: boolean;
+export type GeoChartDatasetOption = {
+  visible: boolean;
+  checked: boolean;
+  borderColor: string;
+  backgroundColor: string;
+};
+
+/**
+ * Helper type to work with the Datasets.
+ */
+export type GeoChartSelectedDataset = {
+  [label: string]: GeoChartDatasetOption;
 };
 
 /**
  * The default color palette that ChartJS uses (I couldn't easily find out where that const is stored within ChartJS)
  */
 export const DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT: string[] = [
-  'rgba(54, 162, 235, 0.5)',
-  'rgba(255, 99, 132, 0.5)',
-  'rgba(75, 192, 192, 0.5)',
-  'rgba(255, 159, 64, 0.5)',
-  'rgba(153, 102, 255, 0.5)',
-  'rgba(255, 205, 86, 0.5)',
-  'rgba(201, 203, 207, 0.5)',
+  'rgba(54, 162, 235, 0.5)', // light blue
+  'rgba(255, 99, 132, 0.5)', // light red
+  'rgba(75, 192, 192, 0.5)', // light green
+  'rgba(255, 159, 64, 0.5)', // light orange
+  'rgba(153, 102, 255, 0.5)', // light purple
+  'rgba(255, 205, 86, 0.5)', // light yellow
+  'rgba(201, 203, 207, 0.5)', // light gray
+  'rgba(0, 0, 255, 0.5)', // blue
+  'rgba(0, 255, 0, 0.5)', // green
+  'rgba(255, 0, 0, 0.5)', // red
+  'rgba(255, 150, 0, 0.5)', // orange
+  'rgba(255, 0, 255, 0.5)', // pink
+  'rgba(30, 219, 34, 0.5)', // lime green
+  'rgba(190, 0, 190, 0.5)', // purple
+  'rgba(132, 255, 255, 0.5)', // cyan
+  'rgba(255, 250, 0, 0.5)', // yellow
+  'rgba(128, 0, 128, 0.5)', // maroon
+  'rgba(0, 128, 128, 0.5)', // teal
+  'rgba(128, 128, 0, 0.5)', // olive
+  'rgba(128, 128, 128, 0.5)', // gray
 ];
 
 /**

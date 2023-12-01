@@ -1,17 +1,310 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "GeoChart Inputs Schema",
-  "description": "This Schema validator validates the GeoChart Inputs. ABSOLUTELY UNFINISHED.",
+  "description": "This Schema validator validates the GeoChart Inputs.",
   "type": "object",
   "properties": {
     "chart": {
       "description": "Supported types of chart.",
       "enum": ["line", "bar", "pie", "doughnut"],
-      "default": "line"      
+      "default": "line"
+    },
+    "title": {
+      "description": "Optionally provide the title of the chart",
+      "type": "string"
+    },
+    "query": {
+      "description": "Groups information on how the data should be queried in the table source",
+      "type": "object",
+      "properties": {
+        "type": {
+          "description": "Indicates the kind of query to perform - supported values are: 'esriRegular', 'ogcAPIFeatures' and 'json'",
+          "type": "string"
+        },
+        "url": {
+          "description": "Indicates the url where to fetch the data to build the chart with - supported urls are Esri services, OGC API Features services or urls pointing to a .json file built on the GeoJson format",
+          "type": "string"
+        },
+        "queryOptions": {
+          "description": "",
+          "type": "object",
+          "properties": {
+            "whereClauses": {
+              "description": "Indicates how to generate the where clause to fetch the correct data in the table source. This is an array to support filtering on more than 1 field. The and logic operator is implicit",
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "field": {
+                    "description": "Indicates the field name, in the table source, on which to filter",
+                    "type": "string"
+                  },
+                  "prefix": {
+                    "description": "Indicates the prefix/suffix to use to build the query (useful to support single-quotes when the attribute to query is a string)",
+                    "type": "string"
+                  },
+                  "valueIs": {
+                    "description": "Indicates the value as a literal information (not read from a property name from the datasource)",
+                    "type": "string"
+                  },
+                  "valueFrom": {
+                    "description": "Indicates the property name, in the datasource.sourceItem(!), to use to query the table source (the url)",
+                    "type": "string"
+                  },
+                  "suffix": {
+                    "description": "Indicates the prefix/suffix to use to build the query (useful to support single-quotes when the attribute to query is a string)",
+                    "type": "string"
+                  }
+                },
+                "required": ["field"]
+              }
+            },
+            "orderByField": {
+              "description": "Indicates the property on which to order the results of the data coming from the table source",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "required": ["type", "url"]
     },
     "geochart": {
+      "description": "Groups information on how to build the chart",
+      "type": "object",
+      "properties": {
+        "borderWidth": {
+          "description": "Indicates the thickness of the borders (or lines in the line chart)",
+          "type": "number"
+        },
+        "useSteps": {
+          "description": "Indicates if the line chart should use steps - supported values are: 'before', 'middle', 'after', false",
+          "enum": ["before", "after", "middle", false]
+        },
+        "tension": {
+          "description": "Indicates if the line chart should use tension when drawing the line between the values",
+          "type": "number"
+        },
+        "xAxis": {
+          "description": "Groups information on the x axis",
+          "type": "object",
+          "properties": {
+            "property": {
+              "description": "Indicates the property name on which to read the information from the table source",
+              "type": "string"
+            },
+            "type": {
+              "description": "Indicates the type of axis - supported values are: 'linear', 'time', 'timeseries', 'logarithmic', 'category'",
+              "type": "string"
+            },
+            "label": {
+              "description": "",
+              "type": "string"
+            },
+            "usePalette": {
+              "description": "Indicates if a pre-determined (GeoChart specific) color palette should be used",
+              "type": "boolean"
+            },
+            "paletteBackgrounds": {
+              "description": "Indicates the array of rgba color values to use as the palette for background coloring",
+              "type": "array",
+              "items": {
+                "description": "A rgba() color",
+                "type": "string"
+              }
+            },
+            "paletteBorders": {
+              "description": "Indicates the array of rgb color values to use as the palette for border coloring",
+              "type": "array",
+              "items": {
+                "description": "A rgb() color",
+                "type": "string"
+              }
+            },
+            "tooltipSuffix": {
+              "description": "Indicates the suffix to use on for the values when displayed in the tooltip",
+              "type": "string"
+            }
+          },
+          "required": ["property"]
+        },
+        "yAxis": {
+          "description": "Groups information on the y axis",
+          "type": "object",
+          "properties": {
+            "property": {
+              "description": "Indicates the property name on which to read the information from the table source",
+              "type": "string"
+            },
+            "type": {
+              "description": "Indicates the type of axis - supported values are: 'linear', 'time', 'timeseries', 'logarithmic', 'category'",
+              "type": "string"
+            },
+            "label": {
+              "description": "",
+              "type": "string"
+            },
+            "usePalette": {
+              "description": "Indicates if a pre-determined (GeoChart specific) color palette should be used",
+              "type": "boolean"
+            },
+            "paletteBackgrounds": {
+              "description": "Indicates the array of rgba color values to use as the palette for background coloring",
+              "type": "array",
+              "items": {
+                "description": "A rgba() color",
+                "type": "string"
+              }
+            },
+            "paletteBorders": {
+              "description": "Indicates the array of rgb color values to use as the palette for border coloring",
+              "type": "array",
+              "items": {
+                "description": "A rgb() color",
+                "type": "string"
+              }
+            },
+            "tooltipSuffix": {
+              "description": "Indicates the suffix to use on for the values when displayed in the tooltip",
+              "type": "string"
+            }
+          },
+          "required": ["property"]
+        }
+      },
+      "required": ["xAxis", "yAxis"]
+    },
+    "category": {
+      "description": "Indicates how the data from the table source should be categorized (this creates the datasets aka the legend)",
+      "type": "object",
+      "properties": {
+        "property": {
+          "description": "Indicates the property name to use to categorize records",
+          "type": "string"
+        },
+        "usePalette": {
+          "description": "Indicates if a pre-determined (GeoChart specific) color palette should be used",
+          "type": "boolean"
+        },
+        "paletteBackgrounds": {
+          "description": "Indicates the array of rgba color values to use as the palette for background coloring",
+          "type": "array",
+          "items": {
+            "description": "A rgba() color",
+            "type": "string"
+          }
+        },
+        "paletteBorders": {
+          "description": "Indicates the array of rgb color values to use as the palette for border coloring",
+          "type": "array",
+          "items": {
+            "description": "A rgb() color",
+            "type": "string"
+          }
+        }
+      },
+      "required": ["property"]
+    },
+    "datasources": {
+      "description": "Groups information on the datasources to build the datasource drop down and the chart",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "display": {
+            "description": "Indicates the string to be displayed in the drop down",
+            "type": "string"
+          },
+          "sourceItem": {
+            "description": "Indicates the source item(!) used as reference to query the data from. This property has an object with a property that should equal the property in query.queryOptions.whereClauses.valueFrom",
+            "type": "object"
+          },
+          "value": {
+            "description": "Indicates the inner value used for the 'sourceItem'",
+            "type": "string"
+          },
+          "items": {
+            "description": "Indicates the actual items (coming from the table source), associated with the datasources.sourceItem (coming from the origin source), used to build the chart with. When items is already specified/populated, the data isn't fetched via the query.url",
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "required": ["display"]
+      }
+    },
+    "ui": {
+      "description": "Indicates what ui elements to show with the chart",
+      "type": "object",
+      "properties": {
+        "xSlider": {
+          "description": "Groups information on the x slider",
+          "type": "object",
+          "properties": {
+            "display": {
+              "description": "Indicates if the slider should be displayed",
+              "type": "boolean"
+            },
+            "step": {
+              "description": "Indicates the steps the slider should jump when sliding",
+              "type": "number"
+            },
+            "min": {
+              "description": "Indicates the minimum value for the slider",
+              "type": "number"
+            },
+            "max": {
+              "description": "Indicates the maximum value for the slider",
+              "type": "number"
+            }
+          },
+          "required": ["display"]
+        },
+        "ySlider": {
+          "description": "Groups information on the y slider",
+          "type": "object",
+          "properties": {
+            "display": {
+              "description": "Indicates if the slider should be displayed",
+              "type": "boolean"
+            },
+            "step": {
+              "description": "Indicates the steps the slider should jump when sliding",
+              "type": "number"
+            },
+            "min": {
+              "description": "Indicates the minimum value for the slider",
+              "type": "number"
+            },
+            "max": {
+              "description": "Indicates the maximum value for the slider",
+              "type": "number"
+            }
+          },
+          "required": ["display"]
+        },
+        "stepsSwitcher": {
+          "description": "Indicates if the select drop down to switch the steps on-the-fly is displayed",
+          "type": "boolean"
+        },
+        "resetStates": {
+          "description": "Indicates if the button to reset the states is displayed",
+          "type": "boolean"
+        },
+        "description": {
+          "description": "Indicates the description text to show at the bottom of the chart",
+          "type": "string"
+        },
+        "download": {
+          "description": "Indicates if a download button should be displayed",
+          "type": "boolean"
+        }
+      }
+    },
+    "chartjsOptions": {
+      "description": "Iindicates further ChartJS specific options to open the door to further customization when natively supported by ChartJS: https://www.chartjs.org/docs/latest/general/options.html",
       "type": "object"
     }
   },
-  "required": ["chart", "geochart"]
+  "required": ["chart", "geochart", "datasources"]
 }

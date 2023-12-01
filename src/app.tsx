@@ -1,6 +1,6 @@
 import { GeoChart } from './chart';
 import { GeoChartConfig, ChartType, ChartOptions, ChartData, GeoChartAction, DefaultDataPoint } from './chart-types';
-import { SchemaValidator, ValidatorResult } from './chart-schema-validator';
+import { SchemaValidator } from './chart-schema-validator';
 
 /**
  * Main props for the Application
@@ -25,9 +25,9 @@ export function App(props: TypeAppProps): JSX.Element {
   const { schemaValidator } = props;
 
   // Translation
-  const { t, i18n } = useTranslation();
+  const { i18n } = useTranslation();
 
-  /** ****************************************** USE STATE SECTION START ************************************************ */
+  // #region USE STATE SECTION ****************************************************************************************
 
   const [inputs, setInputs] = useState() as [
     GeoChartConfig<ChartType> | undefined,
@@ -43,8 +43,9 @@ export function App(props: TypeAppProps): JSX.Element {
   const [isLoadingChart, setIsLoadingChart] = useState() as [boolean, React.Dispatch<React.SetStateAction<boolean>>];
   const [isLoadingDatasource, setIsLoadingDatasource] = useState() as [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 
-  /** ****************************************** USE STATE SECTION END ************************************************** */
-  /** *************************************** EVENT HANDLERS SECTION START ********************************************** */
+  // #endregion
+
+  // #region EVENT HANDLERS SECTION ***********************************************************************************
 
   /**
    * Handles when the Chart has to be loaded with data or options.
@@ -89,8 +90,34 @@ export function App(props: TypeAppProps): JSX.Element {
     if (ev.detail.state === 2) setIsLoadingDatasource(true);
   };
 
-  /** **************************************** EVENT HANDLERS SECTION END *********************************************** */
-  /** ******************************************* HOOKS SECTION START *************************************************** */
+  // #endregion
+
+  // #region HOOKS SECTION ********************************************************************************************
+
+  /**
+   * Handles when the Chart has parsed inputs.
+   * @param theChart ChartType The chart type
+   * @param theOptions ChartOptions The chart options
+   * @param theData ChartData The chart data
+   */
+  const handleParsed = useCallback((theChart: ChartType, theOptions: ChartOptions, theData: ChartData): void => {
+    // Raise event higher
+    window.dispatchEvent(new CustomEvent('chart/parsed', { detail: { chart: theChart, options: theOptions, data: theData } }));
+  }, []);
+
+  /**
+   * Handles a generic error that happened in the Chart component.
+   * @param error The error message
+   * @param exception The exception that happened (if any)
+   */
+  const handleError = useCallback((error: string, exception: unknown): void => {
+    // Show the error using an alert. We can't use the cgpv SnackBar as that component is attached to
+    // a map and we're not even running a cgpv.init() at all here.
+    // eslint-disable-next-line no-console
+    console.error(error, exception);
+    // eslint-disable-next-line no-alert
+    alert(error);
+  }, []);
 
   /**
    * Handles when the Chart language is changed.
@@ -102,36 +129,6 @@ export function App(props: TypeAppProps): JSX.Element {
     },
     [i18n]
   );
-
-  /**
-   * Handles when the Chart has parsed inputs.
-   * We use a 'useCallback' so that any child component with a useEffect dependency on the callback
-   * doesn't get triggered everytime this parent component re-renders and re-generates its stub.
-   */
-  const handleParsed = useCallback((theChart: ChartType, theOptions: ChartOptions, theData: ChartData): void => {
-    // Raise event higher
-    window.dispatchEvent(new CustomEvent('chart/parsed', { detail: { chart: theChart, options: theOptions, data: theData } }));
-  }, []) as (theChart: ChartType, theOptions: ChartOptions, theData: ChartData) => void; // Crazy typing, because can't use the generic version of 'useCallback'
-
-  /**
-   * Handles an error that happened in the Chart component.
-   * We use a 'useCallback' so that any child component with a useEffect dependency on the callback
-   * doesn't get triggered everytime this parent component re-renders and re-generates its stub.
-   * @param dataErrors The data errors that happened (if any)
-   * @param optionsErrors The options errors that happened (if any)
-   */
-  const handleError = useCallback(
-    (validators: (ValidatorResult | undefined)[]): void => {
-      // Gather all error messages
-      const msgAll = SchemaValidator.parseValidatorResultsMessages(validators);
-
-      // Show the error using an alert. We can't use the cgpv SnackBar as that component is attached to
-      // a map and we're not even running a cgpv.init() at all here.
-      // eslint-disable-next-line no-alert
-      alert(`${t('geochart.parsingError')}\n\n${msgAll}\n\n${t('geochart.viewConsoleDetails')}`);
-    },
-    [t]
-  ) as (validators: (ValidatorResult | undefined)[]) => void; // Crazy typing, because can't use the generic version of 'useCallback'
 
   // Effect hook to add and remove event listeners.
   // Using window.addEventListener is unconventional here, but this is strictly for the 'app' logic with the index.html.
@@ -149,8 +146,9 @@ export function App(props: TypeAppProps): JSX.Element {
     };
   }, [handleChartLanguage]);
 
-  /** ********************************************* HOOKS SECTION END *************************************************** */
-  /** ******************************************** RENDER SECTION START ************************************************* */
+  // #endregion
+
+  // #region RENDER SECTION START *************************************************************************************
 
   // Render the Chart
   return (
@@ -167,6 +165,8 @@ export function App(props: TypeAppProps): JSX.Element {
       onError={handleError}
     />
   );
+
+  // #endregion
 }
 
 export default App;

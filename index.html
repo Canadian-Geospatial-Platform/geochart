@@ -216,7 +216,7 @@
         }]
       };
 
-      const DATA_INPUT_LINE_3 = {
+      const DATA_INPUT_BAR_3 = {
         chart: 'bar',
         title: 'Bar Chart with OGC Features',
         query: {
@@ -248,6 +248,40 @@
           display: "Lake info 1",
         }, {
           display: "Lake info 2",
+        }]
+      };
+
+      const DATA_INPUT_LINE_3 = {
+        chart: 'line',
+        title: 'Line Chart with OGC Features',
+        query: {
+          type: "ogcAPIFeatures",
+          url: "https://api.czs-dev.services.geo.ca/collections/sante_canada_tab",
+          queryOptions: {
+            whereClauses: [
+              {
+                field: "location_name",
+                prefix: "'",
+                valueIs: "8000_8_45.1134_-66.8242",
+                suffix: "'"
+              }]
+          }
+        },
+        geochart: {
+          xAxis: {
+            type: 'time',
+            property: 'start_time',
+          },
+          yAxis: {
+            property: 'value_nsvhr'
+          }
+        },
+        ui: {
+          resetStates: true,
+          download: true
+        },
+        datasources: [{
+          display: "Data",
         }]
       };
 
@@ -712,7 +746,8 @@
             <button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Chart w/ time w/steps</button>
             <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Chart w/ time logar. w/tension</button>
             <button onclick="importDataInputs(DATA_INPUT_LINE_2_SLIM)">Import Chart slim</button>
-            <button onclick="importDataInputs(DATA_INPUT_LINE_3)">Import Chart w/ OGC Features simple</button>
+            <button onclick="importDataInputs(DATA_INPUT_LINE_3)">Imp. OGC Line</button>
+            <button onclick="importDataInputs(DATA_INPUT_BAR_3)">Imp. OGC Bar</button>
             <br/>
             <button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button>
             <button onclick="importDataInputs(DATA_INPUT_3)">Import Data PIE</button>
@@ -857,7 +892,7 @@
       }
 
       // Load data 1
-      importDataInputs(DATA_INPUT_LINE_1);
+      importDataInputs(DATA_INPUT_LINE_1); // DATA_INPUT_LINE_3
       importDataParsed(DATA_NATIVE_1);
       importOptionsParsed(OPTIONS_NATIVE_1);
 
