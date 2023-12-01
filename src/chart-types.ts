@@ -153,11 +153,9 @@ export type GeoChartOptionsAxis = {
  */
 export type GeoChartOptionsSlider = {
   display?: boolean;
+  step?: number;
   min?: number;
   max?: number;
-  step?: number;
-  value?: number | number[];
-  track?: 'normal' | 'inverted' | false;
 };
 
 /**

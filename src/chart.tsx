@@ -120,7 +120,7 @@ export function GeoChart<
   if (defaultColors?.borderColor) ChartJS.defaults.borderColor = defaultColors?.borderColor;
   if (defaultColors?.color) ChartJS.defaults.color = defaultColors?.color;
 
-  /** ****************************************** USE STATE SECTION START ************************************************ */
+  // #region USE STATE SECTION ****************************************************************************************
 
   // TODO: Refactor - Check why the useState and useCallback coming from cgpv lose their generic capabilities.
   // TO.DO.CONT: This is rather problematic. It forces the devs to explicitely use some "not so pretty" type assertions
@@ -168,8 +168,9 @@ export function GeoChart<
 
   const chartRef = useRef() as React.MutableRefObject<ChartJS<TType, TData>>;
 
-  /** ****************************************** USE STATE SECTION END ************************************************** */
-  /** ******************************************* CORE FUNCTIONS START ************************************************** */
+  // #endregion
+
+  // #region CORE FUNCTIONS *******************************************************************************************
 
   /**
    * Helper function to set the x and y axes based on the inputs and values.
@@ -318,8 +319,9 @@ export function GeoChart<
     });
   };
 
-  /** ******************************************* CORE FUNCTIONS END **************************************************** */
-  /** *************************************** EVENT HANDLERS SECTION START ********************************************** */
+  // #endregion
+
+  // #region EVENT HANDLERS SECTION ***********************************************************************************
 
   /**
    * Handles when the Datasource changes
@@ -503,8 +505,9 @@ export function GeoChart<
     downloadJson(data, 'chart-data.json');
   };
 
-  /** **************************************** EVENT HANDLERS SECTION END *********************************************** */
-  /** ******************************************* HOOKS SECTION START *************************************************** */
+  // #endregion
+
+  // #region HOOKS SECTION ********************************************************************************************
 
   /**
    * Helper function to filter datasource items based on 2 possible and independent axis.
@@ -677,7 +680,6 @@ export function GeoChart<
 
       // Callback
       onParsed?.(theInputs!.chart, parsedOptions, parsedData);
-      console.log('PARSED', parsedData);
 
       // Override
       setChartType(theInputs!.chart);
@@ -990,8 +992,9 @@ export function GeoChart<
     };
   }, [parentLoadingDatasource]);
 
-  /** ********************************************* HOOKS SECTION END *************************************************** */
-  /** ******************************************** RENDER SECTION START ************************************************* */
+  // #endregion
+
+  // #region RENDER SECTION *******************************************************************************************
 
   /**
    * Renders the Chart JSX.Element itself using Line as default
@@ -1337,6 +1340,8 @@ export function GeoChart<
       </Box>
     );
   };
+
+  // #endregion
 
   // If no errors
   if (hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {

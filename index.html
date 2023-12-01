@@ -173,6 +173,49 @@
         }]
       };
 
+      const DATA_INPUT_LINE_2_SLIM = {
+        chart: 'line',
+        title: 'Line Chart slim config',
+        query: {
+          type: "esriRegular",
+          url: "https://maps-cartes.services.geo.ca/server_serveur/rest/services/HC/airborne_radioactivity_en/MapServer/3",
+          queryOptions: {
+            whereClauses: [
+              {
+                field: "Location_Emplacement",
+                prefix: "'",
+                valueFrom: "Location_Emplacement",
+                suffix: "'"
+              }],
+              orderByField: "CollectionStart_DebutPrelevement"
+          }
+        },
+        geochart: {
+          xAxis: {
+            type: 'time',
+            property: 'CollectionStart_DebutPrelevement',
+          },
+          yAxis: {
+            property: 'Activity_Activite_mBqm3',
+          }
+        },
+        category: {
+          property: 'Radionuclide_Radionucleide',
+          usePalette: false
+        },
+        datasources: [{
+          display: "Vancouver",
+          sourceItem: {
+            Location_Emplacement: "Vancouver"
+          }
+        },{
+          display: "Regina",
+          sourceItem: {
+            Location_Emplacement: "Regina"
+          }
+        }]
+      };
+
       const DATA_INPUT_LINE_3 = {
         chart: 'bar',
         title: 'Bar Chart with OGC Features',
@@ -668,6 +711,7 @@
           <div>
             <button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Chart w/ time w/steps</button>
             <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Chart w/ time logar. w/tension</button>
+            <button onclick="importDataInputs(DATA_INPUT_LINE_2_SLIM)">Import Chart slim</button>
             <button onclick="importDataInputs(DATA_INPUT_LINE_3)">Import Chart w/ OGC Features simple</button>
             <br/>
             <button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button>
