@@ -1291,7 +1291,10 @@ export function GeoChart<
 
   /**
    * Handles when the download button is clicked
-   * @param value number Indicates the button drop down selection index when it was clicked
+   * @param index number Indicates the button drop down selection index when it was clicked.
+   * For our button usage:
+   * - 0: Means 'download view' was selected when button was clicked
+   * - 1: Means 'download all' was selected when button was clicked
    */
   const handleDownloadClick = (index: number): void => {
     // Get the data
@@ -1516,7 +1519,7 @@ export function GeoChart<
     if (inputs?.ui?.resetStates) {
       return (
         <Button sx={sxClasses.uiOptionsResetStates} onClick={handleResetStates}>
-          {t('reset states')}
+          {t('geochart.resetStates')}
         </Button>
       );
     }
