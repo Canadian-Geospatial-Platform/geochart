@@ -198,7 +198,7 @@
         }]
       };
 
-      const DATA_INPUT_LINE_3 = {
+      const DATA_INPUT_BAR_3 = {
         chart: 'bar',
         title: 'Bar Chart with OGC Features',
         query: {
@@ -230,6 +230,40 @@
           display: "Lake info 1",
         }, {
           display: "Lake info 2",
+        }]
+      };
+
+      const DATA_INPUT_LINE_3 = {
+        chart: 'line',
+        title: 'Line Chart with OGC Features',
+        query: {
+          type: "ogcAPIFeatures",
+          url: "https://api.czs-dev.services.geo.ca/collections/sante_canada_tab",
+          queryOptions: {
+            whereClauses: [
+              {
+                field: "location_name",
+                prefix: "'",
+                valueIs: "8000_8_45.1134_-66.8242",
+                suffix: "'"
+              }]
+          }
+        },
+        geochart: {
+          xAxis: {
+            type: 'time',
+            property: 'start_time',
+          },
+          yAxis: {
+            property: 'value_nsvhr'
+          }
+        },
+        ui: {
+          resetStates: true,
+          download: true
+        },
+        datasources: [{
+          display: "Data",
         }]
       };
 
@@ -672,7 +706,7 @@
         datasets: [{
           data: [{"x": 10, "y": 15}, {"x": 15, "y": 25}, {"x": 20, "y": 10}]
         }]
-      };</script><script defer="defer" src="main.js"></script></head><body><div style="text-align: center; height: 400px;"><div style="display:inline-block; background-color: lightgreen; width: 49%; height: 100%; vertical-align:top;"><div style="text-align: left;">GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span></div><div><span>Language: </span><select id="lang" onchange="languageChanged()"><option selected="selected" value="en">English</option><option value="fr">Français</option></select></div><div><div><button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Chart w/ time w/steps</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Chart w/ time logar. w/tension</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2_SLIM)">Import Chart slim</button> <button onclick="importDataInputs(DATA_INPUT_LINE_3)">Import Chart w/ OGC Features simple</button><br/><button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button> <button onclick="importDataInputs(DATA_INPUT_3)">Import Data PIE</button> <button onclick="importDataInputs(DATA_INPUT_4)">Import Data DOUGHNUT</button> <button onclick="importDataInputs(DATA_INPUT_5)">Import Data BAR simple</button></div><div><textarea id="CHARTDATAINPUTS" rows="18" style="width: 98%;"></textarea></div></div><div><button onclick="buildChartInputs()" style="padding:5px;"><strong>BUILD CHART FROM GEOCHART INPUTS</strong></button></div></div><div style="display:inline-block; background-color: aliceblue; width: 50%; height: 100%; vertical-align:top;"><div style="text-align: left;">CHART.JS PROPS <span style="font-size: small;">(these Chart.js native parameters are used to draw the actual chart itself)</span></div><div style="padding:10px;"><select id="CHARTTYPE"><option value="line" selected="selected">Line</option><option value="bar">Bar</option><option value="pie">Pie</option><option value="doughnut">Doughnut</option></select></div><div><div style="display:inline-block; width: 49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1)">Import Options (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options dummy scale</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea></div></div><div style="display:inline-block; width: 49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea></div></div></div><div><button onclick="buildChartNative()" style="padding:5px;"><strong>BUILD CHART FROM CHART.JS PROPS</strong></button></div></div></div><div id="root2aca7b6b288c" style="position: relative; width: 800px;"></div><div><button onclick="redrawChart()" style="padding:5px;"><strong>Looks weird? Redraw!</strong></button> <button onclick="isLoadingState(1)" style="padding:5px;"><strong>Sim. loading whole chart</strong></button> <button onclick="isLoadingState(2)" style="padding:5px;"><strong>Sim. lazy loading of datasource</strong></button> <button onclick="isLoadingState(0)" style="padding:5px;"><strong>Clear loading sim.</strong></button></div><script>function importDataInputs(inputs) {
+      };</script><script defer="defer" src="main.js"></script></head><body><div style="text-align: center; height: 400px;"><div style="display:inline-block; background-color: lightgreen; width: 49%; height: 100%; vertical-align:top;"><div style="text-align: left;">GEOCHART INPUTS <span style="font-size: small;">(these parameters will be parsed and sent to the Chart.js props on the right and GeoChart created below)</span></div><div><span>Language: </span><select id="lang" onchange="languageChanged()"><option selected="selected" value="en">English</option><option value="fr">Français</option></select></div><div><div><button onclick="importDataInputs(DATA_INPUT_LINE_1)">Import Chart w/ time w/steps</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2)">Import Chart w/ time logar. w/tension</button> <button onclick="importDataInputs(DATA_INPUT_LINE_2_SLIM)">Import Chart slim</button> <button onclick="importDataInputs(DATA_INPUT_LINE_3)">Imp. OGC Line</button> <button onclick="importDataInputs(DATA_INPUT_BAR_3)">Imp. OGC Bar</button><br/><button onclick="importDataInputs(DATA_INPUT_2)">Import Data BAR</button> <button onclick="importDataInputs(DATA_INPUT_3)">Import Data PIE</button> <button onclick="importDataInputs(DATA_INPUT_4)">Import Data DOUGHNUT</button> <button onclick="importDataInputs(DATA_INPUT_5)">Import Data BAR simple</button></div><div><textarea id="CHARTDATAINPUTS" rows="18" style="width: 98%;"></textarea></div></div><div><button onclick="buildChartInputs()" style="padding:5px;"><strong>BUILD CHART FROM GEOCHART INPUTS</strong></button></div></div><div style="display:inline-block; background-color: aliceblue; width: 50%; height: 100%; vertical-align:top;"><div style="text-align: left;">CHART.JS PROPS <span style="font-size: small;">(these Chart.js native parameters are used to draw the actual chart itself)</span></div><div style="padding:10px;"><select id="CHARTTYPE"><option value="line" selected="selected">Line</option><option value="bar">Bar</option><option value="pie">Pie</option><option value="doughnut">Doughnut</option></select></div><div><div style="display:inline-block; width: 49%;"><div><button onclick="importOptionsParsed(OPTIONS_NATIVE_1)">Import Options (default)</button> <button onclick="importOptionsParsed(OPTIONS_NATIVE_2)">Import Options dummy scale</button></div><div><textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea></div></div><div style="display:inline-block; width: 49%;"><div><button onclick="importDataParsed(DATA_NATIVE_1)">Import Data 1 rec</button> <button onclick="importDataParsed(DATA_NATIVE_2)">Import Data 2 recs</button> <button onclick="importDataParsed(DATA_NATIVE_3)">Import Data 2 recs w/ steps</button> <button onclick="importDataParsed(DATA_NATIVE_4)">Import Data using x,y</button></div><div><textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea></div></div></div><div><button onclick="buildChartNative()" style="padding:5px;"><strong>BUILD CHART FROM CHART.JS PROPS</strong></button></div></div></div><div id="root2aca7b6b288c" style="position: relative; width: 800px;"></div><div><button onclick="redrawChart()" style="padding:5px;"><strong>Looks weird? Redraw!</strong></button> <button onclick="isLoadingState(1)" style="padding:5px;"><strong>Sim. loading whole chart</strong></button> <button onclick="isLoadingState(2)" style="padding:5px;"><strong>Sim. lazy loading of datasource</strong></button> <button onclick="isLoadingState(0)" style="padding:5px;"><strong>Clear loading sim.</strong></button></div><script>function importDataInputs(inputs) {
         document.getElementById('CHARTDATAINPUTS').value = JSON.stringify(inputs, null, 2);
       }
 
@@ -751,7 +785,7 @@
       }
 
       // Load data 1
-      importDataInputs(DATA_INPUT_LINE_1);
+      importDataInputs(DATA_INPUT_LINE_1); // DATA_INPUT_LINE_3
       importDataParsed(DATA_NATIVE_1);
       importOptionsParsed(OPTIONS_NATIVE_1);
 
