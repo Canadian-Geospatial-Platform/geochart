@@ -222,7 +222,7 @@
           },
           "value": {
             "description": "Indicates the inner value used for the 'sourceItem'",
-            "type": "string"
+            "type": ["number", "string"]
           },
           "items": {
             "description": "Indicates the actual items (coming from the table source), associated with the datasources.sourceItem (coming from the origin source), used to build the chart with. When items is already specified/populated, the data isn't fetched via the query.url",
