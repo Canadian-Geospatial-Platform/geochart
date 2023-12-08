@@ -6,6 +6,7 @@
     "parsingError": "There was an error parsing the Chart inputs.",
     "viewConsoleDetails": "View console for details.",
     "downloadFiltered": "Download visible",
-    "downloadAll": "Download all"
+    "downloadAll": "Download all",
+    "resetStates": "Reset states"
   }
 }

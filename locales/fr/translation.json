@@ -6,6 +6,7 @@
     "parsingError": "Une erreur est survenue lors de la lecture des paramètres.",
     "viewConsoleDetails": "Voir détails dans la console.",
     "downloadFiltered": "Télécharger visuel",
-    "downloadAll": "Télécharger tout"
+    "downloadAll": "Télécharger tout",
+    "resetStates": "Réinitialiser états"
   }
 }

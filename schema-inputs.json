@@ -78,7 +78,8 @@
         },
         "useSteps": {
           "description": "Indicates if the line chart should use steps - supported values are: 'before', 'middle', 'after', false",
-          "enum": ["before", "after", "middle", false]
+          "enum": ["before", "after", "middle", false],
+          "default": false
         },
         "tension": {
           "description": "Indicates if the line chart should use tension when drawing the line between the values",
@@ -94,7 +95,8 @@
             },
             "type": {
               "description": "Indicates the type of axis - supported values are: 'linear', 'time', 'timeseries', 'logarithmic', 'category'",
-              "type": "string"
+              "type": "string",
+              "default": "linear"
             },
             "label": {
               "description": "Indicates the text in the user interface that should be shown for the axis",
