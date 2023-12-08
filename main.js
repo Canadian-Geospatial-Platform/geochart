@@ -45621,11 +45621,10 @@ function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, 
  */
 var sxClasses = {
   mainContainer: {
+    width: '100%',
     minHeight: '400px'
   },
-  mainGeoChartContainer: {
-    padding: '10px'
-  },
+  mainGeoChartContainer: {},
   header: {
     display: 'flex',
     alignItems: 'center'
@@ -47481,10 +47480,12 @@ function App(props) {
   // Fetch the cgpv module
   var cgpv = w.cgpv;
   var react = cgpv.react,
+    ui = cgpv.ui,
     useTranslation = cgpv.useTranslation;
   var useEffect = react.useEffect,
     useState = react.useState,
     useCallback = react.useCallback;
+  var Box = ui.elements.Box;
   var schemaValidator = props.schemaValidator;
 
   // Translation
@@ -47636,17 +47637,22 @@ function App(props) {
   // #region RENDER SECTION START *************************************************************************************
 
   // Render the Chart
-  return /*#__PURE__*/(0,jsx_runtime.jsx)(GeoChart, {
-    inputs: inputs,
-    schemaValidator: schemaValidator,
-    chart: chart,
-    data: data,
-    options: options,
-    action: action,
-    isLoadingChart: isLoadingChart,
-    isLoadingDatasource: isLoadingDatasource,
-    onParsed: handleParsed,
-    onError: handleError
+  return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+    sx: {
+      padding: '10px'
+    },
+    children: /*#__PURE__*/(0,jsx_runtime.jsx)(GeoChart, {
+      inputs: inputs,
+      schemaValidator: schemaValidator,
+      chart: chart,
+      data: data,
+      options: options,
+      action: action,
+      isLoadingChart: isLoadingChart,
+      isLoadingDatasource: isLoadingDatasource,
+      onParsed: handleParsed,
+      onError: handleError
+    })
   });
 
   // #endregion
