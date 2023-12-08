@@ -20,8 +20,9 @@ export function App(props: TypeAppProps): JSX.Element {
   const w = window as any;
   // Fetch the cgpv module
   const { cgpv } = w;
-  const { react, useTranslation } = cgpv;
+  const { react, ui, useTranslation } = cgpv;
   const { useEffect, useState, useCallback } = react;
+  const { Box } = ui.elements;
   const { schemaValidator } = props;
 
   // Translation
@@ -152,18 +153,20 @@ export function App(props: TypeAppProps): JSX.Element {
 
   // Render the Chart
   return (
-    <GeoChart
-      inputs={inputs}
-      schemaValidator={schemaValidator}
-      chart={chart}
-      data={data}
-      options={options}
-      action={action}
-      isLoadingChart={isLoadingChart}
-      isLoadingDatasource={isLoadingDatasource}
-      onParsed={handleParsed}
-      onError={handleError}
-    />
+    <Box sx={{ padding: '10px' }}>
+      <GeoChart
+        inputs={inputs}
+        schemaValidator={schemaValidator}
+        chart={chart}
+        data={data}
+        options={options}
+        action={action}
+        isLoadingChart={isLoadingChart}
+        isLoadingDatasource={isLoadingDatasource}
+        onParsed={handleParsed}
+        onError={handleError}
+      />
+    </Box>
   );
 
   // #endregion

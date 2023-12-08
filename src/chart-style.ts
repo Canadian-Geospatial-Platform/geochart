@@ -3,11 +3,10 @@
  */
 export const sxClasses = {
   mainContainer: {
+    width: '100%',
     minHeight: '400px',
   },
-  mainGeoChartContainer: {
-    padding: '10px',
-  },
+  mainGeoChartContainer: {},
   header: {
     display: 'flex',
     alignItems: 'center',
