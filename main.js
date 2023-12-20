@@ -29345,6 +29345,106 @@ function _nonIterableRest() {
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/typeof.js
+function _typeof(o) {
+  "@babel/helpers - typeof";
+
+  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
+    return typeof o;
+  } : function (o) {
+    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+  }, _typeof(o);
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toPrimitive.js
+
+function toPrimitive(t, r) {
+  if ("object" != _typeof(t) || !t) return t;
+  var e = t[Symbol.toPrimitive];
+  if (void 0 !== e) {
+    var i = e.call(t, r || "default");
+    if ("object" != _typeof(i)) return i;
+    throw new TypeError("@@toPrimitive must return a primitive value.");
+  }
+  return ("string" === r ? String : Number)(t);
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toPropertyKey.js
+
+
+function toPropertyKey(t) {
+  var i = toPrimitive(t, "string");
+  return "symbol" == _typeof(i) ? i : String(i);
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/defineProperty.js
+
+function _defineProperty(obj, key, value) {
+  key = toPropertyKey(key);
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+  return obj;
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+  try {
+    var info = gen[key](arg);
+    var value = info.value;
+  } catch (error) {
+    reject(error);
+    return;
+  }
+  if (info.done) {
+    resolve(value);
+  } else {
+    Promise.resolve(value).then(_next, _throw);
+  }
+}
+function _asyncToGenerator(fn) {
+  return function () {
+    var self = this,
+      args = arguments;
+    return new Promise(function (resolve, reject) {
+      var gen = fn.apply(self, args);
+      function _next(value) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
+      }
+      function _throw(err) {
+        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
+      }
+      _next(undefined);
+    });
+  };
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayWithoutHoles.js
+
+function _arrayWithoutHoles(arr) {
+  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/iterableToArray.js
+function _iterableToArray(iter) {
+  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/nonIterableSpread.js
+function _nonIterableSpread() {
+  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
+}
+;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toConsumableArray.js
+
+
+
+
+function _toConsumableArray(arr) {
+  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
+}
+// EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
+var regenerator = __webpack_require__(4687);
+var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
 // EXTERNAL MODULE: external "cgpv.react"
 var external_cgpv_react_ = __webpack_require__(5359);
 // EXTERNAL MODULE: ./node_modules/void-elements/index.js
@@ -30029,11 +30129,11 @@ function I18nextProvider(_ref) {
     defaultNS,
     children
   } = _ref;
-  const value = (0,external_cgpv_react_.useMemo)(() => ({
+  const value = useMemo(() => ({
     i18n,
     defaultNS
   }), [i18n, defaultNS]);
-  return (0,external_cgpv_react_.createElement)(context_I18nContext.Provider, {
+  return createElement(I18nContext.Provider, {
     value
   }, children);
 }
@@ -30109,106 +30209,6 @@ const number = () => '';
 const es_select = () => '';
 const plural = () => '';
 const selectOrdinal = () => '';
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/typeof.js
-function _typeof(o) {
-  "@babel/helpers - typeof";
-
-  return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) {
-    return typeof o;
-  } : function (o) {
-    return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
-  }, _typeof(o);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toPrimitive.js
-
-function toPrimitive(t, r) {
-  if ("object" != _typeof(t) || !t) return t;
-  var e = t[Symbol.toPrimitive];
-  if (void 0 !== e) {
-    var i = e.call(t, r || "default");
-    if ("object" != _typeof(i)) return i;
-    throw new TypeError("@@toPrimitive must return a primitive value.");
-  }
-  return ("string" === r ? String : Number)(t);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toPropertyKey.js
-
-
-function toPropertyKey(t) {
-  var i = toPrimitive(t, "string");
-  return "symbol" == _typeof(i) ? i : String(i);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/defineProperty.js
-
-function _defineProperty(obj, key, value) {
-  key = toPropertyKey(key);
-  if (key in obj) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-  } else {
-    obj[key] = value;
-  }
-  return obj;
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/asyncToGenerator.js
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-  try {
-    var info = gen[key](arg);
-    var value = info.value;
-  } catch (error) {
-    reject(error);
-    return;
-  }
-  if (info.done) {
-    resolve(value);
-  } else {
-    Promise.resolve(value).then(_next, _throw);
-  }
-}
-function _asyncToGenerator(fn) {
-  return function () {
-    var self = this,
-      args = arguments;
-    return new Promise(function (resolve, reject) {
-      var gen = fn.apply(self, args);
-      function _next(value) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-      }
-      function _throw(err) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-      }
-      _next(undefined);
-    });
-  };
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayWithoutHoles.js
-
-function _arrayWithoutHoles(arr) {
-  if (Array.isArray(arr)) return _arrayLikeToArray(arr);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/iterableToArray.js
-function _iterableToArray(iter) {
-  if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter);
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/nonIterableSpread.js
-function _nonIterableSpread() {
-  throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-}
-;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/toConsumableArray.js
-
-
-
-
-function _toConsumableArray(arr) {
-  return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread();
-}
-// EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
-var regenerator = __webpack_require__(4687);
-var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
 ;// CONCATENATED MODULE: ./node_modules/@kurkle/color/dist/color.esm.js
 /*!
  * @kurkle/color v0.3.2
@@ -45253,14 +45253,14 @@ adapters._date.override(typeof (moment_default()) === 'function' ? {
   }
 } : {});
 
-;// CONCATENATED MODULE: ./src/chart-util.ts
+;// CONCATENATED MODULE: ./src/utils.ts
 
 /**
  * Checks if the value is a number.
  * @param val unknown An unknown value
  * @returns boolean True when the value is a number.
  */
-var chart_util_isNumber = function isNumber(val) {
+var utils_isNumber = function isNumber(val) {
   return typeof val === 'number' && !Number.isNaN(val);
 };
 
@@ -45333,7 +45333,7 @@ var downloadJson = function downloadJson(data, filename) {
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
 };
-;// CONCATENATED MODULE: ./src/chart-types.ts
+;// CONCATENATED MODULE: ./src/types.ts
 
 
 // Export all ChartJS types
@@ -45716,7 +45716,7 @@ function sortOnX(datasets) {
         if (a.x < b.x) return -1;
         return 1;
       }
-      if (chart_util_isNumber(a.x) && chart_util_isNumber(b.x)) return a.x - b.x;
+      if (utils_isNumber(a.x) && utils_isNumber(b.x)) return a.x - b.x;
       if (a.x && b.x) return a.x.localeCompare(b.x);
       if (!a.x) return -1;
       if (!b.x) return 1;
@@ -46657,6 +46657,7 @@ function GeoChart(props) {
     defaultColors = props.defaultColors,
     isLoadingChart = props.isLoadingChart,
     parentLoadingDatasource = props.isLoadingDatasource,
+    language = props.language,
     onDatasourceChanged = props.onDatasourceChanged,
     onDataChanged = props.onDataChanged,
     onDatasetChanged = props.onDatasetChanged,
@@ -46672,8 +46673,7 @@ function GeoChart(props) {
 
   // Translation
   var _useTranslation = useTranslation_useTranslation(),
-    t = _useTranslation.t,
-    i18n = _useTranslation.i18n;
+    i18nReact = _useTranslation.i18n;
 
   // Cast the style
   var sx = elStyle;
@@ -46799,6 +46799,11 @@ function GeoChart(props) {
     _ref56 = _slicedToArray(_ref55, 2),
     colorPaletteAxisBorderIndex = _ref56[0],
     setColorPaletteAxisBorderIndex = _ref56[1];
+  var _useState = useState(i18nReact),
+    _useState2 = _slicedToArray(_useState, 2),
+    i18n = _useState2[0],
+    seti18n = _useState2[1];
+  var t = i18n.t;
   var chartRef = useRef();
 
   // #endregion
@@ -46856,7 +46861,7 @@ function GeoChart(props) {
     var yMaxVal = uiOptions === null || uiOptions === void 0 || (_uiOptions$ySlider2 = uiOptions.ySlider) === null || _uiOptions$ySlider2 === void 0 ? void 0 : _uiOptions$ySlider2.max;
     if (uiOptions !== null && uiOptions !== void 0 && (_uiOptions$ySlider3 = uiOptions.ySlider) !== null && _uiOptions$ySlider3 !== void 0 && _uiOptions$ySlider3.display) {
       // If using numbers as data value
-      if (datasourceItems && datasourceItems.length > 0 && chart_util_isNumber(datasourceItems[0][geochart.yAxis.property])) {
+      if (datasourceItems && datasourceItems.length > 0 && utils_isNumber(datasourceItems[0][geochart.yAxis.property])) {
         // If either min or max isn't preset
         if (yMinVal === undefined || yMaxVal === undefined) {
           // Dynamically calculate them
@@ -46925,7 +46930,7 @@ function GeoChart(props) {
    * @param ds GeoChartDatasource The Datasource to fetch the items for
    */
   var fetchDatasourceItems = /*#__PURE__*/function () {
-    var _ref57 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, language, sourceItem, errorCallback) {
+    var _ref57 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
       return regenerator_default().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -46935,7 +46940,7 @@ function GeoChart(props) {
 
             // Fetch the items for the data source in question
             _context.next = 4;
-            return fetchItemsViaQueryForDatasource(chartQuery, language, sourceItem);
+            return fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
           case 4:
             return _context.abrupt("return", _context.sent);
           case 7:
@@ -47354,6 +47359,25 @@ function GeoChart(props) {
     };
   }, [parentAction]);
 
+  // Effect hook when i18n changes - coming from parent component.
+  useEffect(function () {
+    // Log
+    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - i18n';
+    logUseEffectMount(USE_EFFECT_FUNC);
+
+    // We have to clone i18n, because otherwise the i18n is shared across all GeoCharts (so we can't have GeoChart simultaneously in diff languages per application).
+    // I also couldn't make it work with changeLanguage either, so it's just re-cloning when the language changes.
+    var newi18n = i18nReact.cloneInstance({
+      lng: language,
+      fallbackLng: language
+    });
+    seti18n(newi18n);
+    return function () {
+      // Log
+      logUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [i18nReact, language]);
+
   // #endregion
 
   // #region HOOKS USE EFFECT CURRENT COMP SECTION *********************************************************************************
@@ -47380,12 +47404,12 @@ function GeoChart(props) {
 
     // Async function to fetch data from within a sync useEffect :|
     var fetchAndSetSelectedDatasource = /*#__PURE__*/function () {
-      var _ref58 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee2(query, language, datasource) {
+      var _ref58 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
               _context2.next = 2;
-              return fetchDatasourceItems(query, language, datasource.sourceItem, onError);
+              return fetchDatasourceItems(query, theLanguage, datasource.sourceItem, onError);
             case 2:
               datasource.items = _context2.sent;
               // Set the datasource
@@ -48194,13 +48218,9 @@ function GeoChart(props) {
    * @returns The complete GeoChart Component container JSX.Element
    */
   var renderEverything = function renderEverything() {
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(I18nextProvider, {
-      i18n: i18n,
-      defaultNS: "translation",
-      children: /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
-        sx: sxClasses.mainContainer,
-        children: [!isLoadingChart && renderChartContainer(), isLoadingChart && /*#__PURE__*/(0,jsx_runtime.jsx)(CircularProgress, {})]
-      })
+    return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+      sx: sxClasses.mainContainer,
+      children: [!isLoadingChart && renderChartContainer(), isLoadingChart && /*#__PURE__*/(0,jsx_runtime.jsx)(CircularProgress, {})]
     });
   };
 
@@ -48252,7 +48272,6 @@ GeoChart.defaultProps = {
 
 
 
-
 /**
  * Main props for the Application
  */
@@ -48275,10 +48294,6 @@ function App(props) {
     useCallback = react.useCallback;
   var Box = ui.elements.Box;
   var schemaValidator = props.schemaValidator;
-
-  // Translation
-  var _useTranslation = useTranslation_useTranslation(),
-    i18n = _useTranslation.i18n;
 
   // #region USE STATE SECTION ****************************************************************************************
 
@@ -48304,12 +48319,16 @@ function App(props) {
     setAction = _ref10[1];
   var _ref11 = useState(),
     _ref12 = _slicedToArray(_ref11, 2),
-    isLoadingChart = _ref12[0],
-    setIsLoadingChart = _ref12[1];
+    language = _ref12[0],
+    setLanguage = _ref12[1];
   var _ref13 = useState(),
     _ref14 = _slicedToArray(_ref13, 2),
-    isLoadingDatasource = _ref14[0],
-    setIsLoadingDatasource = _ref14[1];
+    isLoadingChart = _ref14[0],
+    setIsLoadingChart = _ref14[1];
+  var _ref15 = useState(),
+    _ref16 = _slicedToArray(_ref15, 2),
+    isLoadingDatasource = _ref16[0],
+    setIsLoadingDatasource = _ref16[1];
 
   // #endregion
 
@@ -48401,8 +48420,8 @@ function App(props) {
    */
   var handleChartLanguage = useCallback(function (e) {
     var ev = e;
-    i18n.changeLanguage(ev.detail.language);
-  }, [i18n]);
+    setLanguage(ev.detail.language);
+  }, []);
 
   // Effect hook to add and remove event listeners.
   // Using window.addEventListener is unconventional here, but this is strictly for the 'app' logic with the index.html.
@@ -48436,6 +48455,7 @@ function App(props) {
       data: data,
       options: options,
       action: action,
+      language: language,
       isLoadingChart: isLoadingChart,
       isLoadingDatasource: isLoadingDatasource,
       onParsed: handleParsed,
@@ -50779,11 +50799,6 @@ instance.use(initReactI18next)
     fr: {
       translation: fr_translation_namespaceObject
     }
-  },
-  // special options for react-i18next
-  // learn more: https://react.i18next.com/components/i18next-instance
-  react: {
-    useSuspense: true
   }
 });
 /* harmony default export */ const src_i18n = ((/* unused pure expression or super */ null && (i18n)));
