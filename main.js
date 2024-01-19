@@ -46493,91 +46493,6 @@ var sxClasses = {
     color: 'red'
   }
 };
-;// CONCATENATED MODULE: ./src/logger.ts
-/* eslint-disable no-console */
-
-// Some arbitrary log levels.
-var LOG_LEVEL_MAXIMUM = 10; // Max detail steps (like useEffects unmounting)
-var LOG_LEVEL_HIGH = 8; // Fine detail steps (like useEffects)
-var LOG_LEVEL_MEDIUM = 5; // Medium level steps
-var LOG_LEVEL_LOW = 3; // Essential steps
-var LOG_LEVEL_MINIMAL = 1; // Core steps
-
-// Indicates logging level. The higher the number, the more detailed the log.
-var LOGGING_LEVEL = LOG_LEVEL_LOW;
-
-/**
- * Checks if the web application is running localhost
- * @returns boolean true if running localhost
- */
-var runningDev = function runningDev() {
-  return "production" === 'development';
-};
-
-/**
- * Checks if not running localhost and checks that the level is greater or equal to the application logging level.
- * If both conditions are valid, logs using console.log().
- * @param level number the level associated with the message to be logged.
- * @param message string[] the messages to log
- */
-var log = function log(level) {
-  var _console;
-  // If not running localhost, skip
-  if (!runningDev()) return;
-  for (var _len = arguments.length, message = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    message[_key - 1] = arguments[_key];
-  }
-  if (level <= LOGGING_LEVEL) (_console = console).log.apply(_console, ["".concat('-'.repeat(level), ">")].concat(message));
-};
-var logMaximum = function logMaximum() {
-  for (var _len2 = arguments.length, message = new Array(_len2), _key2 = 0; _key2 < _len2; _key2++) {
-    message[_key2] = arguments[_key2];
-  }
-  // Redirect
-  log.apply(void 0, [LOG_LEVEL_MAXIMUM].concat(message));
-};
-var logHigh = function logHigh() {
-  for (var _len3 = arguments.length, message = new Array(_len3), _key3 = 0; _key3 < _len3; _key3++) {
-    message[_key3] = arguments[_key3];
-  }
-  // Redirect
-  log.apply(void 0, [LOG_LEVEL_HIGH].concat(message));
-};
-var logMedium = function logMedium() {
-  for (var _len4 = arguments.length, message = new Array(_len4), _key4 = 0; _key4 < _len4; _key4++) {
-    message[_key4] = arguments[_key4];
-  }
-  // Redirect
-  log.apply(void 0, [LOG_LEVEL_MEDIUM].concat(message));
-};
-var logLow = function logLow() {
-  for (var _len5 = arguments.length, message = new Array(_len5), _key5 = 0; _key5 < _len5; _key5++) {
-    message[_key5] = arguments[_key5];
-  }
-  // Redirect
-  log.apply(void 0, [LOG_LEVEL_LOW].concat(message));
-};
-var logMinimal = function logMinimal() {
-  for (var _len6 = arguments.length, message = new Array(_len6), _key6 = 0; _key6 < _len6; _key6++) {
-    message[_key6] = arguments[_key6];
-  }
-  // Redirect
-  log.apply(void 0, [LOG_LEVEL_MINIMAL].concat(message));
-};
-var logUseEffectMount = function logUseEffectMount(useEffectFunction) {
-  for (var _len7 = arguments.length, message = new Array(_len7 > 1 ? _len7 - 1 : 0), _key7 = 1; _key7 < _len7; _key7++) {
-    message[_key7 - 1] = arguments[_key7];
-  }
-  // Redirect
-  logHigh.apply(void 0, ["".concat(useEffectFunction, " - MOUNT")].concat(message));
-};
-var logUseEffectUnmount = function logUseEffectUnmount(useEffectFunction) {
-  for (var _len8 = arguments.length, message = new Array(_len8 > 1 ? _len8 - 1 : 0), _key8 = 1; _key8 < _len8; _key8++) {
-    message[_key8 - 1] = arguments[_key8];
-  }
-  // Redirect
-  logMaximum.apply(void 0, ["".concat(useEffectFunction, " - UNMOUNT")].concat(message));
-};
 // EXTERNAL MODULE: ./node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(8521);
 ;// CONCATENATED MODULE: ./src/chart.tsx
@@ -46592,18 +46507,11 @@ function chart_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { va
 
 
 
-// Keeping the import line commented, until we decide to use it or code an equivalent.
-// So that a dev can locally install it to work. This package is pretty useful to track this GeoChart Component.
-// import { useWhatChanged, setUseWhatChange } from '@simbathesailor/use-what-changed';
 
 
 
 
 
-
-
-// Activate useWhatChanged in development (leaving the code commented, see header of file for reason)
-// setUseWhatChange(process.env.NODE_ENV === 'development');
 
 /**
  * Main props for the Chart.
@@ -46628,12 +46536,15 @@ function GeoChart(props) {
   var w = window;
   // Fetch the cgpv module
   var cgpv = w.cgpv;
+  var logger = cgpv.logger;
   var _cgpv$react = cgpv.react,
     useEffect = _cgpv$react.useEffect,
     useState = _cgpv$react.useState,
     useRef = _cgpv$react.useRef,
     useCallback = _cgpv$react.useCallback,
     CSSProperties = _cgpv$react.CSSProperties;
+  // Leaving the code commented purposely in case we want it fast
+  // const { useWhatChanged } = cgpv.ui;
   var _cgpv$ui$elements = cgpv.ui.elements,
     Box = _cgpv$ui$elements.Box,
     Grid = _cgpv$ui$elements.Grid,
@@ -46999,6 +46910,9 @@ function GeoChart(props) {
    * @param theChartData ChartData<TType, TData, TLabel>
    */
   var processDatasets = useCallback(function (items, catPropertyName, paletteBackgrounds, paletteBorders) {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - processDatasets', items, catPropertyName);
+
     // Check
     if (!items || !catPropertyName) return;
 
@@ -47058,6 +46972,9 @@ function GeoChart(props) {
    * @param theChartData ChartData<TType, TData, TLabel>
    */
   var processLabels = useCallback(function (theChartType, items, labelPropertyName, paletteBackgrounds, paletteBorders) {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - processLabels', theChartType, items);
+
     // Check
     if (!items || !labelPropertyName) return;
 
@@ -47113,7 +47030,7 @@ function GeoChart(props) {
       setColorPaletteAxisBackgroundIndex(backgroundIndex);
       setColorPaletteAxisBorderIndex(borderIndex);
     }
-  }, [datasRegistry, colorPaletteAxisBackgroundIndex, colorPaletteAxisBorderIndex]);
+  }, [datasRegistry, colorPaletteAxisBackgroundIndex, colorPaletteAxisBorderIndex, logger]);
 
   /**
    * Updates the chart dataset visibility based on the currently selected datasets.
@@ -47121,6 +47038,8 @@ function GeoChart(props) {
    * @param theSelectedDatasets GeoChartSelectedDatasets
    */
   var updateDatasetVisibilityUsingState = useCallback(function (theChartRef, theDatasetRegistry) {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - updateDatasetVisibilityUsingState', theChartRef, theDatasetRegistry);
     if (!theChartRef) return;
 
     // Get the current dataset labels
@@ -47137,7 +47056,7 @@ function GeoChart(props) {
 
     // Update visibility
     theChartRef.update();
-  }, []);
+  }, [logger]);
 
   /**
    * Updates the chart data visibility based on the currently selected data.
@@ -47145,6 +47064,9 @@ function GeoChart(props) {
    * @param theSelectedData GeoChartSelectedDatasets
    */
   var updateDataVisibilityUsingState = useCallback(function (theChartRef, theDatasRegistry) {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theChartRef, theDatasRegistry);
+
     // Check
     if (!theChartRef) return;
 
@@ -47167,7 +47089,7 @@ function GeoChart(props) {
       // Update visibility
       theChartRef.update();
     }
-  }, []);
+  }, [logger]);
 
   /**
    * Essential function to load the records in the Chart.
@@ -47176,6 +47098,9 @@ function GeoChart(props) {
    */
   var processLoadingRecords = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, records) {
     var _parsedData$datasets;
+    // Log
+    logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
+
     // Parse the data
     var parsedOptions = createChartJSOptions(theInputs, parentOptions, theLanguage);
     var parsedData = createChartJSData(theInputs, theDatasetRegistry, theDatasRegistry, theSteps, records, parentData);
@@ -47196,7 +47121,7 @@ function GeoChart(props) {
   // NO REACT for 'onParsed' (explicitely excluding it here instead of relying on
   // the parent component to have used useCallback as they should have)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  [parentOptions, parentData]);
+  [parentOptions, parentData, logger]);
 
   /**
    * Helper function to filter datasource items based on 2 possible and independent axis.
@@ -47206,6 +47131,9 @@ function GeoChart(props) {
    * @param yValues number | number[] The values in Y to filter on
    */
   var processLoadingRecordsFilteringFirst = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, records, xValues, yValues) {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - processLoadingRecordsFilteringFirst', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
+
     // If chart type is line
     var resItemsFinal = records ? _toConsumableArray(records) : [];
     if ((theInputs === null || theInputs === void 0 ? void 0 : theInputs.chart) === 'line') {
@@ -47252,7 +47180,7 @@ function GeoChart(props) {
 
     // Set new filtered inputs
     setFilteredRecords(resItemsFinal);
-  }, [processLoadingRecords]);
+  }, [processLoadingRecords, logger]);
 
   // #endregion
 
@@ -47264,12 +47192,12 @@ function GeoChart(props) {
    */
   var handleChartJSAfterInit = useCallback(function (chart) {
     // Log
-    logHigh('CHARTJS AFTER INIT', chart, datasetRegistry);
+    logger.logTraceUseCallback('GEOCHART - handleChartJSAfterInit', chart, datasRegistry, datasetRegistry);
 
     // Make sure the UI fits with the registry state before the first render is made. Mostly useful for pie/doughnut charts.
     updateDatasetVisibilityUsingState(chart, datasetRegistry);
     updateDataVisibilityUsingState(chart, datasRegistry);
-  }, [datasRegistry, datasetRegistry, updateDataVisibilityUsingState, updateDatasetVisibilityUsingState]);
+  }, [datasRegistry, datasetRegistry, updateDataVisibilityUsingState, updateDatasetVisibilityUsingState, logger]);
 
   // #endregion
 
@@ -47278,8 +47206,8 @@ function GeoChart(props) {
   // Effect hook when the inputs change - coming from parent component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - INPUTS';
-    logUseEffectMount(USE_EFFECT_FUNC, parentInputs);
+    var USE_EFFECT_FUNC = 'GEOCHART - PARENT - INPUTS';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, parentInputs);
 
     // Refresh the inputs in this component
     setInputs(parentInputs);
@@ -47297,15 +47225,15 @@ function GeoChart(props) {
     }
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC, parentInputs);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, parentInputs);
     };
-  }, [parentInputs, schemaValidator]);
+  }, [parentInputs, schemaValidator, logger]);
 
   // Effect hook when the main props about charttype, options and data change - coming from parent component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - CHARTJS INPUTS';
-    logUseEffectMount(USE_EFFECT_FUNC);
+    var USE_EFFECT_FUNC = 'GEOCHART - PARENT - CHARTJS INPUTS';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC);
 
     // Override
     setChartType(parentChart);
@@ -47313,57 +47241,57 @@ function GeoChart(props) {
     setChartData(parentData);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [parentChart, parentOptions, parentData]);
+  }, [parentChart, parentOptions, parentData, logger]);
 
   // Effect hook when the selected datasource changes - coming from parent component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - DATASOURCE';
-    logUseEffectMount(USE_EFFECT_FUNC, parentDatasource);
+    var USE_EFFECT_FUNC = 'GEOCHART - PARENT - DATASOURCE';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, parentDatasource);
 
     // Set the datasource as provided
     setSelectedDatasource(parentDatasource);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC, parentDatasource);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, parentDatasource);
     };
-  }, [parentDatasource]);
+  }, [parentDatasource, logger]);
 
   // Effect hook to be executed with loading datasource - coming from parent component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - LOADING DATASOURCE';
-    logUseEffectMount(USE_EFFECT_FUNC, parentLoadingDatasource);
+    var USE_EFFECT_FUNC = 'GEOCHART - PARENT - LOADING DATASOURCE';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, parentLoadingDatasource);
 
     // If defined, update the state
     if (parentLoadingDatasource !== undefined) setIsLoadingDatasource(parentLoadingDatasource);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [parentLoadingDatasource]);
+  }, [parentLoadingDatasource, logger]);
 
   // Effect hook when an action needs to happen - coming from parent component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - PARENT - ACTION';
-    logUseEffectMount(USE_EFFECT_FUNC, parentAction);
+    var USE_EFFECT_FUNC = 'GEOCHART - PARENT - ACTION';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, parentAction);
 
     // Set action for the component
     if (parentAction) setAction(parentAction);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [parentAction]);
+  }, [parentAction, logger]);
 
   // Effect hook when i18n changes - coming from parent component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - i18n';
-    logUseEffectMount(USE_EFFECT_FUNC);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - i18n';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC);
 
     // We have to clone i18n, because otherwise the i18n is shared across all GeoCharts (so we can't have GeoChart simultaneously in diff languages per application).
     // I also couldn't make it work with changeLanguage either, so it's just re-cloning when the language changes.
@@ -47374,9 +47302,9 @@ function GeoChart(props) {
     seti18n(newi18n);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [i18nReact, language]);
+  }, [i18nReact, language, logger]);
 
   // #endregion
 
@@ -47384,6 +47312,9 @@ function GeoChart(props) {
 
   // Effect hook ran once when initializing
   useEffect(function () {
+    // Log
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - PLUGINS';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, handleChartJSAfterInit);
     var plugin = {
       id: 'geochart-chartjs-plugin',
       afterInit: function afterInit(chartEvent) {
@@ -47393,14 +47324,18 @@ function GeoChart(props) {
 
     // Register
     setPlugins([plugin]);
-  }, [handleChartJSAfterInit]);
+    return function () {
+      // Log
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [handleChartJSAfterInit, logger]);
 
   // Effect hook when the inputs change - coming from this component.
   useEffect(function () {
     var _inputs$ui;
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - INPUTS';
-    logUseEffectMount(USE_EFFECT_FUNC, inputs);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - INPUTS';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, inputs);
 
     // Async function to fetch data from within a sync useEffect :|
     var fetchAndSetSelectedDatasource = /*#__PURE__*/function () {
@@ -47441,18 +47376,18 @@ function GeoChart(props) {
     } else setSelectedDatasource(undefined);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC, inputs);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, inputs);
     };
     // NO REACT for 'onError' (explicitely excluding it here instead of relying on
     // the parent component to have used useCallback as they should have)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputs, i18n.language]);
+  }, [inputs, i18n.language, logger]);
 
   // Effect hook when the selected datasource changes - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - PROCESS DATA - REGISTRY';
-    logUseEffectMount(USE_EFFECT_FUNC, inputs, selectedDatasource);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - SELECTED DATASOURCE';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, inputs, selectedDatasource);
 
     // If selectedDatasource is specified
     if (inputs && selectedDatasource) {
@@ -47465,15 +47400,15 @@ function GeoChart(props) {
     }
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
     };
-  }, [inputs, selectedDatasource, processDatasets, processLabels]);
+  }, [inputs, selectedDatasource, processDatasets, processLabels, logger]);
 
   // Effect hook when the selected datasource changes - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - PROCESS DATA - DATA';
-    logUseEffectMount(USE_EFFECT_FUNC, inputs, selectedDatasource);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - DATASOURCE STEPS SLIDERS';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, inputs, selectedDatasource);
 
     // If selectedDatasource is specified
     if (inputs && selectedDatasource) {
@@ -47506,15 +47441,15 @@ function GeoChart(props) {
     }
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
     };
-  }, [inputs, selectedDatasource, datasRegistry, datasetRegistry, i18n.language, selectedSteps, xSliderValues, ySliderValues, processLoadingRecordsFilteringFirst, processLoadingRecords]);
+  }, [inputs, selectedDatasource, datasRegistry, datasetRegistry, i18n.language, selectedSteps, xSliderValues, ySliderValues, processLoadingRecordsFilteringFirst, processLoadingRecords, logger]);
 
   // Effect hook when the chartOptions, chartData change - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - CHARTJS OPTIONS+DATA';
-    logUseEffectMount(USE_EFFECT_FUNC, chartOptions, chartData);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - CHARTJS OPTIONS+DATA';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, chartOptions, chartData);
 
     // If chart options. Validate the parsing we did do follow ChartJS options schema validating
     if (chartOptions) setValidatorOptions(schemaValidator.validateOptions(chartOptions));
@@ -47523,43 +47458,43 @@ function GeoChart(props) {
     if (chartData) setValidatorData(schemaValidator.validateData(chartData));
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [chartOptions, chartData, schemaValidator]);
+  }, [chartOptions, chartData, schemaValidator, logger]);
 
   // Effect hook when the datasetRegistry change - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - SELECTED DATASETS';
-    logUseEffectMount(USE_EFFECT_FUNC);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - DATASETS REGISTRY';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC);
 
     // Make sure the visibility of the chart aligns with the selected datasets
     updateDatasetVisibilityUsingState(chartRef.current, datasetRegistry);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [datasetRegistry, updateDatasetVisibilityUsingState]);
+  }, [datasetRegistry, updateDatasetVisibilityUsingState, logger]);
 
   // Effect hook when the datasRegistry change - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - SELECTED DATAS';
-    logUseEffectMount(USE_EFFECT_FUNC);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - DATAS REGISTRY';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC);
 
     // Make sure the visibility of the chart aligns with the selected datas
     updateDataVisibilityUsingState(chartRef.current, datasRegistry);
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [datasRegistry, updateDataVisibilityUsingState]);
+  }, [datasRegistry, updateDataVisibilityUsingState, logger]);
 
   // Effect hook to validate the schemas of inputs - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - VALIDATORS - INPUTS';
-    logUseEffectMount(USE_EFFECT_FUNC, hasValidSchemas([validatorInputs]));
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - VALIDATORS - INPUTS';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, hasValidSchemas([validatorInputs]));
 
     // If any error
     if (!hasValidSchemas([validatorInputs])) {
@@ -47570,18 +47505,18 @@ function GeoChart(props) {
     }
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
     // NO REACT for 'onError' (explicitely excluding it here instead of relying on
     // the parent component to have used useCallback as they should have)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [validatorInputs, t]);
+  }, [validatorInputs, t, logger]);
 
   // Effect hook to validate the schemas of inputs - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - VALIDATORS - OPTIONS+DATA';
-    logUseEffectMount(USE_EFFECT_FUNC, hasValidSchemas([validatorOptions, validatorData]));
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - VALIDATORS - OPTIONS+DATA';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, hasValidSchemas([validatorOptions, validatorData]));
 
     // If any error
     if (!hasValidSchemas([validatorOptions, validatorData])) {
@@ -47592,18 +47527,18 @@ function GeoChart(props) {
     }
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
     // NO REACT for 'onError' (explicitely excluding it here instead of relying on
     // the parent component to have used useCallback as they should have)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [validatorOptions, validatorData, t]);
+  }, [validatorOptions, validatorData, t, logger]);
 
   // Effect hook when an action needs to happen - coming from this component.
   useEffect(function () {
     // Log
-    var USE_EFFECT_FUNC = 'GEOCHART - USE EFFECT - CURRENT - ACTION';
-    logUseEffectMount(USE_EFFECT_FUNC, action);
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - ACTION';
+    logger.logTraceUseEffectMount(USE_EFFECT_FUNC, action);
 
     // If redraw is true, reset the property in the action, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
     // A bit funky, but only way I could find without having code the logic within the Parent Component.
@@ -47614,9 +47549,9 @@ function GeoChart(props) {
     }
     return function () {
       // Log
-      logUseEffectUnmount(USE_EFFECT_FUNC);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [action]);
+  }, [action, logger]);
 
   // #endregion
 
@@ -47706,7 +47641,7 @@ function GeoChart(props) {
    * Handles when the X Slider changes
    * @param value number | number[] Indicates the slider value
    */
-  var handleSliderXChange = function handleSliderXChange(newValue) {
+  var handleSliderXChange = function handleSliderXChange(event, newValue) {
     // Set the X State
     setXSliderValues(newValue);
 
@@ -47718,7 +47653,7 @@ function GeoChart(props) {
    * Handles when the Y Slider changes
    * @param value number | number[] Indicates the slider value
    */
-  var handleSliderYChange = function handleSliderYChange(newValue) {
+  var handleSliderYChange = function handleSliderYChange(event, newValue) {
     // Set the Y State
     setYSliderValues(newValue);
 
@@ -47909,7 +47844,7 @@ function GeoChart(props) {
             max: xSliderMax,
             step: xSliderSteps,
             value: xSliderValues || 0,
-            customOnChange: handleSliderXChange,
+            onChangeCommitted: handleSliderXChange,
             onValueDisplay: handleSliderXValueDisplay,
             onValueDisplayAriaLabel: handleSliderXValueDisplay
           })
@@ -47938,7 +47873,7 @@ function GeoChart(props) {
             step: ySliderSteps,
             value: ySliderValues || 0,
             orientation: "vertical",
-            customOnChange: handleSliderYChange,
+            onChangeCommitted: handleSliderYChange,
             onValueDisplay: handleSliderYValueDisplay,
             onValueDisplayAriaLabel: handleSliderYValueDisplay
           })
