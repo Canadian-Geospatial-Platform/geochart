@@ -46426,8 +46426,7 @@ function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, 
  */
 var sxClasses = {
   mainContainer: {
-    width: '100%',
-    minHeight: '400px'
+    width: '100%'
   },
   mainGeoChartContainer: {},
   header: {
@@ -46616,20 +46615,20 @@ function GeoChart(props) {
     _ref10 = _slicedToArray(_ref9, 2),
     selectedDatasource = _ref10[0],
     setSelectedDatasource = _ref10[1];
-  var _ref11 = useState(parentAction === null || parentAction === void 0 ? void 0 : parentAction.shouldRedraw),
+  var _ref11 = useState(parentAction),
     _ref12 = _slicedToArray(_ref11, 2),
-    redraw = _ref12[0],
-    setRedraw = _ref12[1];
-  var _ref13 = useState(parentLoadingDatasource),
+    action = _ref12[0],
+    setAction = _ref12[1];
+  var _ref13 = useState(parentAction === null || parentAction === void 0 ? void 0 : parentAction.shouldRedraw),
     _ref14 = _slicedToArray(_ref13, 2),
-    isLoadingDatasource = _ref14[0],
-    setIsLoadingDatasource = _ref14[1];
+    redraw = _ref14[0],
+    setRedraw = _ref14[1];
+  var _ref15 = useState(parentLoadingDatasource),
+    _ref16 = _slicedToArray(_ref15, 2),
+    isLoadingDatasource = _ref16[0],
+    setIsLoadingDatasource = _ref16[1];
 
   // Inner component states unrelated to the parent component
-  var _ref15 = useState(),
-    _ref16 = _slicedToArray(_ref15, 2),
-    action = _ref16[0],
-    setAction = _ref16[1];
   var _ref17 = useState({}),
     _ref18 = _slicedToArray(_ref17, 2),
     datasetRegistry = _ref18[0],
