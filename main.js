@@ -27331,7 +27331,6 @@ webpackContext.id = 6700;
 /***/ ((__unused_webpack_module, exports, __webpack_require__) => {
 
 "use strict";
-var __webpack_unused_export__;
 /**
  * @license React
  * react-jsx-runtime.production.min.js
@@ -27342,7 +27341,7 @@ var __webpack_unused_export__;
  * LICENSE file in the root directory of this source tree.
  */
 var f=__webpack_require__(5359),k=Symbol.for("react.element"),l=Symbol.for("react.fragment"),m=Object.prototype.hasOwnProperty,n=f.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner,p={key:!0,ref:!0,__self:!0,__source:!0};
-function q(c,a,g){var b,d={},e=null,h=null;void 0!==g&&(e=""+g);void 0!==a.key&&(e=""+a.key);void 0!==a.ref&&(h=a.ref);for(b in a)m.call(a,b)&&!p.hasOwnProperty(b)&&(d[b]=a[b]);if(c&&c.defaultProps)for(b in a=c.defaultProps,a)void 0===d[b]&&(d[b]=a[b]);return{$$typeof:k,type:c,key:e,ref:h,props:d,_owner:n.current}}__webpack_unused_export__=l;exports.jsx=q;exports.jsxs=q;
+function q(c,a,g){var b,d={},e=null,h=null;void 0!==g&&(e=""+g);void 0!==a.key&&(e=""+a.key);void 0!==a.ref&&(h=a.ref);for(b in a)m.call(a,b)&&!p.hasOwnProperty(b)&&(d[b]=a[b]);if(c&&c.defaultProps)for(b in a=c.defaultProps,a)void 0===d[b]&&(d[b]=a[b]);return{$$typeof:k,type:c,key:e,ref:h,props:d,_owner:n.current}}exports.Fragment=l;exports.jsx=q;exports.jsxs=q;
 
 
 /***/ }),
@@ -45538,6 +45537,7 @@ var DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_T
  * The date formatting to show the dates on the Axis.
  */
 var DATE_OPTIONS_AXIS = {
+  year: 'numeric',
   month: 'short',
   day: 'numeric'
 };
@@ -46424,73 +46424,121 @@ function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, 
 /**
  * SX Classes for the Chart
  */
-var sxClasses = {
-  mainContainer: {
-    width: '100%'
-  },
-  mainGeoChartContainer: {},
-  header: {
-    display: 'flex',
-    alignItems: 'center'
-  },
-  datasourceSelector: {
-    minWidth: '150px'
-  },
-  title: {
-    padding: '10px',
-    fontSize: 'larger'
-  },
-  xAxisLabel: {
-    textAlign: 'center',
-    margin: '10px 0px'
-  },
-  yAxisLabel: {
-    position: 'relative',
-    margin: '0 10px',
-    writingMode: 'vertical-rl',
-    transform: 'rotate(-180deg)',
-    transformOrigin: 'bottom center'
-  },
-  uiOptions: {
-    position: 'absolute',
-    right: '0px',
-    marginRight: '35px',
-    verticalAlign: 'middle'
-  },
-  uiOptionsStepsSelector: {
-    minWidth: '100px'
-  },
-  uiOptionsResetStates: {
-    display: 'inline-flex',
-    width: '40px'
-  },
-  checkDatasetWrapperLabel: {
-    display: 'inline-block',
-    padding: '9px'
-  },
-  checkDatasetWrapper: {
-    display: 'inline-block'
-  },
-  checkDatasetLabel: {
-    display: 'inline-flex',
-    verticalAlign: 'middle',
-    marginRight: '20px !important'
-  },
-  chartContent: {
-    position: 'relative'
-  },
-  xSliderWrapper: {},
-  ySliderWrapper: {
-    height: '85%'
-  },
-  loadingDatasource: {
-    backgroundColor: 'transparent',
-    zIndex: 0
-  },
-  chartError: {
-    fontStyle: 'italic',
-    color: 'red'
-  }
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+var getSxClasses = function getSxClasses(theme) {
+  var _theme$palette$geoVie, _theme$palette$geoVie2;
+  return {
+    mainContainer: {
+      borderColor: theme.palette.geoViewColor.primary.main,
+      borderWidth: '2px',
+      borderStyle: 'solid',
+      overflowY: 'auto'
+    },
+    mainGeoChartContainer: {
+      padding: '20px',
+      display: 'flex'
+    },
+    header: {
+      display: 'flex',
+      flexDirection: 'row'
+    },
+    datasourceSelector: {
+      minWidth: '150px',
+      marginRight: '10px',
+      '& .MuiSelect-select': {
+        padding: '8px 12px !important'
+      }
+    },
+    uiOptionsStepsSelector: {
+      minWidth: '100px',
+      '& .MuiSelect-select': {
+        padding: '8px 12px !important'
+      }
+    },
+    downloadButton: {
+      marginLeft: 'auto',
+      '& button': {
+        height: '40px',
+        textTransform: 'capitalize',
+        backgroundColor: (_theme$palette$geoVie = theme.palette.geoViewColor) === null || _theme$palette$geoVie === void 0 ? void 0 : _theme$palette$geoVie.bgColor.dark[100],
+        color: theme.palette.geoViewColor.textColor.main,
+        '&:hover': {
+          backgroundColor: (_theme$palette$geoVie2 = theme.palette.geoViewColor) === null || _theme$palette$geoVie2 === void 0 ? void 0 : _theme$palette$geoVie2.bgColor.dark[50],
+          color: theme.palette.geoViewColor.textColor.main
+        }
+      }
+    },
+    dataset: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
+    title: {
+      fontWeight: 'bold',
+      fontSize: theme.palette.geoViewFontSize.lg,
+      textAlign: 'center',
+      margin: '10px 0px'
+    },
+    xAxisLabel: {
+      textAlign: 'center',
+      margin: '10px 0px',
+      fontWeight: 'bold'
+    },
+    yAxisLabel: {
+      position: 'relative',
+      margin: 'auto',
+      writingMode: 'vertical-rl',
+      transform: 'rotate(-180deg)',
+      transformOrigin: 'bottom center',
+      fontWeight: 'bold',
+      marginTop: '-15%'
+    },
+    uiOptionsResetStates: {
+      display: 'inline-flex',
+      width: '40px',
+      textTransform: 'capitalize',
+      margin: '10px'
+    },
+    checkDatasetWrapperLabel: {
+      display: 'inline-block',
+      padding: '10px'
+    },
+    checkDatasetWrapper: {
+      display: 'inline-block',
+      '& .Mui-checked': {
+        color: "".concat(theme.palette.geoViewColor.primary.main, " !important")
+      }
+    },
+    checkDatasetLabel: {
+      display: 'inline-flex',
+      verticalAlign: 'middle',
+      marginRight: '20px !important'
+    },
+    chartContent: {
+      position: 'relative'
+    },
+    xSliderWrapper: {
+      '& .MuiSlider-root': {
+        color: theme.palette.geoViewColor.primary.main
+      }
+    },
+    ySliderWrapper: {
+      height: '75%',
+      textAlign: 'center',
+      '& .MuiSlider-root': {
+        color: theme.palette.geoViewColor.primary.main
+      }
+    },
+    loadingDatasource: {
+      backgroundColor: 'transparent',
+      zIndex: 0
+    },
+    chartError: {
+      fontStyle: 'italic',
+      color: 'red'
+    }
+  };
 };
 // EXTERNAL MODULE: ./node_modules/react/jsx-runtime.js
 var jsx_runtime = __webpack_require__(8521);
@@ -46520,6 +46568,7 @@ function chart_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { va
  */
 
 
+
 /**
  * Create a customized Chart UI
  *
@@ -46545,6 +46594,7 @@ function GeoChart(props) {
   // Leaving the code commented purposely in case we want it fast
   // const { useWhatChanged } = cgpv.ui;
   var _cgpv$ui$elements = cgpv.ui.elements,
+    Paper = _cgpv$ui$elements.Paper,
     Box = _cgpv$ui$elements.Box,
     Grid = _cgpv$ui$elements.Grid,
     Button = _cgpv$ui$elements.Button,
@@ -46555,7 +46605,8 @@ function GeoChart(props) {
     TypeMenuItemProps = _cgpv$ui$elements.TypeMenuItemProps,
     Typography = _cgpv$ui$elements.Typography,
     Slider = _cgpv$ui$elements.SliderBase,
-    CircularProgress = _cgpv$ui$elements.CircularProgress;
+    CircularProgress = _cgpv$ui$elements.CircularProgress,
+    cgpvTheme = _cgpv$ui$elements.cgpvTheme;
   var elStyle = props.sx,
     schemaValidator = props.schemaValidator,
     parentInputs = props.inputs,
@@ -46580,6 +46631,7 @@ function GeoChart(props) {
     onResetStates = props.onResetStates,
     onParsed = props.onParsed,
     onError = props.onError;
+  var sxClasses = getSxClasses(cgpvTheme);
 
   // Translation
   var _useTranslation = useTranslation_useTranslation(),
@@ -47906,9 +47958,12 @@ function GeoChart(props) {
   var renderDownload = function renderDownload() {
     var _inputs$ui5;
     if (inputs !== null && inputs !== void 0 && (_inputs$ui5 = inputs.ui) !== null && _inputs$ui5 !== void 0 && _inputs$ui5.download) {
-      return /*#__PURE__*/(0,jsx_runtime.jsx)(ButtonDropDown, {
-        onButtonClick: handleDownloadClick,
-        options: [t('geochart.downloadFiltered'), t('geochart.downloadAll')]
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+        sx: sxClasses.downloadButton,
+        children: /*#__PURE__*/(0,jsx_runtime.jsx)(ButtonDropDown, {
+          onButtonClick: handleDownloadClick,
+          options: [t('geochart.downloadFiltered'), t('geochart.downloadAll')]
+        })
       });
     }
     return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
@@ -48002,9 +48057,8 @@ function GeoChart(props) {
    * @returns The UI Options Element
    */
   var renderUIOptions = function renderUIOptions() {
-    return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
-      sx: sxClasses.uiOptions,
-      children: [renderUIOptionsStepsSwitcher(), renderUIOptionsResetStates()]
+    return /*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+      children: [renderUIOptionsStepsSwitcher(),  false && 0]
     });
   };
 
@@ -48016,7 +48070,7 @@ function GeoChart(props) {
     if (inputs && chartData && inputs.category) {
       if (Object.keys(datasetRegistry).length > 1) {
         var label = chartType === 'pie' || chartType === 'doughnut' ? "".concat(t('geochart.category'), ":") : '';
-        return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+        return /*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
           children: [/*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
             sx: sxClasses.checkDatasetWrapperLabel,
             children: label
@@ -48063,7 +48117,7 @@ function GeoChart(props) {
     if (inputs && chartData) {
       if (chartType === 'pie' || chartType === 'doughnut') {
         if (Object.keys(datasRegistry).length > 1) {
-          return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+          return /*#__PURE__*/(0,jsx_runtime.jsx)(jsx_runtime.Fragment, {
             children: Object.entries(datasRegistry).filter(function (_ref64) {
               var _ref65 = _slicedToArray(_ref64, 2),
                 dsOption = _ref65[1];
@@ -48105,7 +48159,7 @@ function GeoChart(props) {
    */
   var renderChartContainer = function renderChartContainer() {
     // The xs: 1, 11 and 12 used here are as documented online
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(Paper, {
       sx: chart_objectSpread(chart_objectSpread({}, sx), sxClasses.mainGeoChartContainer),
       children: /*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
         container: true,
@@ -48114,8 +48168,14 @@ function GeoChart(props) {
           xs: 12,
           children: [/*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
             sx: sxClasses.header,
-            children: [renderDatasourceSelector(), renderTitle(), renderUIOptions()]
-          }), renderDataSelector(), renderDatasetSelector()]
+            children: [renderDatasourceSelector(), renderUIOptions(), renderDownload()]
+          }), /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+            sx: sxClasses.title,
+            children: renderTitle()
+          }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+            sx: sxClasses.dataset,
+            children: [renderDataSelector(), renderDatasetSelector()]
+          })]
         }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
           item: true,
           xs: 1,
@@ -48133,15 +48193,18 @@ function GeoChart(props) {
           children: renderYSlider()
         }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
           item: true,
-          xs: 1
+          xs: 1.25
         }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
           item: true,
-          xs: 10,
+          xs: 9.75,
           children: [renderXAxisLabel(), renderXSlider()]
-        }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
+        }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
+          item: true,
+          xs: 1
+        }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
           item: true,
           xs: 12,
-          children: [renderDescription(), renderDownload()]
+          children: renderDescription()
         })]
       })
     });
@@ -48199,7 +48262,8 @@ GeoChart.defaultProps = {
   },
   data: {
     datasets: [],
-    labels: []
+    labels: [],
+    borderWidth: 10
   }
 };
 ;// CONCATENATED MODULE: ./src/app.tsx
