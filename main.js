@@ -46332,9 +46332,12 @@ function createChartJSOptions(chartConfig, defaultOptions, language) {
       x: {
         type: (_chartConfig$geochart5 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart5 === void 0 ? void 0 : _chartConfig$geochart5.type,
         ticks: {
+          autoSkip: true,
+          maxTicksLimit: 20,
           major: {
             enabled: true
           },
+          padding: 10,
           source: 'auto',
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
           callback: function callback(tickValue, index, ticks) {
@@ -46355,7 +46358,8 @@ function createChartJSOptions(chartConfig, defaultOptions, language) {
             // No label, redundant
             return '';
           }
-        }
+        },
+        offset: true
       }
     });
   }
@@ -46430,6 +46434,7 @@ var getSxClasses = function getSxClasses(theme) {
   var _theme$palette$geoVie, _theme$palette$geoVie2;
   return {
     mainContainer: {
+      fontFamily: theme.typography.body1.fontFamily,
       borderColor: theme.palette.geoViewColor.primary.main,
       borderWidth: '2px',
       borderStyle: 'solid',
@@ -46470,29 +46475,35 @@ var getSxClasses = function getSxClasses(theme) {
       }
     },
     dataset: {
-      display: 'flex',
       alignItems: 'center',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      textAlign: 'center'
     },
     title: {
-      fontWeight: 'bold',
-      fontSize: theme.palette.geoViewFontSize.lg,
+      fontFamily: theme.typography.h5.fontFamily,
+      fontWeight: theme.typography.h5.fontWeight,
+      fontSize: theme.typography.h5.fontSize,
       textAlign: 'center',
       margin: '10px 0px'
     },
     xAxisLabel: {
+      fontFamily: theme.typography.body1.fontFamily,
+      fontWeight: theme.typography.fontWeightBold,
+      fontSize: theme.palette.geoViewFontSize["default"],
       textAlign: 'center',
-      margin: '10px 0px',
-      fontWeight: 'bold'
+      margin: '10px 0px'
     },
     yAxisLabel: {
-      position: 'relative',
-      margin: 'auto',
+      fontFamily: theme.typography.body1.fontFamily,
+      fontWeight: theme.typography.fontWeightBold,
+      fontSize: theme.palette.geoViewFontSize["default"],
+      position: 'absolute',
+      top: '45%',
+      margin: '0 auto',
+      marginLeft: '20px',
       writingMode: 'vertical-rl',
       transform: 'rotate(-180deg)',
-      transformOrigin: 'bottom center',
-      fontWeight: 'bold',
-      marginTop: '-15%'
+      transformOrigin: 'center'
     },
     uiOptionsResetStates: {
       display: 'inline-flex',
@@ -46511,9 +46522,9 @@ var getSxClasses = function getSxClasses(theme) {
       }
     },
     checkDatasetLabel: {
+      fontFamily: theme.typography.body1.fontFamily,
       display: 'inline-flex',
-      verticalAlign: 'middle',
-      marginRight: '20px !important'
+      verticalAlign: 'middle'
     },
     chartContent: {
       position: 'relative'
@@ -46521,13 +46532,47 @@ var getSxClasses = function getSxClasses(theme) {
     xSliderWrapper: {
       '& .MuiSlider-root': {
         color: theme.palette.geoViewColor.primary.main
+      },
+      '& .MuiSlider-markLabel-overlap': {
+        marginTop: '20px'
+      },
+      '& .MuiSlider-markLabel-first': {
+        marginLeft: '-40px'
+      },
+      '& .MuiSlider-markLabel-last': {
+        marginLeft: '40px'
+      },
+      '& .markLabel-first': {
+        fontFamily: theme.typography.body1.fontFamily,
+        fontSize: theme.palette.geoViewFontSize.sm,
+        "float": 'left',
+        marginLeft: '-60px',
+        color: '#000',
+        opacity: 0.6
+      },
+      '& .markLabel-last': {
+        fontFamily: theme.typography.body1.fontFamily,
+        fontSize: theme.palette.geoViewFontSize.sm,
+        "float": 'right',
+        marginRight: '-60px',
+        color: '#000',
+        opacity: 0.6
       }
     },
     ySliderWrapper: {
-      height: '75%',
+      height: '70%',
       textAlign: 'center',
+      marginTop: '-20px',
+      marginLeft: '20px',
       '& .MuiSlider-root': {
         color: theme.palette.geoViewColor.primary.main
+      },
+      '& .markLabel-top, & .markLabel-bottom': {
+        fontFamily: theme.typography.body1.fontFamily,
+        fontSize: theme.palette.geoViewFontSize.sm,
+        marginLeft: '-30px',
+        color: '#000',
+        opacity: 0.6
       }
     },
     loadingDatasource: {
@@ -46549,6 +46594,7 @@ var jsx_runtime = __webpack_require__(8521);
 
 function chart_ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
 function chart_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? chart_ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : chart_ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+
 
 
 
@@ -47762,7 +47808,7 @@ function GeoChart(props) {
     // Default behavior
     // If current chart has time as xAxis
     if ((inputs === null || inputs === void 0 || (_inputs$geochart = inputs.geochart) === null || _inputs$geochart === void 0 ? void 0 : _inputs$geochart.xAxis.type) === 'time' || (inputs === null || inputs === void 0 || (_inputs$geochart2 = inputs.geochart) === null || _inputs$geochart2 === void 0 ? void 0 : _inputs$geochart2.xAxis.type) === 'timeseries') {
-      return new Date(value).toLocaleDateString(i18n.language, DATE_OPTIONS_LONG);
+      return new Date(value).toLocaleDateString(i18n.language, DATE_OPTIONS_AXIS);
     }
 
     // Default value as is
@@ -47880,6 +47926,108 @@ function GeoChart(props) {
   };
 
   /**
+   * Generate marker labels for the slider values
+   * @returns The array of slider markers
+   */
+  var getMarkers = useCallback(function (sliderValues, handleSliderValueDisplay) {
+    var sliderMarks = [];
+    if (Array.isArray(sliderValues)) {
+      for (var i = 0; i < sliderValues.length; i++) {
+        sliderMarks.push({
+          value: sliderValues[i],
+          label: handleSliderValueDisplay(sliderValues[i])
+        });
+      }
+    }
+    return sliderMarks;
+  }, []);
+  var checkOverlap = function checkOverlap(prev, curr, next) {
+    var orientation = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : 'horizontal';
+    var labelPadding = 10;
+    var prevDim = prev ? prev.getBoundingClientRect() : null;
+    var currDim = curr ? curr.getBoundingClientRect() : null;
+    var nextDim = next ? next.getBoundingClientRect() : null;
+    if (prevDim === null || currDim === null || nextDim === null) {
+      return false;
+    }
+    var hasPrevOverlap = false;
+    var hasNextOverlap = false;
+    if (prevDim) {
+      hasPrevOverlap = orientation === 'vertical' ? prevDim.bottom + labelPadding > currDim.top : prevDim.right + labelPadding > currDim.left;
+    }
+    if (nextDim) {
+      hasNextOverlap = orientation === 'vertical' ? currDim.bottom + labelPadding > nextDim.top : currDim.right + labelPadding > nextDim.left;
+    }
+    return hasPrevOverlap || hasNextOverlap;
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  var removeLabelOverlap = function removeLabelOverlap(containerId) {
+    var _document$getElementB;
+    // Log
+    logger.logTraceCore('UI.SLIDER - window resize event');
+
+    // get slider labels
+    var markers = containerId ? ((_document$getElementB = document.getElementById(containerId)) === null || _document$getElementB === void 0 ? void 0 : _document$getElementB.getElementsByClassName('MuiSlider-markLabel')) || [] : document.getElementsByClassName('MuiSlider-markLabel');
+    for (var i = 0; i < markers.length; i++) {
+      markers[0].classList.add('MuiSlider-markLabel-first');
+      markers[markers.length - 1].classList.add('MuiSlider-markLabel-last');
+      markers[i].classList.remove('MuiSlider-markLabel-overlap');
+    }
+    var middleIndices = markers.length % 2 === 0 ? [markers.length / 2, markers.length / 2 + 1] : [Math.floor(markers.length / 2)];
+    var lastVisibleInFirstHalf = 0;
+    var firstVisibleInSecondHalf = markers.length - 1;
+
+    // Check first half
+    for (var prevIdx = 0, currIdx = 1; currIdx < markers.length / 2; currIdx++) {
+      // if there is a collision, set classname and test with the next pips
+      if (checkOverlap(markers[prevIdx], markers[currIdx], null)) {
+        markers[currIdx].classList.add('MuiSlider-markLabel-overlap');
+      } else {
+        // if there is no collision and reset the startIdx to be the one before the fwdIdx
+        prevIdx = currIdx - prevIdx !== 1 ? currIdx : prevIdx + 1;
+        lastVisibleInFirstHalf = currIdx;
+      }
+    }
+
+    // Check second half
+    for (var nextIdx = markers.length - 1, _currIdx = markers.length - 2; _currIdx > markers.length / 2; _currIdx--) {
+      if (checkOverlap(null, markers[_currIdx], markers[nextIdx])) {
+        markers[_currIdx].classList.add('MuiSlider-markLabel-overlap');
+      } else {
+        // if there is no  collision and reset the curIndex to be the one before the testIndex
+        nextIdx = nextIdx - _currIdx !== 1 ? _currIdx : nextIdx - 1;
+        firstVisibleInSecondHalf = _currIdx;
+      }
+    }
+    middleIndices.push(lastVisibleInFirstHalf, firstVisibleInSecondHalf);
+    middleIndices = _toConsumableArray(new Set(middleIndices)).sort(function (a, b) {
+      return a - b;
+    });
+
+    // Check middle elements
+    for (var testIdx = 0, _currIdx2 = 1; _currIdx2 < middleIndices.length; _currIdx2++) {
+      if (checkOverlap(markers[middleIndices[testIdx]], markers[middleIndices[_currIdx2]], _currIdx2 === middleIndices.length - 1 ? null : markers[middleIndices[_currIdx2 + 1]])) {
+        markers[middleIndices[_currIdx2]].classList.add('MuiSlider-markLabel-overlap');
+      } else {
+        testIdx = _currIdx2 - testIdx !== 1 ? _currIdx2 : testIdx + 1;
+      }
+    }
+  };
+  (0,external_cgpv_react_.useLayoutEffect)(function () {
+    // remove overlaping labels
+    removeLabelOverlap('xAxisSlider');
+    window.addEventListener('resize', function () {
+      return removeLabelOverlap;
+    });
+    return function () {
+      return window.removeEventListener('resize', function () {
+        return removeLabelOverlap;
+      });
+    };
+  }, [removeLabelOverlap]);
+
+  /**
    * Renders the X Chart Slider JSX.Element or an empty box
    * @returns The X Chart Slider JSX.Element or an empty box
    */
@@ -47888,9 +48036,22 @@ function GeoChart(props) {
     if (inputs && selectedDatasource) {
       var _inputs$ui2;
       if (inputs.chart === 'line' && (_inputs$ui2 = inputs.ui) !== null && _inputs$ui2 !== void 0 && (_inputs$ui2 = _inputs$ui2.xSlider) !== null && _inputs$ui2 !== void 0 && _inputs$ui2.display) {
-        return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+        return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+          id: "xAxisSlider",
           sx: sxClasses.xSliderWrapper,
-          children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+          children: [/*#__PURE__*/(0,jsx_runtime.jsxs)("div", {
+            style: {
+              height: '16px'
+            },
+            children: [Array.isArray(xSliderValues) && xSliderValues[0] !== xSliderMin && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
+              className: "markLabel-first",
+              children: handleSliderXValueDisplay(xSliderMin)
+            }), Array.isArray(xSliderValues) && xSliderValues[xSliderValues.length - 1] !== xSliderMax && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
+              className: "markLabel-last",
+              children: handleSliderXValueDisplay(xSliderMax)
+            })]
+          }), /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+            marks: getMarkers(xSliderValues, handleSliderXValueDisplay),
             min: xSliderMin,
             max: xSliderMax,
             step: xSliderSteps,
@@ -47898,7 +48059,7 @@ function GeoChart(props) {
             onChangeCommitted: handleSliderXChange,
             onValueDisplay: handleSliderXValueDisplay,
             onValueDisplayAriaLabel: handleSliderXValueDisplay
-          })
+          })]
         });
       }
     }
@@ -47916,9 +48077,19 @@ function GeoChart(props) {
     if (inputs && selectedDatasource) {
       var _inputs$ui3;
       if (inputs.chart === 'line' && (_inputs$ui3 = inputs.ui) !== null && _inputs$ui3 !== void 0 && (_inputs$ui3 = _inputs$ui3.ySlider) !== null && _inputs$ui3 !== void 0 && _inputs$ui3.display) {
-        return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+        return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
           sx: sxClasses.ySliderWrapper,
-          children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+          children: [/*#__PURE__*/(0,jsx_runtime.jsx)("div", {
+            style: {
+              height: '16px',
+              marginBottom: '10px'
+            },
+            children: Array.isArray(ySliderValues) && ySliderValues[ySliderValues.length - 1] !== ySliderMax && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
+              className: "markLabel-top",
+              children: handleSliderYValueDisplay(ySliderMax)
+            })
+          }), /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+            marks: getMarkers(ySliderValues, handleSliderYValueDisplay),
             min: ySliderMin,
             max: ySliderMax,
             step: ySliderSteps,
@@ -47927,7 +48098,15 @@ function GeoChart(props) {
             onChangeCommitted: handleSliderYChange,
             onValueDisplay: handleSliderYValueDisplay,
             onValueDisplayAriaLabel: handleSliderYValueDisplay
-          })
+          }), /*#__PURE__*/(0,jsx_runtime.jsx)("div", {
+            style: {
+              height: '16px'
+            },
+            children: Array.isArray(ySliderValues) && ySliderValues[0] !== ySliderMin && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
+              className: "markLabel-bottom",
+              children: handleSliderYValueDisplay(ySliderMin)
+            })
+          })]
         });
       }
     }
@@ -48070,7 +48249,7 @@ function GeoChart(props) {
     if (inputs && chartData && inputs.category) {
       if (Object.keys(datasetRegistry).length > 1) {
         var label = chartType === 'pie' || chartType === 'doughnut' ? "".concat(t('geochart.category'), ":") : '';
-        return /*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+        return /*#__PURE__*/(0,jsx_runtime.jsxs)("div", {
           children: [/*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
             sx: sxClasses.checkDatasetWrapperLabel,
             children: label
@@ -48163,6 +48342,9 @@ function GeoChart(props) {
       sx: chart_objectSpread(chart_objectSpread({}, sx), sxClasses.mainGeoChartContainer),
       children: /*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
         container: true,
+        sx: {
+          m: '20px'
+        },
         children: [/*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
           item: true,
           xs: 12,
