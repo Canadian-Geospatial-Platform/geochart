@@ -46434,10 +46434,10 @@ var getSxClasses = function getSxClasses(theme) {
   var _theme$palette$geoVie, _theme$palette$geoVie2;
   return {
     mainContainer: {
-      fontFamily: theme.typography.body1.fontFamily,
-      overflowY: 'auto'
+      fontFamily: theme.typography.body1.fontFamily
     },
     mainGeoChartContainer: {
+      position: 'relative',
       padding: '20px',
       display: 'flex',
       borderColor: theme.palette.geoViewColor.primary.main,
