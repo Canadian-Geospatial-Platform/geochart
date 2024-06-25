@@ -46934,6 +46934,7 @@ function GeoChart(props) {
     CircularProgress = _cgpv$ui$elements.CircularProgress,
     cgpvTheme = _cgpv$ui$elements.cgpvTheme;
   var elStyle = props.sx,
+    containerElement = props.container,
     schemaValidator = props.schemaValidator,
     parentInputs = props.inputs,
     parentDatasource = props.datasource,
@@ -48362,6 +48363,7 @@ function GeoChart(props) {
       });
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
         children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
+          container: containerElement,
           sx: sxClasses.datasourceSelector,
           label: t('geochart.feature'),
           onChange: handleDatasourceChanged,
@@ -48405,6 +48407,7 @@ function GeoChart(props) {
         });
       });
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
+        container: containerElement,
         sx: sxClasses.uiOptionsStepsSelector,
         label: t('geochart.steps'),
         onChange: handleStepsSwitcherChanged,
