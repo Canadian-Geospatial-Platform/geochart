@@ -33,6 +33,14 @@ export const getSxClasses = (theme: Theme) => {
       '& .MuiSelect-select': {
         padding: '8px 12px !important',
       },
+      marginRight: '10px',
+    },
+    uiOptionsScaleSelector: {
+      minWidth: '130px',
+      '& .MuiSelect-select': {
+        padding: '8px 12px !important',
+      },
+      marginRight: '10px',
     },
     downloadButton: {
       marginLeft: 'auto',

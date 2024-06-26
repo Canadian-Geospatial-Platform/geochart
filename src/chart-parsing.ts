@@ -9,6 +9,7 @@ import {
   GeoChartQueryOptionClause,
   GeoChartSelectedDataset,
   StepsPossibilities,
+  ScalePossibilities,
   DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT,
   DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE,
   DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT,
@@ -611,6 +612,7 @@ export function setColorPalettes<TType extends ChartType>(chartConfig: GeoChartC
 export function createChartJSOptions<TType extends ChartType>(
   chartConfig: GeoChartConfig<TType>,
   defaultOptions: ChartOptions<TType>,
+  yAxisType: ScalePossibilities,
   language: string
 ): ChartOptions<TType> {
   // The Chart JS Options as entered or the default options
@@ -664,11 +666,11 @@ export function createChartJSOptions<TType extends ChartType>(
   if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
     const optionsLine = options as ChartOptions<'line' | 'bar'>;
     // If type is set
-    if (chartConfig.geochart.yAxis?.type) {
+    if (yAxisType) {
       optionsLine.scales = {
         ...optionsLine.scales,
         y: {
-          type: chartConfig.geochart.yAxis?.type,
+          type: yAxisType,
         },
       };
     }

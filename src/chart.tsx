@@ -17,6 +17,8 @@ import {
   StepsPossibilities,
   DATE_OPTIONS_AXIS,
   GeoChartDatasetOption,
+  ScalePossibilitiesConst,
+  ScalePossibilities,
 } from './types';
 import { SchemaValidator, ValidatorResult } from './chart-schema-validator';
 import { createChartJSOptions, createChartJSData, fetchItemsViaQueryForDatasource, setColorPalettes } from './chart-parsing';
@@ -34,8 +36,9 @@ export interface TypeChartChartProps<
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
   TLabel = string
 > {
-  //container element
-  container?: HTMLElement,
+  // Container element
+  container?: HTMLElement;
+
   // The schemas validator object
   schemaValidator: SchemaValidator;
 
@@ -94,10 +97,13 @@ export interface TypeChartChartProps<
   // Callback executed when the use has clicked the download button
   onDownloadClicked?: (value: GeoChartDatasource, index: number) => string;
 
-  // Callback executed when user has selected another steps value from the ui (top right corner in the ui at the time of writing)
+  // Callback executed when user has selected another steps value from the ui (top right corner in the ui)
   onStepSwitcherChanged?: (value: string) => void;
 
-  // Callback executed when user has clicked the reset states button (top right corner in the ui at the time of writing)
+  // Callback executed when user has selected another scale value from the ui (top right corner in the ui)
+  onScaleSwitcherChanged?: (value: string) => void;
+
+  // Callback executed when user has clicked the reset states button (top right corner in the ui)
   onResetStates?: () => void;
 
   // Callback executed when the data coming from the inputs parameters have been parsed and is ready to redirect to ChartJS for rendering
@@ -168,6 +174,7 @@ export function GeoChart<
     onSliderYValueDisplaying,
     onDownloadClicked,
     onStepSwitcherChanged,
+    onScaleSwitcherChanged,
     onResetStates,
     onParsed,
     onError,
@@ -226,6 +233,10 @@ export function GeoChart<
   const [selectedSteps, setSelectedSteps] = useState(inputs?.geochart.useSteps || false) as [
     StepsPossibilities,
     React.Dispatch<StepsPossibilities>
+  ];
+  const [selectedScale, setSelectedScale] = useState(inputs?.geochart.yAxis?.type || 'linear') as [
+    ScalePossibilities,
+    React.Dispatch<ScalePossibilities>
   ];
   const [plugins, setPlugins] = useState() as [Plugin<TType, unknown>[] | undefined, React.Dispatch<Plugin<TType, unknown>[] | undefined>];
   const [colorPaletteCategoryBackgroundIndex, setColorPaletteCategoryBackgroundIndex] = useState(0) as [number, React.Dispatch<number>];
@@ -648,13 +659,14 @@ export function GeoChart<
       theDatasRegistry: GeoChartSelectedDataset,
       theLanguage: string,
       theSteps: StepsPossibilities,
+      theYScale: ScalePossibilities,
       records: TypeJsonObject[] | undefined
     ): void => {
       // Log
       logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
 
       // Parse the data
-      const parsedOptions = createChartJSOptions<TType>(theInputs, parentOptions!, theLanguage);
+      const parsedOptions = createChartJSOptions<TType>(theInputs, parentOptions!, theYScale, theLanguage);
       const parsedData = createChartJSData<TType, TData, TLabel>(
         theInputs,
         theDatasetRegistry,
@@ -685,6 +697,7 @@ export function GeoChart<
     theDatasRegistry: GeoChartSelectedDataset,
     theLanguage: string,
     theSteps: StepsPossibilities,
+    theYScale: ScalePossibilities,
     records: TypeJsonObject[] | undefined
   ) => void;
 
@@ -702,6 +715,7 @@ export function GeoChart<
       theDatasRegistry: GeoChartSelectedDataset,
       theLanguage: string,
       theSteps: StepsPossibilities,
+      theYScale: ScalePossibilities,
       records: TypeJsonObject[] | undefined,
       xValues: number | number[],
       yValues: number | number[]
@@ -758,7 +772,7 @@ export function GeoChart<
       }
 
       // Filter
-      processLoadingRecords(theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, resItemsFinal);
+      processLoadingRecords(theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, theYScale, resItemsFinal);
 
       // Set new filtered inputs
       setFilteredRecords(resItemsFinal);
@@ -770,6 +784,7 @@ export function GeoChart<
     theDatasRegistry: GeoChartSelectedDataset,
     theLanguage: string,
     theSteps: StepsPossibilities,
+    theYScale: ScalePossibilities,
     records: TypeJsonObject[] | undefined,
     xValues: number | number[],
     yValues: number | number[]
@@ -781,7 +796,7 @@ export function GeoChart<
 
   /**
    * Handles when the ChartJS has finished initializing and before it started drawing data.
-   * @param chart ChartJS<TType, TData, TLabel> The ChartJS reference.
+   * @param {ChartJS<TType, TData, TLabel>} chart - The ChartJS reference.
    */
   const handleChartJSAfterInit = useCallback(
     (chart: ChartJS<TType, TData, TLabel>): void => {
@@ -952,8 +967,13 @@ export function GeoChart<
       setSelectedDatasource(datasource);
     };
 
-    // If no steps switcher, reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
-    if (!inputs?.ui?.stepsSwitcher) setSelectedSteps(inputs?.geochart.useSteps || false);
+    // Reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
+    setSelectedSteps(inputs?.geochart.useSteps || false);
+
+    // Reset the state of the useScale to the config
+    let scale: ScalePossibilities = 'linear';
+    if (inputs?.geochart.yAxis?.type === 'logarithmic') scale = 'logarithmic';
+    setSelectedScale(scale);
 
     // If no datasources on the inputs, create a default one
     if (inputs && inputs.datasources && inputs.datasources.length > 0) {
@@ -1040,13 +1060,22 @@ export function GeoChart<
           datasRegistry,
           i18n.language,
           selectedSteps,
+          selectedScale,
           selectedDatasource.items,
           [xMinVal!, xMaxVal!],
           [yMinVal!, yMaxVal!]
         );
       } else {
         // Load records without filtering for nothing
-        processLoadingRecords(inputs, datasetRegistry, datasRegistry, i18n.language, selectedSteps, selectedDatasource.items);
+        processLoadingRecords(
+          inputs,
+          datasetRegistry,
+          datasRegistry,
+          i18n.language,
+          selectedSteps,
+          selectedScale,
+          selectedDatasource.items
+        );
       }
     }
 
@@ -1061,6 +1090,7 @@ export function GeoChart<
     datasetRegistry,
     i18n.language,
     selectedSteps,
+    selectedScale,
     xSliderValues,
     ySliderValues,
     processLoadingRecordsFilteringFirst,
@@ -1278,6 +1308,18 @@ export function GeoChart<
 
     // Callback
     onStepSwitcherChanged?.(item.props.value);
+  };
+
+  /**
+   * Handles when the Scale Switcher changes
+   * @param value string Indicates the scale type value
+   */
+  const handleScaleSwitcherChanged = (e: unknown, item: typeof MenuItem): void => {
+    // Set the scale switcher
+    setSelectedScale(item.props.value);
+
+    // Callback
+    onScaleSwitcherChanged?.(item.props.value);
   };
 
   /**
@@ -1602,7 +1644,29 @@ export function GeoChart<
           label={t('geochart.steps')}
           onChange={handleStepsSwitcherChanged}
           menuItems={menuItems}
-          value={selectedSteps || false}
+          value={selectedSteps || inputs?.geochart.useSteps || false}
+        />
+      );
+    }
+    return <Box />;
+  };
+
+  const renderUIOptionsScaleSwitcher = (): JSX.Element => {
+    if (inputs?.ui?.scaleSwitcher) {
+      // Create the menu items
+      const menuItems: (typeof TypeMenuItemProps)[] = [];
+      ScalePossibilitiesConst.forEach((scaleOption: string | boolean) => {
+        menuItems.push({ key: scaleOption, item: { value: scaleOption, children: scaleOption.toString() } });
+      });
+
+      return (
+        <Select
+          container={containerElement}
+          sx={sxClasses.uiOptionsScaleSelector}
+          label={t('geochart.scale')}
+          onChange={handleScaleSwitcherChanged}
+          menuItems={menuItems}
+          value={selectedScale || inputs?.geochart.yAxis?.type || 'linear'}
         />
       );
     }
@@ -1628,6 +1692,7 @@ export function GeoChart<
     return (
       <>
         {renderUIOptionsStepsSwitcher()}
+        {renderUIOptionsScaleSwitcher()}
         {false && renderUIOptionsResetStates()}
       </>
     );

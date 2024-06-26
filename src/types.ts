@@ -72,6 +72,9 @@ export type GeoChartCategory = {
 export const StepsPossibilitiesConst = ['before', 'after', 'middle', false] as const;
 export type StepsPossibilities = (typeof StepsPossibilitiesConst)[number];
 
+export const ScalePossibilitiesConst = ['linear', 'logarithmic'] as const;
+export type ScalePossibilities = (typeof ScalePossibilitiesConst)[number];
+
 /**
  * The Configuration about using GeoChart specific parameters.
  */
@@ -90,6 +93,7 @@ export type GeoChartOptionsUI = {
   xSlider?: GeoChartOptionsSlider;
   ySlider?: GeoChartOptionsSlider;
   stepsSwitcher?: boolean;
+  scaleSwitcher?: boolean;
   resetStates?: boolean;
   description?: string;
   download?: boolean;

@@ -2,6 +2,7 @@
   "geochart": {
     "feature": "Enregistrement",
     "steps": "Marches",
+    "scale": "Échelle",
     "category": "Catégorie",
     "parsingError": "Une erreur est survenue lors de la lecture des paramètres.",
     "viewConsoleDetails": "Voir détails dans la console.",

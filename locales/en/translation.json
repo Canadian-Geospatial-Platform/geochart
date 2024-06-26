@@ -2,6 +2,7 @@
   "geochart": {
     "feature": "Feature",
     "steps": "Steps",
+    "scale": "Scale",
     "category": "Category",
     "parsingError": "There was an error parsing the Chart inputs.",
     "viewConsoleDetails": "View console for details.",

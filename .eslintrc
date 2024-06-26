@@ -41,6 +41,12 @@
     "import/prefer-default-export": "off",
     "react/no-find-dom-node": 0,
     "class-methods-use-this": "off",
+    "@typescript-eslint/class-methods-use-this": [
+      1, // Warning
+      {
+        "ignoreOverrideMethods": true
+      }
+    ],
     "jsx-a11y/anchor-is-valid": [
       "error",
       {
@@ -73,14 +79,30 @@
       {
         "endOfLine": "auto"
       }
-    ]
+    ],
+    "no-restricted-syntax": [
+      1, // Warning
+      {
+          "selector": ":matches(PropertyDefinition, MethodDefinition)[accessibility='private']",
+          "message": "Use # prefix for private instead"
+      }
+    ],
+    "require-await": 1, // Warning
+    "@typescript-eslint/await-thenable": "warn"
   },
   "overrides": [
     {
       // enable the rule specifically for TypeScript files
       "files": ["*.ts", "*.mts", "*.cts", "*.tsx"],
       "rules": {
-        "@typescript-eslint/explicit-function-return-type": "error"
+        "@typescript-eslint/no-floating-promises": 1, // Warning
+        "@typescript-eslint/no-misused-promises": 1, // Warning
+        "@typescript-eslint/explicit-function-return-type": [
+          1,
+          {
+            "allowExpressions": true
+          }
+        ]
       }
     }
   ]
