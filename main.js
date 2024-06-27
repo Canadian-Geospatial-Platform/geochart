@@ -29558,7 +29558,7 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-// UNUSED EXPORTS: DATE_OPTIONS_AXIS, DATE_OPTIONS_LONG, DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE, DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT, GeoChart, GeoChartQueryTypesConst, SchemaValidator, StepsPossibilitiesConst, createChartJSData, createChartJSOptions, fetchItemsViaQueryForDatasource, parseFeatureInfoEsriEntries, parseFeatureInfoOGCEntries, queryEsriFeaturesByUrl, queryOGCFeaturesByUrl, setColorPalettes
+// UNUSED EXPORTS: DATE_OPTIONS_AXIS, DATE_OPTIONS_LONG, DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE, DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT, GeoChart, GeoChartQueryTypesConst, ScalePossibilitiesConst, SchemaValidator, StepsPossibilitiesConst, createChartJSData, createChartJSOptions, fetchItemsViaQueryForDatasource, parseFeatureInfoEsriEntries, parseFeatureInfoOGCEntries, queryEsriFeaturesByUrl, queryOGCFeaturesByUrl, setColorPalettes
 
 ;// CONCATENATED MODULE: ./node_modules/@babel/runtime/helpers/esm/arrayWithHoles.js
 function _arrayWithHoles(arr) {
@@ -45648,6 +45648,7 @@ var GeoChartQueryTypesConst = (/* unused pure expression or super */ null && (['
  * The steps possibilities explicitely typed.
  */
 var StepsPossibilitiesConst = ['before', 'after', 'middle', false];
+var ScalePossibilitiesConst = ['linear', 'logarithmic'];
 
 /**
  * The Configuration about using GeoChart specific parameters.
@@ -46600,7 +46601,7 @@ function setColorPalettes(chartConfig) {
  * @param language string The current language of the UI.
  * @returns The ChartJS ingestable Options properties
  */
-function createChartJSOptions(chartConfig, defaultOptions, language) {
+function createChartJSOptions(chartConfig, defaultOptions, yAxisType, language) {
   var _chartConfig$geochart3, _chartConfig$geochart4;
   // The Chart JS Options as entered or the default options
   var options = _objectSpread(_objectSpread(_objectSpread({}, defaultOptions), chartConfig.chartjsOptions), {}, {
@@ -46649,14 +46650,12 @@ function createChartJSOptions(chartConfig, defaultOptions, language) {
 
   // If line or bar
   if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
-    var _chartConfig$geochart6;
     var _optionsLine = options;
     // If type is set
-    if ((_chartConfig$geochart6 = chartConfig.geochart.yAxis) !== null && _chartConfig$geochart6 !== void 0 && _chartConfig$geochart6.type) {
-      var _chartConfig$geochart7;
+    if (yAxisType) {
       _optionsLine.scales = _objectSpread(_objectSpread({}, _optionsLine.scales), {}, {
         y: {
-          type: (_chartConfig$geochart7 = chartConfig.geochart.yAxis) === null || _chartConfig$geochart7 === void 0 ? void 0 : _chartConfig$geochart7.type
+          type: yAxisType
         }
       });
     }
@@ -46688,7 +46687,7 @@ function createChartJSOptions(chartConfig, defaultOptions, language) {
  * @returns The ChartJS ingestable Data properties
  */
 function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, records, defaultData) {
-  var _chartConfig$geochart8, _chartConfig$geochart9;
+  var _chartConfig$geochart6, _chartConfig$geochart7;
   // If there's a data source, parse it to a GeoChart data
   var data = _objectSpread({}, defaultData);
   if (records && records.length > 0) {
@@ -46699,7 +46698,7 @@ function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, 
   sortOnDatasetLabels(data);
 
   // If the x axis type is time
-  if (((_chartConfig$geochart8 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart8 === void 0 ? void 0 : _chartConfig$geochart8.type) === 'time' || ((_chartConfig$geochart9 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart9 === void 0 ? void 0 : _chartConfig$geochart9.type) === 'timeseries') {
+  if (((_chartConfig$geochart6 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart6 === void 0 ? void 0 : _chartConfig$geochart6.type) === 'time' || ((_chartConfig$geochart7 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart7 === void 0 ? void 0 : _chartConfig$geochart7.type) === 'timeseries') {
     // Make sure the datasets data are sorted on X
     sortOnX(data.datasets);
   }
@@ -46742,7 +46741,15 @@ var getSxClasses = function getSxClasses(theme) {
       minWidth: '100px',
       '& .MuiSelect-select': {
         padding: '8px 12px !important'
-      }
+      },
+      marginRight: '10px'
+    },
+    uiOptionsScaleSelector: {
+      minWidth: '130px',
+      '& .MuiSelect-select': {
+        padding: '8px 12px !important'
+      },
+      marginRight: '10px'
     },
     downloadButton: {
       marginLeft: 'auto',
@@ -46902,6 +46909,7 @@ function chart_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { va
  * @returns {JSX.Element} the created Chart element
  */
 function GeoChart(props) {
+  var _inputs$geochart$yAxi;
   // Prep ChartJS
   Chart.register.apply(Chart, _toConsumableArray(registerables));
 
@@ -46955,6 +46963,7 @@ function GeoChart(props) {
     onSliderYValueDisplaying = props.onSliderYValueDisplaying,
     onDownloadClicked = props.onDownloadClicked,
     onStepSwitcherChanged = props.onStepSwitcherChanged,
+    onScaleSwitcherChanged = props.onScaleSwitcherChanged,
     onResetStates = props.onResetStates,
     onParsed = props.onParsed,
     onError = props.onError;
@@ -47068,26 +47077,30 @@ function GeoChart(props) {
     _ref46 = _slicedToArray(_ref45, 2),
     selectedSteps = _ref46[0],
     setSelectedSteps = _ref46[1];
-  var _ref47 = useState(),
+  var _ref47 = useState((inputs === null || inputs === void 0 || (_inputs$geochart$yAxi = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi === void 0 ? void 0 : _inputs$geochart$yAxi.type) || 'linear'),
     _ref48 = _slicedToArray(_ref47, 2),
-    plugins = _ref48[0],
-    setPlugins = _ref48[1];
-  var _ref49 = useState(0),
+    selectedScale = _ref48[0],
+    setSelectedScale = _ref48[1];
+  var _ref49 = useState(),
     _ref50 = _slicedToArray(_ref49, 2),
-    colorPaletteCategoryBackgroundIndex = _ref50[0],
-    setColorPaletteCategoryBackgroundIndex = _ref50[1];
+    plugins = _ref50[0],
+    setPlugins = _ref50[1];
   var _ref51 = useState(0),
     _ref52 = _slicedToArray(_ref51, 2),
-    colorPaletteCategoryBorderIndex = _ref52[0],
-    setColorPaletteCategoryBorderIndex = _ref52[1];
+    colorPaletteCategoryBackgroundIndex = _ref52[0],
+    setColorPaletteCategoryBackgroundIndex = _ref52[1];
   var _ref53 = useState(0),
     _ref54 = _slicedToArray(_ref53, 2),
-    colorPaletteAxisBackgroundIndex = _ref54[0],
-    setColorPaletteAxisBackgroundIndex = _ref54[1];
+    colorPaletteCategoryBorderIndex = _ref54[0],
+    setColorPaletteCategoryBorderIndex = _ref54[1];
   var _ref55 = useState(0),
     _ref56 = _slicedToArray(_ref55, 2),
-    colorPaletteAxisBorderIndex = _ref56[0],
-    setColorPaletteAxisBorderIndex = _ref56[1];
+    colorPaletteAxisBackgroundIndex = _ref56[0],
+    setColorPaletteAxisBackgroundIndex = _ref56[1];
+  var _ref57 = useState(0),
+    _ref58 = _slicedToArray(_ref57, 2),
+    colorPaletteAxisBorderIndex = _ref58[0],
+    setColorPaletteAxisBorderIndex = _ref58[1];
   var _useState = useState(i18nReact),
     _useState2 = _slicedToArray(_useState, 2),
     i18n = _useState2[0],
@@ -47219,7 +47232,7 @@ function GeoChart(props) {
    * @param ds GeoChartDatasource The Datasource to fetch the items for
    */
   var fetchDatasourceItems = /*#__PURE__*/function () {
-    var _ref57 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
+    var _ref59 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
       return regenerator_default().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -47250,7 +47263,7 @@ function GeoChart(props) {
       }, _callee, null, [[0, 7, 11, 14]]);
     }));
     return function fetchDatasourceItems(_x, _x2, _x3, _x4) {
-      return _ref57.apply(this, arguments);
+      return _ref59.apply(this, arguments);
     };
   }();
 
@@ -47474,13 +47487,13 @@ function GeoChart(props) {
    * @param datasource GeoChartDatasource The Datasource on which the records were grabbed
    * @param records TypeJsonObject[] The actual records to load in the Chart.
    */
-  var processLoadingRecords = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, records) {
+  var processLoadingRecords = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, theYScale, records) {
     var _parsedData$datasets;
     // Log
     logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
 
     // Parse the data
-    var parsedOptions = createChartJSOptions(theInputs, parentOptions, theLanguage);
+    var parsedOptions = createChartJSOptions(theInputs, parentOptions, theYScale, theLanguage);
     var parsedData = createChartJSData(theInputs, theDatasetRegistry, theDatasRegistry, theSteps, records, parentData);
 
     // Callback
@@ -47508,7 +47521,7 @@ function GeoChart(props) {
    * @param xValues number | number[] The values in X to filter on
    * @param yValues number | number[] The values in Y to filter on
    */
-  var processLoadingRecordsFilteringFirst = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, records, xValues, yValues) {
+  var processLoadingRecordsFilteringFirst = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, theYScale, records, xValues, yValues) {
     // Log
     logger.logTraceUseCallback('GEOCHART - processLoadingRecordsFilteringFirst', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
 
@@ -47554,7 +47567,7 @@ function GeoChart(props) {
     }
 
     // Filter
-    processLoadingRecords(theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, resItemsFinal);
+    processLoadingRecords(theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, theYScale, resItemsFinal);
 
     // Set new filtered inputs
     setFilteredRecords(resItemsFinal);
@@ -47566,7 +47579,7 @@ function GeoChart(props) {
 
   /**
    * Handles when the ChartJS has finished initializing and before it started drawing data.
-   * @param chart ChartJS<TType, TData, TLabel> The ChartJS reference.
+   * @param {ChartJS<TType, TData, TLabel>} chart - The ChartJS reference.
    */
   var handleChartJSAfterInit = useCallback(function (chart) {
     // Log
@@ -47710,14 +47723,14 @@ function GeoChart(props) {
 
   // Effect hook when the inputs change - coming from this component.
   useEffect(function () {
-    var _inputs$ui;
+    var _inputs$geochart$yAxi2;
     // Log
     var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - INPUTS';
     logger.logTraceUseEffect(USE_EFFECT_FUNC, inputs);
 
     // Async function to fetch data from within a sync useEffect :|
     var fetchAndSetSelectedDatasource = /*#__PURE__*/function () {
-      var _ref58 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
+      var _ref60 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
@@ -47734,12 +47747,17 @@ function GeoChart(props) {
         }, _callee2);
       }));
       return function fetchAndSetSelectedDatasource(_x5, _x6, _x7) {
-        return _ref58.apply(this, arguments);
+        return _ref60.apply(this, arguments);
       };
     }();
 
-    // If no steps switcher, reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
-    if (!(inputs !== null && inputs !== void 0 && (_inputs$ui = inputs.ui) !== null && _inputs$ui !== void 0 && _inputs$ui.stepsSwitcher)) setSelectedSteps((inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) || false);
+    // Reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
+    setSelectedSteps((inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) || false);
+
+    // Reset the state of the useScale to the config
+    var scale = 'linear';
+    if ((inputs === null || inputs === void 0 || (_inputs$geochart$yAxi2 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi2 === void 0 ? void 0 : _inputs$geochart$yAxi2.type) === 'logarithmic') scale = 'logarithmic';
+    setSelectedScale(scale);
 
     // If no datasources on the inputs, create a default one
     if (inputs && inputs.datasources && inputs.datasources.length > 0) {
@@ -47811,17 +47829,17 @@ function GeoChart(props) {
       yMaxVal = _processAxesValues2$[3];
       if (valuesComeFromState) {
         // Load records with filtering
-        processLoadingRecordsFilteringFirst(inputs, datasetRegistry, datasRegistry, i18n.language, selectedSteps, selectedDatasource.items, [xMinVal, xMaxVal], [yMinVal, yMaxVal]);
+        processLoadingRecordsFilteringFirst(inputs, datasetRegistry, datasRegistry, i18n.language, selectedSteps, selectedScale, selectedDatasource.items, [xMinVal, xMaxVal], [yMinVal, yMaxVal]);
       } else {
         // Load records without filtering for nothing
-        processLoadingRecords(inputs, datasetRegistry, datasRegistry, i18n.language, selectedSteps, selectedDatasource.items);
+        processLoadingRecords(inputs, datasetRegistry, datasRegistry, i18n.language, selectedSteps, selectedScale, selectedDatasource.items);
       }
     }
     return function () {
       // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
     };
-  }, [inputs, selectedDatasource, datasRegistry, datasetRegistry, i18n.language, selectedSteps, xSliderValues, ySliderValues, processLoadingRecordsFilteringFirst, processLoadingRecords, logger]);
+  }, [inputs, selectedDatasource, datasRegistry, datasetRegistry, i18n.language, selectedSteps, selectedScale, xSliderValues, ySliderValues, processLoadingRecordsFilteringFirst, processLoadingRecords, logger]);
 
   // Effect hook when the chartOptions, chartData change - coming from this component.
   useEffect(function () {
@@ -47941,7 +47959,7 @@ function GeoChart(props) {
    * @param item MenuItem The selected MenuItem
    */
   var handleDatasourceChanged = /*#__PURE__*/function () {
-    var _ref59 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
+    var _ref61 = _asyncToGenerator( /*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
       var ds;
       return regenerator_default().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
@@ -47977,7 +47995,7 @@ function GeoChart(props) {
       }, _callee3);
     }));
     return function handleDatasourceChanged(_x8, _x9) {
-      return _ref59.apply(this, arguments);
+      return _ref61.apply(this, arguments);
     };
   }();
 
@@ -48049,6 +48067,18 @@ function GeoChart(props) {
 
     // Callback
     onStepSwitcherChanged === null || onStepSwitcherChanged === void 0 || onStepSwitcherChanged(item.props.value);
+  };
+
+  /**
+   * Handles when the Scale Switcher changes
+   * @param value string Indicates the scale type value
+   */
+  var handleScaleSwitcherChanged = function handleScaleSwitcherChanged(e, item) {
+    // Set the scale switcher
+    setSelectedScale(item.props.value);
+
+    // Callback
+    onScaleSwitcherChanged === null || onScaleSwitcherChanged === void 0 || onScaleSwitcherChanged(item.props.value);
   };
 
   /**
@@ -48230,8 +48260,8 @@ function GeoChart(props) {
   var renderXSlider = function renderXSlider() {
     // If inputs
     if (inputs && selectedDatasource) {
-      var _inputs$ui2;
-      if (inputs.chart === 'line' && (_inputs$ui2 = inputs.ui) !== null && _inputs$ui2 !== void 0 && (_inputs$ui2 = _inputs$ui2.xSlider) !== null && _inputs$ui2 !== void 0 && _inputs$ui2.display) {
+      var _inputs$ui;
+      if (inputs.chart === 'line' && (_inputs$ui = inputs.ui) !== null && _inputs$ui !== void 0 && (_inputs$ui = _inputs$ui.xSlider) !== null && _inputs$ui !== void 0 && _inputs$ui.display) {
         return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
           id: "xAxisSlider",
           sx: sxClasses.xSliderWrapper,
@@ -48271,8 +48301,8 @@ function GeoChart(props) {
   var renderYSlider = function renderYSlider() {
     // If inputs
     if (inputs && selectedDatasource) {
-      var _inputs$ui3;
-      if (inputs.chart === 'line' && (_inputs$ui3 = inputs.ui) !== null && _inputs$ui3 !== void 0 && (_inputs$ui3 = _inputs$ui3.ySlider) !== null && _inputs$ui3 !== void 0 && _inputs$ui3.display) {
+      var _inputs$ui2;
+      if (inputs.chart === 'line' && (_inputs$ui2 = inputs.ui) !== null && _inputs$ui2 !== void 0 && (_inputs$ui2 = _inputs$ui2.ySlider) !== null && _inputs$ui2 !== void 0 && _inputs$ui2.display) {
         return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
           sx: sxClasses.ySliderWrapper,
           children: [/*#__PURE__*/(0,jsx_runtime.jsx)("div", {
@@ -48316,9 +48346,9 @@ function GeoChart(props) {
    * @returns The Description text in a Box element
    */
   var renderDescription = function renderDescription() {
-    var _inputs$ui4;
+    var _inputs$ui3;
     // If an y description
-    if (inputs !== null && inputs !== void 0 && (_inputs$ui4 = inputs.ui) !== null && _inputs$ui4 !== void 0 && _inputs$ui4.description) {
+    if (inputs !== null && inputs !== void 0 && (_inputs$ui3 = inputs.ui) !== null && _inputs$ui3 !== void 0 && _inputs$ui3.description) {
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
         children: inputs.ui.description
       });
@@ -48331,8 +48361,8 @@ function GeoChart(props) {
    * @returns The Download data button if wanted in the UI
    */
   var renderDownload = function renderDownload() {
-    var _inputs$ui5;
-    if (inputs !== null && inputs !== void 0 && (_inputs$ui5 = inputs.ui) !== null && _inputs$ui5 !== void 0 && _inputs$ui5.download) {
+    var _inputs$ui4;
+    if (inputs !== null && inputs !== void 0 && (_inputs$ui4 = inputs.ui) !== null && _inputs$ui4 !== void 0 && _inputs$ui4.download) {
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
         sx: sxClasses.downloadButton,
         children: /*#__PURE__*/(0,jsx_runtime.jsx)(ButtonDropDown, {
@@ -48393,8 +48423,8 @@ function GeoChart(props) {
     return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
   };
   var renderUIOptionsStepsSwitcher = function renderUIOptionsStepsSwitcher() {
-    var _inputs$ui6;
-    if (inputs !== null && inputs !== void 0 && (_inputs$ui6 = inputs.ui) !== null && _inputs$ui6 !== void 0 && _inputs$ui6.stepsSwitcher) {
+    var _inputs$ui5;
+    if (inputs !== null && inputs !== void 0 && (_inputs$ui5 = inputs.ui) !== null && _inputs$ui5 !== void 0 && _inputs$ui5.stepsSwitcher) {
       // Create the menu items
       var menuItems = [];
       StepsPossibilitiesConst.forEach(function (stepOption) {
@@ -48412,7 +48442,33 @@ function GeoChart(props) {
         label: t('geochart.steps'),
         onChange: handleStepsSwitcherChanged,
         menuItems: menuItems,
-        value: selectedSteps || false
+        value: selectedSteps || (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) || false
+      });
+    }
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+  };
+  var renderUIOptionsScaleSwitcher = function renderUIOptionsScaleSwitcher() {
+    var _inputs$ui6;
+    if (inputs !== null && inputs !== void 0 && (_inputs$ui6 = inputs.ui) !== null && _inputs$ui6 !== void 0 && _inputs$ui6.scaleSwitcher) {
+      var _inputs$geochart$yAxi3;
+      // Create the menu items
+      var menuItems = [];
+      ScalePossibilitiesConst.forEach(function (scaleOption) {
+        menuItems.push({
+          key: scaleOption,
+          item: {
+            value: scaleOption,
+            children: scaleOption.toString()
+          }
+        });
+      });
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
+        container: containerElement,
+        sx: sxClasses.uiOptionsScaleSelector,
+        label: t('geochart.scale'),
+        onChange: handleScaleSwitcherChanged,
+        menuItems: menuItems,
+        value: selectedScale || (inputs === null || inputs === void 0 || (_inputs$geochart$yAxi3 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi3 === void 0 ? void 0 : _inputs$geochart$yAxi3.type) || 'linear'
       });
     }
     return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
@@ -48435,7 +48491,7 @@ function GeoChart(props) {
    */
   var renderUIOptions = function renderUIOptions() {
     return /*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
-      children: [renderUIOptionsStepsSwitcher(),  false && 0]
+      children: [renderUIOptionsStepsSwitcher(), renderUIOptionsScaleSwitcher(),  false && 0]
     });
   };
 
@@ -48451,14 +48507,14 @@ function GeoChart(props) {
           children: [/*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
             sx: sxClasses.checkDatasetWrapperLabel,
             children: label
-          }), Object.entries(datasetRegistry).filter(function (_ref60) {
-            var _ref61 = _slicedToArray(_ref60, 2),
-              dsOption = _ref61[1];
-            return dsOption.visible;
-          }).map(function (_ref62, idx) {
+          }), Object.entries(datasetRegistry).filter(function (_ref62) {
             var _ref63 = _slicedToArray(_ref62, 2),
-              dsLabel = _ref63[0],
               dsOption = _ref63[1];
+            return dsOption.visible;
+          }).map(function (_ref64, idx) {
+            var _ref65 = _slicedToArray(_ref64, 2),
+              dsLabel = _ref65[0],
+              dsOption = _ref65[1];
             var color;
             if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
             return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
@@ -48495,14 +48551,14 @@ function GeoChart(props) {
       if (chartType === 'pie' || chartType === 'doughnut') {
         if (Object.keys(datasRegistry).length > 1) {
           return /*#__PURE__*/(0,jsx_runtime.jsx)(jsx_runtime.Fragment, {
-            children: Object.entries(datasRegistry).filter(function (_ref64) {
-              var _ref65 = _slicedToArray(_ref64, 2),
-                dsOption = _ref65[1];
-              return dsOption.visible;
-            }).map(function (_ref66, idx) {
+            children: Object.entries(datasRegistry).filter(function (_ref66) {
               var _ref67 = _slicedToArray(_ref66, 2),
-                dsLabel = _ref67[0],
                 dsOption = _ref67[1];
+              return dsOption.visible;
+            }).map(function (_ref68, idx) {
+              var _ref69 = _slicedToArray(_ref68, 2),
+                dsLabel = _ref69[0],
+                dsOption = _ref69[1];
               var color = dsOption.borderColor;
               return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
                 sx: sxClasses.checkDatasetWrapper,
@@ -51223,9 +51279,9 @@ const i18next_loadLanguages = instance.loadLanguages;
 
 
 ;// CONCATENATED MODULE: ./locales/en/translation.json
-const translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","steps":"Steps","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","downloadFiltered":"Download visible","downloadAll":"Download all","resetStates":"Reset states"}}');
+const translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","steps":"Steps","scale":"Scale","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","downloadFiltered":"Download visible","downloadAll":"Download all","resetStates":"Reset states"}}');
 ;// CONCATENATED MODULE: ./locales/fr/translation.json
-const fr_translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","steps":"Marches","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","resetStates":"Réinitialiser états"}}');
+const fr_translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","steps":"Marches","scale":"Échelle","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","resetStates":"Réinitialiser états"}}');
 ;// CONCATENATED MODULE: ./src/i18n.ts
 
 
