@@ -84,10 +84,10 @@ export const downloadJson = (data: unknown, filename: string): void => {
 export const guessEstimatedStep = (minValue: number, maxValue: number): number | undefined => {
   const day1 = 86400000; // 24h x 60m x 60s x 1000ms = 86,400,000ms in a day
   const month1 = day1 * 30; // 2,592,000,000ms in 1 month
+  const months2 = month1 * 2; // 5,184,000,000ms in 2 months
   const year1 = day1 * 365; // 31,536,000,000ms in 1 year
   const years2 = year1 * 2; // 63,072,000,000ms in 2 years
-  const years10 = year1 * 10; // 63,072,000,000ms in 2 years
-  const months2 = month1 * 2; // 315,360,000,000 in 10 years
+  const years10 = year1 * 10; // 315,360,000,000 in 10 years
   const intervalDiff = maxValue - minValue;
 
   let step: number | undefined;
