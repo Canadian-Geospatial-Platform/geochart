@@ -15,6 +15,13 @@
     <!-- <script src="https://alex-nrcan.github.io/geoview/cgpv-main.js"></script> -->
     <script src="https://canadian-geospatial-platform.github.io/geoview/public/cgpv-main.js"></script>
 
+    <style>
+      /* To help with display */
+      .MuiGrid2-container {
+        width: 600px;
+      }
+    </style>
+
     <script>
       const DATA_INPUT_LINE_1 = {
         chart: 'line',
@@ -861,6 +868,8 @@
 
     <!--------------- CHART IS HERE ----------------->
     <div id="root2aca7b6b288c" style="position: relative; width: 800px;"></div>
+    <!--------------- CHART IS HERE ----------------->
+
     <div>
       <button onclick="redrawChart()" style="padding:5px;"><strong>Looks weird? Redraw!</strong></button>
       <button onclick="isLoadingState(1)" style="padding:5px;"><strong>Sim. loading whole chart</strong></button>

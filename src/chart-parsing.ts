@@ -624,6 +624,7 @@ export function createChartJSOptions<TType extends ChartType>(
 
   // If line and using a time series
   if (chartConfig.chart === 'line' && (chartConfig.geochart.xAxis?.type === 'time' || chartConfig.geochart.xAxis?.type === 'timeseries')) {
+    // Generate the options object
     const optionsLine = options as ChartOptions<'line'>;
     optionsLine.scales = {
       ...optionsLine.scales,
@@ -631,7 +632,6 @@ export function createChartJSOptions<TType extends ChartType>(
         type: chartConfig.geochart.xAxis?.type,
         ticks: {
           autoSkip: true,
-          maxTicksLimit: 20,
           major: {
             enabled: true,
           },
