@@ -44992,6 +44992,27 @@ var downloadJson = function downloadJson(data, filename) {
   downloadAnchorNode.click();
   downloadAnchorNode.remove();
 };
+
+/**
+ * Guesses the estimated steps that should be used by the slider, depending on the value range
+ * @param {number} minValue - The minimum value
+ * @param {number} maxValue - The maximum value
+ * @returns The estimated stepping value based on the min and max values
+ */
+var guessEstimatedStep = function guessEstimatedStep(minValue, maxValue) {
+  var day1 = 86400000; // 24h x 60m x 60s x 1000ms = 86,400,000ms in a day
+  var month1 = day1 * 30; // 2,592,000,000ms in 1 month
+  var months2 = month1 * 2; // 5,184,000,000ms in 2 months
+  var year1 = day1 * 365; // 31,536,000,000ms in 1 year
+  var years2 = year1 * 2; // 63,072,000,000ms in 2 years
+  var years10 = year1 * 10; // 315,360,000,000 in 10 years
+  var intervalDiff = maxValue - minValue;
+  var step;
+  if (intervalDiff > months2) step = day1; // Daily stepping
+  if (intervalDiff > years2) step = month1; // Monthly stepping
+  if (intervalDiff > years10) step = year1; // Yearly stepping
+  return step;
+};
 ;// CONCATENATED MODULE: ./src/types.ts
 
 
@@ -45982,13 +46003,13 @@ function createChartJSOptions(chartConfig, defaultOptions, yAxisType, language) 
   // If line and using a time series
   if (chartConfig.chart === 'line' && (((_chartConfig$geochart3 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart3 === void 0 ? void 0 : _chartConfig$geochart3.type) === 'time' || ((_chartConfig$geochart4 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart4 === void 0 ? void 0 : _chartConfig$geochart4.type) === 'timeseries')) {
     var _chartConfig$geochart5;
+    // Generate the options object
     var optionsLine = options;
     optionsLine.scales = _objectSpread(_objectSpread({}, optionsLine.scales), {}, {
       x: {
         type: (_chartConfig$geochart5 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart5 === void 0 ? void 0 : _chartConfig$geochart5.type,
         ticks: {
           autoSkip: true,
-          maxTicksLimit: 20,
           major: {
             enabled: true
           },
@@ -46084,7 +46105,7 @@ function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, 
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 var getSxClasses = function getSxClasses(theme) {
-  var _theme$palette$geoVie, _theme$palette$geoVie2, _theme$palette$geoVie3, _theme$palette$geoVie4, _theme$palette$geoVie5, _theme$palette$geoVie6, _theme$palette$geoVie7, _theme$palette$geoVie8, _theme$palette$geoVie9, _theme$palette$geoVie10, _theme$palette$geoVie11, _theme$palette$geoVie12, _theme$palette$geoVie13;
+  var _theme$palette$geoVie, _theme$palette$geoVie2, _theme$palette$geoVie3, _theme$palette$geoVie4, _theme$palette$geoVie5, _theme$palette$geoVie6, _theme$palette$geoVie7, _theme$palette$geoVie8, _theme$palette$geoVie9, _theme$palette$geoVie10;
   return {
     mainContainer: {
       fontFamily: theme.typography.body1.fontFamily
@@ -46193,31 +46214,6 @@ var getSxClasses = function getSxClasses(theme) {
     xSliderWrapper: {
       '& .MuiSlider-root': {
         color: (_theme$palette$geoVie9 = theme.palette.geoViewColor) === null || _theme$palette$geoVie9 === void 0 ? void 0 : _theme$palette$geoVie9.primary.main
-      },
-      '& .MuiSlider-markLabel-overlap': {
-        marginTop: '20px'
-      },
-      '& .MuiSlider-markLabel-first': {
-        marginLeft: '-40px'
-      },
-      '& .MuiSlider-markLabel-last': {
-        marginLeft: '40px'
-      },
-      '& .markLabel-first': {
-        fontFamily: theme.typography.body1.fontFamily,
-        fontSize: (_theme$palette$geoVie10 = theme.palette.geoViewFontSize) === null || _theme$palette$geoVie10 === void 0 ? void 0 : _theme$palette$geoVie10.sm,
-        "float": 'left',
-        marginLeft: '-60px',
-        color: '#000',
-        opacity: 0.6
-      },
-      '& .markLabel-last': {
-        fontFamily: theme.typography.body1.fontFamily,
-        fontSize: (_theme$palette$geoVie11 = theme.palette.geoViewFontSize) === null || _theme$palette$geoVie11 === void 0 ? void 0 : _theme$palette$geoVie11.sm,
-        "float": 'right',
-        marginRight: '-60px',
-        color: '#000',
-        opacity: 0.6
       }
     },
     ySliderWrapper: {
@@ -46226,14 +46222,7 @@ var getSxClasses = function getSxClasses(theme) {
       marginTop: '-20px',
       marginLeft: '20px',
       '& .MuiSlider-root': {
-        color: (_theme$palette$geoVie12 = theme.palette.geoViewColor) === null || _theme$palette$geoVie12 === void 0 ? void 0 : _theme$palette$geoVie12.primary.main
-      },
-      '& .markLabel-top, & .markLabel-bottom': {
-        fontFamily: theme.typography.body1.fontFamily,
-        fontSize: (_theme$palette$geoVie13 = theme.palette.geoViewFontSize) === null || _theme$palette$geoVie13 === void 0 ? void 0 : _theme$palette$geoVie13.sm,
-        marginLeft: '-30px',
-        color: '#000',
-        opacity: 0.6
+        color: (_theme$palette$geoVie10 = theme.palette.geoViewColor) === null || _theme$palette$geoVie10 === void 0 ? void 0 : _theme$palette$geoVie10.primary.main
       }
     },
     loadingDatasource: {
@@ -46408,7 +46397,7 @@ function GeoChart(props) {
     _ref26 = _slicedToArray(_ref25, 2),
     xSliderMax = _ref26[0],
     setXSliderMax = _ref26[1];
-  var _ref27 = useState(1),
+  var _ref27 = useState(),
     _ref28 = _slicedToArray(_ref27, 2),
     xSliderSteps = _ref28[0],
     setXSliderSteps = _ref28[1];
@@ -46424,7 +46413,7 @@ function GeoChart(props) {
     _ref34 = _slicedToArray(_ref33, 2),
     ySliderMax = _ref34[0],
     setYSliderMax = _ref34[1];
-  var _ref35 = useState(1),
+  var _ref35 = useState(),
     _ref36 = _slicedToArray(_ref35, 2),
     ySliderSteps = _ref36[0],
     setYSliderSteps = _ref36[1];
@@ -46497,8 +46486,9 @@ function GeoChart(props) {
 
   /**
    * Helper function to set the x and y axes based on the inputs and values.
-   * @param geochart GeoChartOptionsGeochart The Geochart options
-   * @param datasourceItems TypeJsonObject[] The Datasource items
+   * @param {GeoChartOptionsGeochart} geochart The Geochart options
+   * @param {GeoChartOptionsUI | undefined} uiOptions The Geochart options
+   * @param {TypeJsonObject[]} datasourceItems The Datasource items
    */
   var processAxes = function processAxes(geochart, uiOptions, datasourceItems) {
     var _uiOptions$xSlider, _uiOptions$xSlider2, _uiOptions$xSlider3, _uiOptions$ySlider, _uiOptions$ySlider2, _uiOptions$ySlider3;
@@ -46525,7 +46515,15 @@ function GeoChart(props) {
         setXSliderMax(xMaxVal);
 
         // If steps are determined by config
-        if (uiOptions !== null && uiOptions !== void 0 && uiOptions.xSlider.step) setXSliderSteps(uiOptions === null || uiOptions === void 0 ? void 0 : uiOptions.xSlider.step);
+        if (uiOptions !== null && uiOptions !== void 0 && uiOptions.xSlider.step) {
+          setXSliderSteps(uiOptions === null || uiOptions === void 0 ? void 0 : uiOptions.xSlider.step);
+        } else {
+          // If date axis
+          if (geochart.xAxis.type === 'time' || geochart.xAxis.type === 'timeseries') {
+            // Get an estimated stepping value
+            setXSliderSteps(guessEstimatedStep(xMinVal, xMaxVal));
+          }
+        }
       }
     }
 
@@ -46548,7 +46546,9 @@ function GeoChart(props) {
         setYSliderMax(yMaxVal);
 
         // If steps are determined by config
-        if (uiOptions !== null && uiOptions !== void 0 && uiOptions.ySlider.step) setYSliderSteps(uiOptions === null || uiOptions === void 0 ? void 0 : uiOptions.ySlider.step);
+        if (uiOptions !== null && uiOptions !== void 0 && uiOptions.ySlider.step) {
+          setYSliderSteps(uiOptions === null || uiOptions === void 0 ? void 0 : uiOptions.ySlider.step);
+        }
       }
     }
     return [xMinVal, xMaxVal, yMinVal, yMaxVal];
@@ -46556,12 +46556,12 @@ function GeoChart(props) {
 
   /**
    * Helper function to set the x and y axes values based on the min and max of the data or if the values were already set in state.
-   * @param xMinVal number | undefined
-   * @param xMaxVal number | undefined
-   * @param yMinVal number | undefined
-   * @param yMaxVal number | undefined
-   * @param theXSliderValues number[] | undefinedd
-   * @param theYSliderValues number[] | undefined
+   * @param {number | undefined} xMinVal - The min value for X
+   * @param {number | undefined} xMaxVal - The max value for X
+   * @param {number | undefined} yMinVal - The min value for Y
+   * @param {number | undefined} yMaxVal - The max value for Y
+   * @param {number[] | undefined} theXSliderValues - The slider values for X
+   * @param {number[] | undefined} theYSliderValues - The slider values for Y
    */
   var processAxesValues = function processAxesValues(uiOptions, xMinVal, xMaxVal, yMinVal, yMaxVal, theXSliderValues, theYSliderValues) {
     var _uiOptions$xSlider4, _uiOptions$ySlider4;
@@ -46599,8 +46599,10 @@ function GeoChart(props) {
 
   /**
    * Fetches the items to associated to the given Datasource and then sets the Datasource in GeoChart
-   * @param chartConfig GeoViewGeoChartConfig The chart configuration being used
-   * @param ds GeoChartDatasource The Datasource to fetch the items for
+   * @param {GeoViewGeoChartConfig} chartQuery - The chart query being used
+   * @param {string} theLanguage - The language being used
+   * @param {TypeJsonObject | undefined} sourceItem - The source item to fetch for
+   * @param {Function} errorCallback - Callback called when an error happens while fetching data
    */
   var fetchDatasourceItems = /*#__PURE__*/function () {
     var _ref59 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
@@ -46640,7 +46642,7 @@ function GeoChart(props) {
 
   /**
    * Helper function checking for the valid states of a list of ValidatorResults. Returns true if there were no errors found.
-   * @param validators (ValidatorResult | undefined)[] The list of validator results to check for their valid states
+   * @param {(ValidatorResult | undefined)[]} validators - The list of validator results to check for their valid states
    * @returns true if there were no errors in the schema validations
    */
   var hasValidSchemas = function hasValidSchemas(validators) {
@@ -46669,7 +46671,10 @@ function GeoChart(props) {
 
   /**
    * Updates the selected datasets object in synch with the actual datasets read from the data.
-   * @param theChartData ChartData<TType, TData, TLabel>
+   * @param {TypeJsonObject[] | undefined} items - The items reprensenting the data
+   * @param {string | undefined} catPropertyName - The property name for the categorization
+   * @param {string[] | undefined} paletteBackgrounds - The color palette used for the background colors
+   * @param {string[] | undefined} paletteBorders - The color palette used for the border colors
    */
   var processDatasets = useCallback(function (items, catPropertyName, paletteBackgrounds, paletteBorders) {
     // Log
@@ -46731,7 +46736,11 @@ function GeoChart(props) {
 
   /**
    * Updates the selected data object in synch with the actual labels read from the data.
-   * @param theChartData ChartData<TType, TData, TLabel>
+   * @param {string} theChartType - The chart type
+   * @param {TypeJsonObject[] | undefined} items - The items to process the labels for
+   * @param {string | undefined} labelPropertyName - The property name to use for labeling
+   * @param {string[] | undefined} paletteBackgrounds - The color palette used for the background colors
+   * @param {string[] | undefined} paletteBorders - The color palette used for the border colors
    */
   var processLabels = useCallback(function (theChartType, items, labelPropertyName, paletteBackgrounds, paletteBorders) {
     // Log
@@ -46796,8 +46805,8 @@ function GeoChart(props) {
 
   /**
    * Updates the chart dataset visibility based on the currently selected datasets.
-   * @param theChartData ChartData<TType, TData, TLabel>
-   * @param theSelectedDatasets GeoChartSelectedDatasets
+   * @param {ChartJS<TType, TData, TLabel>} theChartRef - The ChartJS reference
+   * @param {GeoChartSelectedDataset} theDatasetRegistry - The dataset registry used by the chart
    */
   var updateDatasetVisibilityUsingState = useCallback(function (theChartRef, theDatasetRegistry) {
     // Log
@@ -46822,12 +46831,12 @@ function GeoChart(props) {
 
   /**
    * Updates the chart data visibility based on the currently selected data.
-   * @param theChartData ChartData<TType, TData, TLabel>
-   * @param theSelectedData GeoChartSelectedDatasets
+   * @param {ChartJS<TType, TData, TLabel>} theChartRef - The ChartJS reference
+   * @param {GeoChartSelectedDataset} theDatasRegistry - The datas registry used by the chart
    */
   var updateDataVisibilityUsingState = useCallback(function (theChartRef, theDatasRegistry) {
     // Log
-    logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theChartRef, theDatasRegistry);
+    logger.logTraceUseCallback('GEOCHART - updateDataVisibilityUsingState', theChartRef, theDatasRegistry);
 
     // Check
     if (!theChartRef) return;
@@ -46855,8 +46864,13 @@ function GeoChart(props) {
 
   /**
    * Essential function to load the records in the Chart.
-   * @param datasource GeoChartDatasource The Datasource on which the records were grabbed
-   * @param records TypeJsonObject[] The actual records to load in the Chart.
+   * @param {GeoChartConfig<TType>} theInputs - The inputs configuration
+   * @param {GeoChartSelectedDataset} theDatasetRegistry - The dataset registry
+   * @param {GeoChartSelectedDataset} theDatasRegistry - The datas registry
+   * @param {string} theLanguage - The language
+   * @param {StepsPossibilities} theSteps - The steps for the graph
+   * @param {ScalePossibilities} theYScale - The scale for the Y axis
+   * @param {TypeJsonObject[] | undefined} records - The records
    */
   var processLoadingRecords = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, theYScale, records) {
     var _parsedData$datasets;
@@ -46888,9 +46902,15 @@ function GeoChart(props) {
   /**
    * Helper function to filter datasource items based on 2 possible and independent axis.
    * For performance reasons, the code cumulates the filtered data instead of treating the axes individually.
-   * @param datasourceItems TypeJsonObject[] The Datasource items
-   * @param xValues number | number[] The values in X to filter on
-   * @param yValues number | number[] The values in Y to filter on
+   * @param {GeoChartConfig<TType>} theInputs - The inputs configuration
+   * @param {GeoChartSelectedDataset} theDatasetRegistry - The dataset registry
+   * @param {GeoChartSelectedDataset} theDatasRegistry - The datas registry
+   * @param {string} theLanguage - The language
+   * @param {StepsPossibilities} theSteps - The steps for the graph
+   * @param {ScalePossibilities} theYScale - The scale for the Y axis
+   * @param {TypeJsonObject[] | undefined} records - The records
+   * @param {number | number[]} xValues - The X axis filtering values
+   * @param {number | number[]} yValues - The Y axis filtering values
    */
   var processLoadingRecordsFilteringFirst = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, theYScale, records, xValues, yValues) {
     // Log
@@ -47342,8 +47362,8 @@ function GeoChart(props) {
 
   /**
    * Handles when the Datasource changes
-   * @param e Event The Select change event
-   * @param item MenuItem The selected MenuItem
+   * @param {Event} e The Select change event
+   * @param {MenuItem} item The selected MenuItem
    */
   var handleDatasourceChanged = /*#__PURE__*/function () {
     var _ref61 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
@@ -47388,9 +47408,9 @@ function GeoChart(props) {
 
   /**
    * Handles when a dataset was checked/unchecked (via the legend)
-   * @param datasetIndex number Indicates the dataset index that was checked/unchecked
-   * @param datasetLabel string | undefined Indicates the dataset label that was checked/unchecked
-   * @param checked boolean Indicates the checked state
+   * @param {number} datasetIndex - Indicates the dataset index that was checked/unchecked
+   * @param {string | undefined} datasetLabel - Indicates the dataset label that was checked/unchecked
+   * @param {boolean} checked - Indicates the checked state
    */
   var handleDatasetChecked = function handleDatasetChecked(datasetIndex, datasetLabel, checked) {
     // Keep track
@@ -47405,9 +47425,9 @@ function GeoChart(props) {
 
   /**
    * Handles when a data was checked/unchecked (via the legend). This is only used by Pie and Doughnut Charts.
-   * @param dataIndex number Indicates the data index that was checked/unchecked
-   * @param dataLabel string Indicates the data label that was checked/unchecked
-   * @param checked boolean Indicates the checked state
+   * @param {number} dataIndex - Indicates the data index that was checked/unchecked
+   * @param {string} dataLabel - Indicates the data label that was checked/unchecked
+   * @param {boolean} checked - Indicates the checked state
    */
   var handleDataChecked = function handleDataChecked(dataIndex, dataLabel, checked) {
     // Keep track
@@ -47422,7 +47442,7 @@ function GeoChart(props) {
 
   /**
    * Handles when the X Slider changes
-   * @param value number | number[] Indicates the slider value
+   * @param {number | number[]} value - Indicates the slider value
    */
   var handleSliderXChange = function handleSliderXChange(newValue) {
     // Set the X State
@@ -47434,7 +47454,7 @@ function GeoChart(props) {
 
   /**
    * Handles when the Y Slider changes
-   * @param value number | number[] Indicates the slider value
+   * @param {number | number[]} newValue - Indicates the slider value
    */
   var handleSliderYChange = function handleSliderYChange(newValue) {
     // Set the Y State
@@ -47446,7 +47466,8 @@ function GeoChart(props) {
 
   /**
    * Handles when the Steps Switcher changes
-   * @param value string Indicates the steps value
+   * @param {unknown} e
+   * @param {MenuItem} item
    */
   var handleStepsSwitcherChanged = function handleStepsSwitcherChanged(e, item) {
     // Set the step switcher
@@ -47458,7 +47479,8 @@ function GeoChart(props) {
 
   /**
    * Handles when the Scale Switcher changes
-   * @param value string Indicates the scale type value
+   * @param {unknown} e
+   * @param {MenuItem} item
    */
   var handleScaleSwitcherChanged = function handleScaleSwitcherChanged(e, item) {
     // Set the scale switcher
@@ -47495,9 +47517,9 @@ function GeoChart(props) {
 
   /**
    * Handles the display of the label on the X Slider
-   * @param value number | number[] Indicates the slider value
+   * @param {number} value - Indicates the slider value
    */
-  var handleSliderXValueDisplay = function handleSliderXValueDisplay(value) {
+  var handleSliderXValueFormat = function handleSliderXValueFormat(value) {
     var _inputs$geochart, _inputs$geochart2;
     // Callback in case we're overriding this behavior
     var val = onSliderXValueDisplaying === null || onSliderXValueDisplaying === void 0 ? void 0 : onSliderXValueDisplaying(value);
@@ -47515,9 +47537,9 @@ function GeoChart(props) {
 
   /**
    * Handles the display of the label on the Y Slider
-   * @param value number | number[] Indicates the slider value
+   * @param {number} value - Indicates the slider value
    */
-  var handleSliderYValueDisplay = function handleSliderYValueDisplay(value) {
+  var handleSliderYValueFormat = function handleSliderYValueFormat(value) {
     // Callback in case we're overriding this behavior
     var val = onSliderYValueDisplaying === null || onSliderYValueDisplaying === void 0 ? void 0 : onSliderYValueDisplaying(value);
     if (val) return val;
@@ -47528,7 +47550,7 @@ function GeoChart(props) {
 
   /**
    * Handles when the download button is clicked
-   * @param index number Indicates the button drop down selection index when it was clicked.
+   * @param {number} index - Indicates the button drop down selection index when it was clicked.
    * For our button usage:
    * - 0: Means 'download view' was selected when button was clicked
    * - 1: Means 'download all' was selected when button was clicked
@@ -47649,30 +47671,18 @@ function GeoChart(props) {
     if (inputs && selectedDatasource) {
       var _inputs$ui;
       if (inputs.chart === 'line' && (_inputs$ui = inputs.ui) !== null && _inputs$ui !== void 0 && (_inputs$ui = _inputs$ui.xSlider) !== null && _inputs$ui !== void 0 && _inputs$ui.display) {
-        return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
-          id: "xAxisSlider",
+        return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: sxClasses.xSliderWrapper,
-          children: [/*#__PURE__*/(0,jsx_runtime.jsxs)("div", {
-            style: {
-              height: '16px'
-            },
-            children: [Array.isArray(xSliderValues) && xSliderValues[0] !== xSliderMin && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
-              className: "markLabel-first",
-              children: handleSliderXValueDisplay(xSliderMin)
-            }), Array.isArray(xSliderValues) && xSliderValues[xSliderValues.length - 1] !== xSliderMax && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
-              className: "markLabel-last",
-              children: handleSliderXValueDisplay(xSliderMax)
-            })]
-          }), /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
-            marks: getMarkers(xSliderValues, handleSliderXValueDisplay),
+          children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+            marks: getMarkers([xSliderMin, xSliderMax], handleSliderXValueFormat),
             min: xSliderMin,
             max: xSliderMax,
             step: xSliderSteps,
             value: xSliderValues || 0,
             onChangeCommitted: handleSliderXChange,
-            onValueDisplay: handleSliderXValueDisplay,
-            onValueDisplayAriaLabel: handleSliderXValueDisplay
-          })]
+            onValueLabelFormat: handleSliderXValueFormat,
+            onValueDisplayAriaLabel: handleSliderXValueFormat
+          })
         });
       }
     }
@@ -47690,36 +47700,19 @@ function GeoChart(props) {
     if (inputs && selectedDatasource) {
       var _inputs$ui2;
       if (inputs.chart === 'line' && (_inputs$ui2 = inputs.ui) !== null && _inputs$ui2 !== void 0 && (_inputs$ui2 = _inputs$ui2.ySlider) !== null && _inputs$ui2 !== void 0 && _inputs$ui2.display) {
-        return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+        return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: sxClasses.ySliderWrapper,
-          children: [/*#__PURE__*/(0,jsx_runtime.jsx)("div", {
-            style: {
-              height: '16px',
-              marginBottom: '10px'
-            },
-            children: Array.isArray(ySliderValues) && ySliderValues[ySliderValues.length - 1] !== ySliderMax && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
-              className: "markLabel-top",
-              children: handleSliderYValueDisplay(ySliderMax)
-            })
-          }), /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
-            marks: getMarkers(ySliderValues, handleSliderYValueDisplay),
+          children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+            marks: getMarkers([ySliderMin, ySliderMax], handleSliderYValueFormat),
             min: ySliderMin,
             max: ySliderMax,
             step: ySliderSteps,
             value: ySliderValues || 0,
             orientation: "vertical",
             onChangeCommitted: handleSliderYChange,
-            onValueDisplay: handleSliderYValueDisplay,
-            onValueDisplayAriaLabel: handleSliderYValueDisplay
-          }), /*#__PURE__*/(0,jsx_runtime.jsx)("div", {
-            style: {
-              height: '16px'
-            },
-            children: Array.isArray(ySliderValues) && ySliderValues[0] !== ySliderMin && /*#__PURE__*/(0,jsx_runtime.jsx)("span", {
-              className: "markLabel-bottom",
-              children: handleSliderYValueDisplay(ySliderMin)
-            })
-          })]
+            onValueLabelFormat: handleSliderYValueFormat,
+            onValueDisplayAriaLabel: handleSliderYValueFormat
+          })
         });
       }
     }
