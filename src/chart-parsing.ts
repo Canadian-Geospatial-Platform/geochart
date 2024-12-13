@@ -1,4 +1,4 @@
-import { ChartType, ChartData, ChartDataset, ChartOptions, Tick, PluginChartOptions } from 'chart.js';
+import { Chart as ChartJS, ChartType, ChartData, ChartDataset, ChartOptions, Tick, PluginChartOptions } from 'chart.js';
 import {
   GeoChartConfig,
   GeoChartXYData,
@@ -414,7 +414,7 @@ function createDatasetsLineBar<
   } else {
     // 1 feature = 1 dataset
     // Create dataset
-    const newDataset = createDataset<TType, TData>(chartConfig, undefined, undefined, steps, undefined);
+    const newDataset = createDataset<TType, TData>(chartConfig, ChartJS.defaults.color as string, undefined, steps, undefined);
     returnedChartData.datasets.push(newDataset);
 
     // For each record
@@ -482,7 +482,7 @@ function createDatasetsPieDoughnut<
         // If new category
         if (!Object.keys(categoriesRead).includes(catName)) {
           // Create dataset
-          const newDataset = createDataset<TType, TData>(chartConfig, paletteBackgroundAll, undefined, undefined, catName);
+          const newDataset = createDataset<TType, TData>(chartConfig, paletteBackgroundAll, ChartJS.defaults.color as string, undefined, catName);
           categoriesRead[catName] = { index: idx++, data: newDataset.data };
           returnedChartData.datasets.push(newDataset);
         }
@@ -502,7 +502,7 @@ function createDatasetsPieDoughnut<
   } else {
     // 1 feature = 1 dataset
     // Create dataset
-    const newDataset = createDataset<TType, TData>(chartConfig, undefined, undefined, undefined, undefined);
+    const newDataset = createDataset<TType, TData>(chartConfig, ChartJS.defaults.color as string, undefined, undefined, undefined);
     returnedChartData.datasets.push(newDataset);
 
     // Compress the data for the ChartDataset

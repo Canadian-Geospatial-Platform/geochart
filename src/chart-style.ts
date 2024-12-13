@@ -46,13 +46,7 @@ export const getSxClasses = (theme: Theme) => {
       marginLeft: 'auto',
       '& button': {
         height: '40px',
-        textTransform: 'capitalize',
-        backgroundColor: theme.palette.geoViewColor?.bgColor.dark[100],
-        color: theme.palette.geoViewColor?.textColor.main,
-        '&:hover': {
-          backgroundColor: theme.palette.geoViewColor?.bgColor.dark[50],
-          color: theme.palette.geoViewColor?.textColor.main,
-        },
+        textTransform: 'capitalize'
       },
     },
     dataset: {
@@ -118,7 +112,6 @@ export const getSxClasses = (theme: Theme) => {
     ySliderWrapper: {
       height: '70%',
       textAlign: 'center',
-      marginTop: '-20px',
       marginLeft: '20px',
       '& .MuiSlider-root': {
         color: theme.palette.geoViewColor?.primary.main,
