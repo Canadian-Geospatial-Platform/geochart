@@ -43,6 +43,8 @@ export const getSxClasses = (theme: Theme) => {
       marginRight: '10px',
     },
     downloadButton: {
+      marginTop: 'auto',
+      marginBottom: 'auto',
       marginLeft: 'auto',
       '& button': {
         height: '40px',
