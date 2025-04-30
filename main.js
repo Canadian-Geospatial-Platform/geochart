@@ -46145,6 +46145,8 @@ var getSxClasses = function getSxClasses(theme) {
       marginRight: '10px'
     },
     downloadButton: {
+      marginTop: 'auto',
+      marginBottom: 'auto',
       marginLeft: 'auto',
       '& button': {
         height: '40px',
@@ -46285,10 +46287,12 @@ function GeoChart(props) {
     Paper = _cgpv$ui$elements.Paper,
     Box = _cgpv$ui$elements.Box,
     Grid = _cgpv$ui$elements.Grid,
-    Button = _cgpv$ui$elements.Button,
-    ButtonDropDown = _cgpv$ui$elements.ButtonDropDown,
     Checkbox = _cgpv$ui$elements.Checkbox,
     Select = _cgpv$ui$elements.Select,
+    Button = _cgpv$ui$elements.Button,
+    IconButton = _cgpv$ui$elements.IconButton,
+    DownloadIcon = _cgpv$ui$elements.DownloadIcon,
+    Menu = _cgpv$ui$elements.Menu,
     MenuItem = _cgpv$ui$elements.MenuItem,
     TypeMenuItemProps = _cgpv$ui$elements.TypeMenuItemProps,
     Typography = _cgpv$ui$elements.Typography,
@@ -46460,6 +46464,11 @@ function GeoChart(props) {
     i18n = _useState2[0],
     seti18n = _useState2[1];
   var t = i18n.t;
+  var _ref59 = useState(null),
+    _ref60 = _slicedToArray(_ref59, 2),
+    anchorEl = _ref60[0],
+    setAnchorEl = _ref60[1];
+  var open = Boolean(anchorEl);
   var chartRef = useRef();
 
   // #endregion
@@ -46599,7 +46608,7 @@ function GeoChart(props) {
    * @param {Function} errorCallback - Callback called when an error happens while fetching data
    */
   var fetchDatasourceItems = /*#__PURE__*/function () {
-    var _ref59 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
+    var _ref61 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
       return regenerator_default().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -46630,7 +46639,7 @@ function GeoChart(props) {
       }, _callee, null, [[0, 7, 11, 14]]);
     }));
     return function fetchDatasourceItems(_x, _x2, _x3, _x4) {
-      return _ref59.apply(this, arguments);
+      return _ref61.apply(this, arguments);
     };
   }();
 
@@ -47115,7 +47124,7 @@ function GeoChart(props) {
 
     // Async function to fetch data from within a sync useEffect :|
     var fetchAndSetSelectedDatasource = /*#__PURE__*/function () {
-      var _ref60 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
+      var _ref62 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
@@ -47132,7 +47141,7 @@ function GeoChart(props) {
         }, _callee2);
       }));
       return function fetchAndSetSelectedDatasource(_x5, _x6, _x7) {
-        return _ref60.apply(this, arguments);
+        return _ref62.apply(this, arguments);
       };
     }();
 
@@ -47360,7 +47369,7 @@ function GeoChart(props) {
    * @param {MenuItem} item The selected MenuItem
    */
   var handleDatasourceChanged = /*#__PURE__*/function () {
-    var _ref61 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
+    var _ref63 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
       var ds;
       return regenerator_default().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
@@ -47396,7 +47405,7 @@ function GeoChart(props) {
       }, _callee3);
     }));
     return function handleDatasourceChanged(_x8, _x9) {
-      return _ref61.apply(this, arguments);
+      return _ref63.apply(this, arguments);
     };
   }();
 
@@ -47543,52 +47552,79 @@ function GeoChart(props) {
   };
 
   /**
-   * Handles when the download button is clicked
-   * @param {number} index - Indicates the button drop down selection index when it was clicked.
-   * For our button usage:
-   * - 0: Means 'download view' was selected when button was clicked
-   * - 1: Means 'download all' was selected when button was clicked
+   * Show export menu.
    */
-  var handleDownloadClick = function handleDownloadClick(index) {
+  var handleClick = useCallback(function (event) {
+    // Log
+    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
+    setAnchorEl(event.currentTarget);
+  }, []);
+
+  /**
+   * Close export menu.
+   */
+
+  var handleClose = useCallback(function () {
+    // Log
+    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClose');
+    setAnchorEl(null);
+  }, []);
+
+  /**
+   * Handles when the download filtered button is clicked
+   */
+  var handleDownloadFiltered = function handleDownloadFiltered() {
     // Get the data
     var data = chart_objectSpread({}, selectedDatasource);
 
-    // If only the filtered information
-    if (index === 0) {
-      // Get either the actually filtered records (via the sliders) or the data.items
-      data.items = filteredRecords || data.items;
+    // Get either the actually filtered records (via the sliders) or the data.items
+    data.items = filteredRecords || data.items;
 
-      // If using categories
-      if (inputs !== null && inputs !== void 0 && inputs.category) {
-        var _data$items;
-        // The checked datasets strings
-        var checkedDatasetsStrings = Object.keys(datasetRegistry).filter(function (ds) {
-          return datasetRegistry[ds].checked;
+    // If using categories
+    if (inputs !== null && inputs !== void 0 && inputs.category) {
+      var _data$items;
+      // The checked datasets strings
+      var checkedDatasetsStrings = Object.keys(datasetRegistry).filter(function (ds) {
+        return datasetRegistry[ds].checked;
+      });
+
+      // Also filter on the selected datasets
+      data.items = (_data$items = data.items) === null || _data$items === void 0 ? void 0 : _data$items.filter(function (value) {
+        return checkedDatasetsStrings.includes(value[inputs.category.property]);
+      });
+
+      // In case of pie/doughnut
+      if (chartType === 'pie' || chartType === 'doughnut') {
+        var _data$items2;
+        // The checked datas strings
+        var checkedDatasStrings = Object.keys(datasRegistry).filter(function (ds) {
+          return datasRegistry[ds].checked;
         });
 
-        // Also filter on the selected datasets
-        data.items = (_data$items = data.items) === null || _data$items === void 0 ? void 0 : _data$items.filter(function (value) {
-          return checkedDatasetsStrings.includes(value[inputs.category.property]);
+        // Also filter on selected datas
+        data.items = (_data$items2 = data.items) === null || _data$items2 === void 0 ? void 0 : _data$items2.filter(function (value) {
+          return checkedDatasStrings.includes(value[inputs.geochart.xAxis.property]);
         });
-
-        // In case of pie/doughnut
-        if (chartType === 'pie' || chartType === 'doughnut') {
-          var _data$items2;
-          // The checked datas strings
-          var checkedDatasStrings = Object.keys(datasRegistry).filter(function (ds) {
-            return datasRegistry[ds].checked;
-          });
-
-          // Also filter on selected datas
-          data.items = (_data$items2 = data.items) === null || _data$items2 === void 0 ? void 0 : _data$items2.filter(function (value) {
-            return checkedDatasStrings.includes(value[inputs.geochart.xAxis.property]);
-          });
-        }
       }
     }
 
     // Callback
-    var fileName = onDownloadClicked === null || onDownloadClicked === void 0 ? void 0 : onDownloadClicked(data, index);
+    var fileName = onDownloadClicked === null || onDownloadClicked === void 0 ? void 0 : onDownloadClicked(data);
+    if (!fileName) fileName = 'chart-data.json';
+
+    // Download the data as json
+    downloadJson(data, fileName);
+  };
+
+  /**
+   * Handles when the download all button is clicked
+   */
+  var handleDownloadAll = function handleDownloadAll() {
+    // Get the data
+    var data = chart_objectSpread({}, selectedDatasource);
+
+    // Callback
+    var fileName = onDownloadClicked === null || onDownloadClicked === void 0 ? void 0 : onDownloadClicked(data);
     if (!fileName) fileName = 'chart-data.json';
 
     // Download the data as json
@@ -47737,12 +47773,25 @@ function GeoChart(props) {
   var renderDownload = function renderDownload() {
     var _inputs$ui4;
     if (inputs !== null && inputs !== void 0 && (_inputs$ui4 = inputs.ui) !== null && _inputs$ui4 !== void 0 && _inputs$ui4.download) {
-      return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
-        sx: sxClasses.downloadButton,
-        children: /*#__PURE__*/(0,jsx_runtime.jsx)(ButtonDropDown, {
-          onButtonClick: handleDownloadClick,
-          options: [t('geochart.downloadFiltered'), t('geochart.downloadAll')]
-        })
+      return /*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
+        children: [/*#__PURE__*/(0,jsx_runtime.jsx)(IconButton, {
+          sx: sxClasses.downloadButton,
+          onClick: handleClick,
+          tooltip: t('geochart.exportBtn'),
+          className: "buttonOutline",
+          children: /*#__PURE__*/(0,jsx_runtime.jsx)(DownloadIcon, {})
+        }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Menu, {
+          anchorEl: anchorEl,
+          open: open,
+          onClose: handleClose,
+          children: [/*#__PURE__*/(0,jsx_runtime.jsx)(MenuItem, {
+            onClick: handleDownloadFiltered,
+            children: t('geochart.downloadFiltered')
+          }), /*#__PURE__*/(0,jsx_runtime.jsx)(MenuItem, {
+            onClick: handleDownloadAll,
+            children: t('geochart.downloadAll')
+          })]
+        })]
       });
     }
     return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
@@ -47881,14 +47930,14 @@ function GeoChart(props) {
           children: [/*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
             sx: sxClasses.checkDatasetWrapperLabel,
             children: label
-          }), Object.entries(datasetRegistry).filter(function (_ref62) {
-            var _ref63 = _slicedToArray(_ref62, 2),
-              dsOption = _ref63[1];
-            return dsOption.visible;
-          }).map(function (_ref64, idx) {
+          }), Object.entries(datasetRegistry).filter(function (_ref64) {
             var _ref65 = _slicedToArray(_ref64, 2),
-              dsLabel = _ref65[0],
               dsOption = _ref65[1];
+            return dsOption.visible;
+          }).map(function (_ref66, idx) {
+            var _ref67 = _slicedToArray(_ref66, 2),
+              dsLabel = _ref67[0],
+              dsOption = _ref67[1];
             var color;
             if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
             return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
@@ -47925,14 +47974,14 @@ function GeoChart(props) {
       if (chartType === 'pie' || chartType === 'doughnut') {
         if (Object.keys(datasRegistry).length > 1) {
           return /*#__PURE__*/(0,jsx_runtime.jsx)(jsx_runtime.Fragment, {
-            children: Object.entries(datasRegistry).filter(function (_ref66) {
-              var _ref67 = _slicedToArray(_ref66, 2),
-                dsOption = _ref67[1];
-              return dsOption.visible;
-            }).map(function (_ref68, idx) {
+            children: Object.entries(datasRegistry).filter(function (_ref68) {
               var _ref69 = _slicedToArray(_ref68, 2),
-                dsLabel = _ref69[0],
                 dsOption = _ref69[1];
+              return dsOption.visible;
+            }).map(function (_ref70, idx) {
+              var _ref71 = _slicedToArray(_ref70, 2),
+                dsLabel = _ref71[0],
+                dsOption = _ref71[1];
               var color = dsOption.borderColor;
               return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
                 sx: sxClasses.checkDatasetWrapper,
@@ -50667,9 +50716,9 @@ const i18next_loadLanguages = instance.loadLanguages;
 
 
 ;// CONCATENATED MODULE: ./locales/en/translation.json
-const translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","steps":"Steps","scale":"Scale","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","downloadFiltered":"Download visible","downloadAll":"Download all","resetStates":"Reset states"}}');
+const translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","steps":"Steps","scale":"Scale","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","exportBtn":"Download the graph data","downloadFiltered":"Download visible","downloadAll":"Download all","resetStates":"Reset states"}}');
 ;// CONCATENATED MODULE: ./locales/fr/translation.json
-const fr_translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","steps":"Marches","scale":"Échelle","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","resetStates":"Réinitialiser états"}}');
+const fr_translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","steps":"Marches","scale":"Échelle","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","exportBtn":"Télécharger les données du graphique","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","resetStates":"Réinitialiser états"}}');
 ;// CONCATENATED MODULE: ./src/i18n.ts
 
 
