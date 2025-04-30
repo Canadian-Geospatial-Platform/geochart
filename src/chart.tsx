@@ -95,7 +95,7 @@ export interface TypeChartChartProps<
   onSliderYValueDisplaying?: (value: number) => string;
 
   // Callback executed when the use has clicked the download button
-  onDownloadClicked?: (value: GeoChartDatasource, index: number) => string;
+  onDownloadClicked?: (value: GeoChartDatasource) => string;
 
   // Callback executed when user has selected another steps value from the ui (top right corner in the ui)
   onStepSwitcherChanged?: (value: string) => void;
@@ -140,10 +140,12 @@ export function GeoChart<
     Paper,
     Box,
     Grid,
-    Button,
-    ButtonDropDown,
     Checkbox,
     Select,
+    Button,
+    IconButton,
+    DownloadIcon,
+    Menu,
     MenuItem,
     TypeMenuItemProps,
     Typography,
@@ -245,6 +247,9 @@ export function GeoChart<
   const [colorPaletteAxisBorderIndex, setColorPaletteAxisBorderIndex] = useState(0) as [number, React.Dispatch<number>];
   const [i18n, seti18n] = useState(i18nReact);
   const { t } = i18n;
+
+  const [anchorEl, setAnchorEl] = useState(null) as [HTMLElement | null, React.Dispatch<HTMLElement | null>];
+  const open = Boolean(anchorEl);
 
   const chartRef = useRef() as React.MutableRefObject<ChartJS<TType, TData, TLabel>>;
 
@@ -1429,50 +1434,79 @@ export function GeoChart<
   };
 
   /**
-   * Handles when the download button is clicked
-   * @param {number} index - Indicates the button drop down selection index when it was clicked.
-   * For our button usage:
-   * - 0: Means 'download view' was selected when button was clicked
-   * - 1: Means 'download all' was selected when button was clicked
+   * Show export menu.
    */
-  const handleDownloadClick = (index: number): void => {
+  const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
+    // Log
+    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
+
+    setAnchorEl(event.currentTarget);
+  }, []);
+
+  /**
+   * Close export menu.
+   */
+
+  const handleClose = useCallback(() => {
+    // Log
+    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClose');
+
+    setAnchorEl(null);
+  }, []);
+
+  /**
+   * Handles when the download filtered button is clicked
+   */
+  const handleDownloadFiltered = (): void => {
     // Get the data
     const data = { ...selectedDatasource! } as GeoChartDatasource;
 
-    // If only the filtered information
-    if (index === 0) {
-      // Get either the actually filtered records (via the sliders) or the data.items
-      data.items = filteredRecords || data.items;
+    // Get either the actually filtered records (via the sliders) or the data.items
+    data.items = filteredRecords || data.items;
 
-      // If using categories
-      if (inputs?.category) {
-        // The checked datasets strings
-        const checkedDatasetsStrings = Object.keys(datasetRegistry).filter((ds) => {
-          return datasetRegistry[ds].checked;
+    // If using categories
+    if (inputs?.category) {
+      // The checked datasets strings
+      const checkedDatasetsStrings = Object.keys(datasetRegistry).filter((ds) => {
+        return datasetRegistry[ds].checked;
+      });
+
+      // Also filter on the selected datasets
+      data.items = data.items?.filter((value: TypeJsonObject) => {
+        return checkedDatasetsStrings.includes(value[inputs.category!.property] as string);
+      });
+
+      // In case of pie/doughnut
+      if (chartType === 'pie' || chartType === 'doughnut') {
+        // The checked datas strings
+        const checkedDatasStrings = Object.keys(datasRegistry).filter((ds) => {
+          return datasRegistry[ds].checked;
         });
 
-        // Also filter on the selected datasets
+        // Also filter on selected datas
         data.items = data.items?.filter((value: TypeJsonObject) => {
-          return checkedDatasetsStrings.includes(value[inputs.category!.property] as string);
+          return checkedDatasStrings.includes(value[inputs.geochart.xAxis.property] as string);
         });
-
-        // In case of pie/doughnut
-        if (chartType === 'pie' || chartType === 'doughnut') {
-          // The checked datas strings
-          const checkedDatasStrings = Object.keys(datasRegistry).filter((ds) => {
-            return datasRegistry[ds].checked;
-          });
-
-          // Also filter on selected datas
-          data.items = data.items?.filter((value: TypeJsonObject) => {
-            return checkedDatasStrings.includes(value[inputs.geochart.xAxis.property] as string);
-          });
-        }
       }
     }
 
     // Callback
-    let fileName = onDownloadClicked?.(data, index);
+    let fileName = onDownloadClicked?.(data);
+    if (!fileName) fileName = 'chart-data.json';
+
+    // Download the data as json
+    downloadJson(data, fileName);
+  };
+
+  /**
+   * Handles when the download all button is clicked
+   */
+  const handleDownloadAll = (): void => {
+    // Get the data
+    const data = { ...selectedDatasource! } as GeoChartDatasource;
+
+    // Callback
+    let fileName = onDownloadClicked?.(data);
     if (!fileName) fileName = 'chart-data.json';
 
     // Download the data as json
@@ -1613,9 +1647,15 @@ export function GeoChart<
   const renderDownload = (): JSX.Element => {
     if (inputs?.ui?.download) {
       return (
-        <Box sx={sxClasses.downloadButton}>
-          <ButtonDropDown onButtonClick={handleDownloadClick} options={[t('geochart.downloadFiltered'), t('geochart.downloadAll')]} />
-        </Box>
+        <>
+          <IconButton sx={sxClasses.downloadButton} onClick={handleClick} tooltip={t('geochart.exportBtn') as string} className="buttonOutline">
+            <DownloadIcon />
+          </IconButton>
+          <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+            <MenuItem onClick={handleDownloadFiltered}>{t('geochart.downloadFiltered')}</MenuItem>
+            <MenuItem onClick={handleDownloadAll}>{t('geochart.downloadAll')}</MenuItem>
+          </Menu>
+        </>
       );
     }
     return <Box />;
