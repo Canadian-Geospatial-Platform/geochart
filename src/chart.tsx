@@ -320,13 +320,13 @@ export function GeoChart<
     let yMaxVal = uiOptions?.ySlider?.max;
     if (uiOptions?.ySlider?.display) {
       // If using numbers as data value
-      if (datasourceItems && datasourceItems.length > 0 && isNumber(datasourceItems![0][geochart.yAxis.property])) {
+      if (datasourceItems && datasourceItems.length > 0) {
         // If either min or max isn't preset
         if (yMinVal === undefined || yMaxVal === undefined) {
-          // Dynamically calculate them
+          // Dynamically calculate them only focusing on the values that are numeric (if any)
           const values = datasourceItems!.map((x: TypeJsonObject) => {
             return x[geochart.yAxis.property] as number;
-          });
+          }).filter((number) => isNumber(number));
           yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min(...values));
           yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max(...values));
         }
