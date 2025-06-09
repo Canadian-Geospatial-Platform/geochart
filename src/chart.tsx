@@ -39,6 +39,9 @@ export interface TypeChartChartProps<
   // Container element, notably used by the 'Select' drop downs
   container?: HTMLElement;
 
+  // Mandatory type of chart
+  chart: TType;
+
   // The schemas validator object
   schemaValidator: SchemaValidator;
 
@@ -51,8 +54,6 @@ export interface TypeChartChartProps<
   // The selected datasource (the selected value in the dropdown on top left corner of the ui)
   datasource?: GeoChartDatasource;
 
-  // When no inputs is specified, the GeoChart will use this chart props to work directly with ChartJS
-  chart?: TType;
   // When no inputs is specified, the GeoChart will use this options props to work directly with ChartJS
   options?: ChartOptions<TType>;
   // When no inputs is specified, the GeoChart will use this data props to work directly with ChartJS
@@ -113,6 +114,22 @@ export interface TypeChartChartProps<
   onError?: (error: string, exception: unknown | undefined) => void;
 }
 
+/** Default Chart type */
+const DEFAULT_CHART: ChartType = 'line';
+
+/** Default options */
+const DEFAULT_OPTIONS: ChartOptions<ChartType> = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+};
+
+/** Default data */
+const DEFAULT_DATA: ChartData<ChartType, GeoDefaultDataPoint<ChartType>>  = { datasets: [], labels: [] };
+
 /**
  * Create a customized Chart UI
  *
@@ -159,9 +176,6 @@ export function GeoChart<
     schemaValidator,
     inputs: parentInputs,
     datasource: parentDatasource,
-    chart: parentChart,
-    options: parentOptions,
-    data: parentData,
     action: parentAction,
     defaultColors,
     isLoadingChart,
@@ -181,6 +195,9 @@ export function GeoChart<
     onParsed,
     onError,
   } = props;
+  const parentChart = props.chart || DEFAULT_CHART;
+  const parentOptions = props.options || DEFAULT_OPTIONS as ChartOptions<TType>;
+  const parentData = props.data || DEFAULT_DATA as ChartData<TType, TData, TLabel>;
   const sxClasses = getSxClasses(cgpvTheme);
 
   // Translation
@@ -200,8 +217,8 @@ export function GeoChart<
     GeoChartConfig<TType> | undefined,
     React.Dispatch<GeoChartConfig<TType> | undefined>
   ];
-  const [chartType, setChartType] = useState(parentChart!) as [TType, React.Dispatch<TType>];
-  const [chartData, setChartData] = useState(parentData!) as [
+  const [chartType, setChartType] = useState(parentChart) as [TType, React.Dispatch<TType>];
+  const [chartData, setChartData] = useState(parentData) as [
     ChartData<TType, TData, TLabel>,
     React.Dispatch<ChartData<TType, TData, TLabel>>
   ];
@@ -862,8 +879,8 @@ export function GeoChart<
     // Clear dependency states because we're cleaning house and until the selected datasource is
     // property reset, inputs might be unrelated to the selected datasource in the other useEffects.
     setSelectedDatasource(undefined);
-    setChartData(GeoChart.defaultProps.data as ChartData<TType, TData, TLabel>);
-    setChartOptions(GeoChart.defaultProps.options as ChartOptions<TType>);
+    setChartData(DEFAULT_DATA);
+    setChartOptions(DEFAULT_OPTIONS);
 
     // If parentInputs is specified
     if (parentInputs) {
@@ -1939,21 +1956,3 @@ export function GeoChart<
   // Failed to render
   return renderChartContainerFailed();
 }
-
-/**
- * React's default properties for the GeoChart
- */
-GeoChart.defaultProps = {
-  sx: null,
-  inputs: null,
-  chart: 'line',
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false,
-      },
-    },
-  } as ChartOptions<ChartType>,
-  data: { datasets: [], labels: [], borderWidth: 10 },
-};
