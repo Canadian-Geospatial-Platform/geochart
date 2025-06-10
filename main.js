@@ -46320,6 +46320,25 @@ function chart_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { va
  * (2) Using the 'chart'+'options'+'data' parameters which creates a basic GeoChart with essential ChartJS parameters.
  */
 
+/** Default Chart type */
+var DEFAULT_CHART = 'line';
+
+/** Default options */
+var DEFAULT_OPTIONS = {
+  responsive: true,
+  plugins: {
+    legend: {
+      display: false
+    }
+  }
+};
+
+/** Default data */
+var DEFAULT_DATA = {
+  datasets: [],
+  labels: []
+};
+
 /**
  * Create a customized Chart UI
  *
@@ -46366,9 +46385,6 @@ function GeoChart(props) {
     schemaValidator = props.schemaValidator,
     parentInputs = props.inputs,
     parentDatasource = props.datasource,
-    parentChart = props.chart,
-    parentOptions = props.options,
-    parentData = props.data,
     parentAction = props.action,
     defaultColors = props.defaultColors,
     isLoadingChart = props.isLoadingChart,
@@ -46387,6 +46403,9 @@ function GeoChart(props) {
     onResetStates = props.onResetStates,
     onParsed = props.onParsed,
     onError = props.onError;
+  var parentChart = props.chart || DEFAULT_CHART;
+  var parentOptions = props.options || DEFAULT_OPTIONS;
+  var parentData = props.data || DEFAULT_DATA;
   var sxClasses = getSxClasses(cgpvTheme);
 
   // Translation
@@ -47064,8 +47083,8 @@ function GeoChart(props) {
     // Clear dependency states because we're cleaning house and until the selected datasource is
     // property reset, inputs might be unrelated to the selected datasource in the other useEffects.
     setSelectedDatasource(undefined);
-    setChartData(GeoChart.defaultProps.data);
-    setChartOptions(GeoChart.defaultProps.options);
+    setChartData(DEFAULT_DATA);
+    setChartOptions(DEFAULT_OPTIONS);
 
     // If parentInputs is specified
     if (parentInputs) {
@@ -48183,28 +48202,6 @@ function GeoChart(props) {
   // Failed to render
   return renderChartContainerFailed();
 }
-
-/**
- * React's default properties for the GeoChart
- */
-GeoChart.defaultProps = {
-  sx: null,
-  inputs: null,
-  chart: 'line',
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: false
-      }
-    }
-  },
-  data: {
-    datasets: [],
-    labels: [],
-    borderWidth: 10
-  }
-};
 ;// CONCATENATED MODULE: ./src/app.tsx
 
 
