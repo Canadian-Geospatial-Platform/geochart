@@ -46168,7 +46168,9 @@ function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, 
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 var getSxClasses = function getSxClasses(theme) {
-  var _theme$palette$geoVie, _theme$palette$geoVie2, _theme$palette$geoVie3, _theme$palette$geoVie4, _theme$palette$geoVie5, _theme$palette$geoVie6;
+  var _gvThemePalette$geoVi, _gvThemePalette$geoVi2, _gvThemePalette$geoVi3;
+  // Cast
+  var gvThemePalette = theme.palette;
   return {
     mainContainer: {
       fontFamily: theme.typography.body1.fontFamily
@@ -46177,7 +46179,7 @@ var getSxClasses = function getSxClasses(theme) {
       position: 'relative',
       padding: '20px',
       display: 'flex',
-      borderColor: (_theme$palette$geoVie = theme.palette.geoViewColor) === null || _theme$palette$geoVie === void 0 ? void 0 : _theme$palette$geoVie.primary.main,
+      borderColor: (_gvThemePalette$geoVi = gvThemePalette.geoViewColor) === null || _gvThemePalette$geoVi === void 0 ? void 0 : _gvThemePalette$geoVi.primary.main,
       borderWidth: '2px',
       borderStyle: 'solid'
     },
@@ -46230,14 +46232,14 @@ var getSxClasses = function getSxClasses(theme) {
     xAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
       fontWeight: theme.typography.fontWeightBold,
-      fontSize: (_theme$palette$geoVie2 = theme.palette.geoViewFontSize) === null || _theme$palette$geoVie2 === void 0 ? void 0 : _theme$palette$geoVie2["default"],
+      fontSize: (_gvThemePalette$geoVi2 = gvThemePalette.geoViewFontSize) === null || _gvThemePalette$geoVi2 === void 0 ? void 0 : _gvThemePalette$geoVi2["default"],
       textAlign: 'center',
       margin: '10px 0px'
     },
     yAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
       fontWeight: theme.typography.fontWeightBold,
-      fontSize: (_theme$palette$geoVie3 = theme.palette.geoViewFontSize) === null || _theme$palette$geoVie3 === void 0 ? void 0 : _theme$palette$geoVie3["default"],
+      fontSize: (_gvThemePalette$geoVi3 = gvThemePalette.geoViewFontSize) === null || _gvThemePalette$geoVi3 === void 0 ? void 0 : _gvThemePalette$geoVi3["default"],
       position: 'absolute',
       top: '45%',
       margin: '0 auto',
@@ -46259,7 +46261,7 @@ var getSxClasses = function getSxClasses(theme) {
     checkDatasetWrapper: {
       display: 'inline-block',
       '& .Mui-checked': {
-        color: "".concat((_theme$palette$geoVie4 = theme.palette.geoViewColor) === null || _theme$palette$geoVie4 === void 0 ? void 0 : _theme$palette$geoVie4.primary.main, " !important")
+        color: "".concat(gvThemePalette === null || gvThemePalette === void 0 ? void 0 : gvThemePalette.primary.main, " !important")
       }
     },
     checkDatasetLabel: {
@@ -46272,7 +46274,7 @@ var getSxClasses = function getSxClasses(theme) {
     },
     xSliderWrapper: {
       '& .MuiSlider-root': {
-        color: (_theme$palette$geoVie5 = theme.palette.geoViewColor) === null || _theme$palette$geoVie5 === void 0 ? void 0 : _theme$palette$geoVie5.primary.main
+        color: gvThemePalette === null || gvThemePalette === void 0 ? void 0 : gvThemePalette.primary.main
       }
     },
     ySliderWrapper: {
@@ -46280,7 +46282,7 @@ var getSxClasses = function getSxClasses(theme) {
       textAlign: 'center',
       marginLeft: '20px',
       '& .MuiSlider-root': {
-        color: (_theme$palette$geoVie6 = theme.palette.geoViewColor) === null || _theme$palette$geoVie6 === void 0 ? void 0 : _theme$palette$geoVie6.primary.main
+        color: gvThemePalette === null || gvThemePalette === void 0 ? void 0 : gvThemePalette.primary.main
       }
     },
     loadingDatasource: {
