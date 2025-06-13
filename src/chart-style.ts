@@ -1,10 +1,15 @@
 /**
  * SX Classes for the Chart
  */
-import { Theme } from '@mui/material/styles';
+import { Palette, Theme } from '@mui/material/styles';
+
+type GeoViewThemePalette = Palette & { geoViewColor: Palette, geoViewFontSize: { default: number } };
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const getSxClasses = (theme: Theme) => {
+  // Cast
+  const gvThemePalette = theme.palette as GeoViewThemePalette;
+
   return {
     mainContainer: {
       fontFamily: theme.typography.body1.fontFamily,
@@ -13,7 +18,7 @@ export const getSxClasses = (theme: Theme) => {
       position: 'relative',
       padding: '20px',
       display: 'flex',
-      borderColor: theme.palette.geoViewColor?.primary.main,
+      borderColor: gvThemePalette.geoViewColor?.primary.main,
       borderWidth: '2px',
       borderStyle: 'solid',
     },
@@ -66,14 +71,14 @@ export const getSxClasses = (theme: Theme) => {
     xAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
       fontWeight: theme.typography.fontWeightBold,
-      fontSize: theme.palette.geoViewFontSize?.default,
+      fontSize: gvThemePalette.geoViewFontSize?.default,
       textAlign: 'center',
       margin: '10px 0px',
     },
     yAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
       fontWeight: theme.typography.fontWeightBold,
-      fontSize: theme.palette.geoViewFontSize?.default,
+      fontSize: gvThemePalette.geoViewFontSize?.default,
       position: 'absolute',
       top: '45%',
       margin: '0 auto',
@@ -95,7 +100,7 @@ export const getSxClasses = (theme: Theme) => {
     checkDatasetWrapper: {
       display: 'inline-block',
       '& .Mui-checked': {
-        color: `${theme.palette.geoViewColor?.primary.main} !important`,
+        color: `${gvThemePalette?.primary.main} !important`,
       },
     },
     checkDatasetLabel: {
@@ -108,7 +113,7 @@ export const getSxClasses = (theme: Theme) => {
     },
     xSliderWrapper: {
       '& .MuiSlider-root': {
-        color: theme.palette.geoViewColor?.primary.main,
+        color: gvThemePalette?.primary.main,
       },
     },
     ySliderWrapper: {
@@ -116,7 +121,7 @@ export const getSxClasses = (theme: Theme) => {
       textAlign: 'center',
       marginLeft: '20px',
       '& .MuiSlider-root': {
-        color: theme.palette.geoViewColor?.primary.main,
+        color: gvThemePalette?.primary.main,
       },
     },
     loadingDatasource: {
