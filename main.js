@@ -27625,7 +27625,7 @@ webpackContext.id = 5358;
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  */
-var f=__webpack_require__(4898),k=Symbol.for("react.element"),l=Symbol.for("react.fragment"),m=Object.prototype.hasOwnProperty,n=f.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner,p={key:!0,ref:!0,__self:!0,__source:!0};
+var f=__webpack_require__(4419),k=Symbol.for("react.element"),l=Symbol.for("react.fragment"),m=Object.prototype.hasOwnProperty,n=f.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentOwner,p={key:!0,ref:!0,__self:!0,__source:!0};
 function q(c,a,g){var b,d={},e=null,h=null;void 0!==g&&(e=""+g);void 0!==a.key&&(e=""+a.key);void 0!==a.ref&&(h=a.ref);for(b in a)m.call(a,b)&&!p.hasOwnProperty(b)&&(d[b]=a[b]);if(c&&c.defaultProps)for(b in a=c.defaultProps,a)void 0===d[b]&&(d[b]=a[b]);return{$$typeof:k,type:c,key:e,ref:h,props:d,_owner:n.current}}exports.Fragment=l;exports.jsx=q;exports.jsxs=q;
 
 
@@ -27672,11 +27672,11 @@ module.exports = {
 
 /***/ }),
 
-/***/ 4898:
+/***/ 4419:
 /***/ ((module) => {
 
 "use strict";
-module.exports = cgpv.react;
+module.exports = cgpv.reactUtilities.react;
 
 /***/ }),
 
@@ -29084,8 +29084,8 @@ function _toConsumableArray(r) {
 // EXTERNAL MODULE: ./node_modules/@babel/runtime/regenerator/index.js
 var regenerator = __webpack_require__(4756);
 var regenerator_default = /*#__PURE__*/__webpack_require__.n(regenerator);
-// EXTERNAL MODULE: external "cgpv.react"
-var external_cgpv_react_ = __webpack_require__(4898);
+// EXTERNAL MODULE: external "cgpv.reactUtilities.react"
+var external_cgpv_reactUtilities_react_ = __webpack_require__(4419);
 // EXTERNAL MODULE: ./node_modules/void-elements/index.js
 var void_elements = __webpack_require__(4915);
 var void_elements_default = /*#__PURE__*/__webpack_require__.n(void_elements);
@@ -29510,7 +29510,7 @@ const initReactI18next = {
 
 
 
-const context_I18nContext = (0,external_cgpv_react_.createContext)();
+const context_I18nContext = (0,external_cgpv_reactUtilities_react_.createContext)();
 class ReportNamespaces {
   constructor() {
     this.usedNamespaces = {};
@@ -29604,8 +29604,8 @@ function Trans_Trans(_ref) {
 
 
 const usePrevious = (value, ignore) => {
-  const ref = (0,external_cgpv_react_.useRef)();
-  (0,external_cgpv_react_.useEffect)(() => {
+  const ref = (0,external_cgpv_reactUtilities_react_.useRef)();
+  (0,external_cgpv_reactUtilities_react_.useEffect)(() => {
     ref.current = ignore ? ref.current : value;
   }, [value, ignore]);
   return ref.current;
@@ -29618,7 +29618,7 @@ function useTranslation_useTranslation(ns) {
   const {
     i18n: i18nFromContext,
     defaultNS: defaultNSFromContext
-  } = (0,external_cgpv_react_.useContext)(context_I18nContext) || {};
+  } = (0,external_cgpv_reactUtilities_react_.useContext)(context_I18nContext) || {};
   const i18n = i18nFromProps || i18nFromContext || i18nInstance_getI18n();
   if (i18n && !i18n.reportNamespaces) i18n.reportNamespaces = new ReportNamespaces();
   if (!i18n) {
@@ -29651,12 +29651,12 @@ function useTranslation_useTranslation(ns) {
   function getT() {
     return i18n.getFixedT(props.lng || null, i18nOptions.nsMode === 'fallback' ? namespaces : namespaces[0], keyPrefix);
   }
-  const [t, setT] = (0,external_cgpv_react_.useState)(getT);
+  const [t, setT] = (0,external_cgpv_reactUtilities_react_.useState)(getT);
   let joinedNS = namespaces.join();
   if (props.lng) joinedNS = `${props.lng}${joinedNS}`;
   const previousJoinedNS = usePrevious(joinedNS);
-  const isMounted = (0,external_cgpv_react_.useRef)(true);
-  (0,external_cgpv_react_.useEffect)(() => {
+  const isMounted = (0,external_cgpv_reactUtilities_react_.useRef)(true);
+  (0,external_cgpv_reactUtilities_react_.useEffect)(() => {
     const {
       bindI18n,
       bindI18nStore
@@ -29687,8 +29687,8 @@ function useTranslation_useTranslation(ns) {
       if (bindI18nStore && i18n) bindI18nStore.split(' ').forEach(e => i18n.store.off(e, boundReset));
     };
   }, [i18n, joinedNS]);
-  const isInitial = (0,external_cgpv_react_.useRef)(true);
-  (0,external_cgpv_react_.useEffect)(() => {
+  const isInitial = (0,external_cgpv_reactUtilities_react_.useRef)(true);
+  (0,external_cgpv_reactUtilities_react_.useEffect)(() => {
     if (isMounted.current && !isInitial.current) {
       setT(getT);
     }
@@ -44805,8 +44805,8 @@ function cloneData(data) {
 
 function ChartComponent(props, ref) {
     const { height = 150, width = 300, redraw = false, datasetIdKey, type, data, options, plugins = [], fallbackContent, updateMode, ...canvasProps } = props;
-    const canvasRef = (0,external_cgpv_react_.useRef)(null);
-    const chartRef = (0,external_cgpv_react_.useRef)(null);
+    const canvasRef = (0,external_cgpv_reactUtilities_react_.useRef)(null);
+    const chartRef = (0,external_cgpv_reactUtilities_react_.useRef)(null);
     const renderChart = ()=>{
         if (!canvasRef.current) return;
         chartRef.current = new Chart(canvasRef.current, {
@@ -44826,7 +44826,7 @@ function ChartComponent(props, ref) {
             chartRef.current = null;
         }
     };
-    (0,external_cgpv_react_.useEffect)(()=>{
+    (0,external_cgpv_reactUtilities_react_.useEffect)(()=>{
         if (!redraw && chartRef.current && options) {
             setOptions(chartRef.current, options);
         }
@@ -44834,7 +44834,7 @@ function ChartComponent(props, ref) {
         redraw,
         options
     ]);
-    (0,external_cgpv_react_.useEffect)(()=>{
+    (0,external_cgpv_reactUtilities_react_.useEffect)(()=>{
         if (!redraw && chartRef.current) {
             setLabels(chartRef.current.config.data, data.labels);
         }
@@ -44842,7 +44842,7 @@ function ChartComponent(props, ref) {
         redraw,
         data.labels
     ]);
-    (0,external_cgpv_react_.useEffect)(()=>{
+    (0,external_cgpv_reactUtilities_react_.useEffect)(()=>{
         if (!redraw && chartRef.current && data.datasets) {
             setDatasets(chartRef.current.config.data, data.datasets, datasetIdKey);
         }
@@ -44850,7 +44850,7 @@ function ChartComponent(props, ref) {
         redraw,
         data.datasets
     ]);
-    (0,external_cgpv_react_.useEffect)(()=>{
+    (0,external_cgpv_reactUtilities_react_.useEffect)(()=>{
         if (!chartRef.current) return;
         if (redraw) {
             destroyChart();
@@ -44865,18 +44865,18 @@ function ChartComponent(props, ref) {
         data.datasets,
         updateMode
     ]);
-    (0,external_cgpv_react_.useEffect)(()=>{
+    (0,external_cgpv_reactUtilities_react_.useEffect)(()=>{
         if (!chartRef.current) return;
         destroyChart();
         setTimeout(renderChart);
     }, [
         type
     ]);
-    (0,external_cgpv_react_.useEffect)(()=>{
+    (0,external_cgpv_reactUtilities_react_.useEffect)(()=>{
         renderChart();
         return ()=>destroyChart();
     }, []);
-    return /*#__PURE__*/ external_cgpv_react_.createElement("canvas", {
+    return /*#__PURE__*/ external_cgpv_reactUtilities_react_.createElement("canvas", {
         ref: canvasRef,
         role: "img",
         height: height,
@@ -44884,7 +44884,7 @@ function ChartComponent(props, ref) {
         ...canvasProps
     }, fallbackContent);
 }
-const dist_Chart = /*#__PURE__*/ (0,external_cgpv_react_.forwardRef)(ChartComponent);
+const dist_Chart = /*#__PURE__*/ (0,external_cgpv_reactUtilities_react_.forwardRef)(ChartComponent);
 
 function createTypedChart(type, registerables) {
     Chart$1.register(registerables);
@@ -46358,12 +46358,12 @@ function GeoChart(props) {
   // Fetch the cgpv module
   var cgpv = w.cgpv;
   var logger = cgpv.logger;
-  var _cgpv$react = cgpv.react,
-    useEffect = _cgpv$react.useEffect,
-    useState = _cgpv$react.useState,
-    useRef = _cgpv$react.useRef,
-    useCallback = _cgpv$react.useCallback,
-    CSSProperties = _cgpv$react.CSSProperties;
+  var _cgpv$reactUtilities$ = cgpv.reactUtilities.react,
+    useEffect = _cgpv$reactUtilities$.useEffect,
+    useState = _cgpv$reactUtilities$.useState,
+    useRef = _cgpv$reactUtilities$.useRef,
+    useCallback = _cgpv$reactUtilities$.useCallback,
+    CSSProperties = _cgpv$reactUtilities$.CSSProperties;
   // Leaving the code commented purposely in case we want it fast
   // const { useWhatChanged } = cgpv.ui;
   var _cgpv$ui$elements = cgpv.ui.elements,
@@ -46577,7 +46577,7 @@ function GeoChart(props) {
    * @param {TypeJsonObject[]} datasourceItems The Datasource items
    */
   var processAxes = function processAxes(geochart, uiOptions, datasourceItems) {
-    var _uiOptions$xSlider, _uiOptions$xSlider2, _uiOptions$xSlider3, _uiOptions$ySlider, _uiOptions$ySlider2, _uiOptions$ySlider3;
+    var _uiOptions$xSlider, _uiOptions$xSlider2, _uiOptions$xSlider3, _uiOptions$ySlider, _uiOptions$ySlider2;
     // If has a xSlider and property and numbers as property
     var xMinVal = uiOptions === null || uiOptions === void 0 || (_uiOptions$xSlider = uiOptions.xSlider) === null || _uiOptions$xSlider === void 0 ? void 0 : _uiOptions$xSlider.min;
     var xMaxVal = uiOptions === null || uiOptions === void 0 || (_uiOptions$xSlider2 = uiOptions.xSlider) === null || _uiOptions$xSlider2 === void 0 ? void 0 : _uiOptions$xSlider2.max;
@@ -46616,27 +46616,27 @@ function GeoChart(props) {
     // If has a ySlider and property
     var yMinVal = uiOptions === null || uiOptions === void 0 || (_uiOptions$ySlider = uiOptions.ySlider) === null || _uiOptions$ySlider === void 0 ? void 0 : _uiOptions$ySlider.min;
     var yMaxVal = uiOptions === null || uiOptions === void 0 || (_uiOptions$ySlider2 = uiOptions.ySlider) === null || _uiOptions$ySlider2 === void 0 ? void 0 : _uiOptions$ySlider2.max;
-    if (uiOptions !== null && uiOptions !== void 0 && (_uiOptions$ySlider3 = uiOptions.ySlider) !== null && _uiOptions$ySlider3 !== void 0 && _uiOptions$ySlider3.display) {
-      // If using numbers as data value
-      if (datasourceItems && datasourceItems.length > 0) {
-        // If either min or max isn't preset
-        if (yMinVal === undefined || yMaxVal === undefined) {
-          // Dynamically calculate them only focusing on the values that are numeric (if any)
-          var _values = datasourceItems.map(function (x) {
-            return x[geochart.yAxis.property];
-          }).filter(function (number) {
-            return utils_isNumber(number);
-          });
-          yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min.apply(Math, _toConsumableArray(_values)));
-          yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max.apply(Math, _toConsumableArray(_values)));
-        }
-        setYSliderMin(yMinVal);
-        setYSliderMax(yMaxVal);
 
-        // If steps are determined by config
-        if (uiOptions !== null && uiOptions !== void 0 && uiOptions.ySlider.step) {
-          setYSliderSteps(uiOptions === null || uiOptions === void 0 ? void 0 : uiOptions.ySlider.step);
-        }
+    // Always set y axis values, even if not displayed
+    // If using numbers as data value
+    if (datasourceItems && datasourceItems.length > 0) {
+      // If either min or max isn't preset
+      if (yMinVal === undefined || yMaxVal === undefined) {
+        // Dynamically calculate them only focusing on the values that are numeric (if any)
+        var _values = datasourceItems.map(function (x) {
+          return x[geochart.yAxis.property];
+        }).filter(function (number) {
+          return utils_isNumber(number);
+        });
+        yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min.apply(Math, _toConsumableArray(_values)));
+        yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max.apply(Math, _toConsumableArray(_values)));
+      }
+      setYSliderMin(yMinVal);
+      setYSliderMax(yMaxVal);
+
+      // If steps are determined by config
+      if (uiOptions !== null && uiOptions !== void 0 && uiOptions.ySlider.step) {
+        setYSliderSteps(uiOptions === null || uiOptions === void 0 ? void 0 : uiOptions.ySlider.step);
       }
     }
     return [xMinVal, xMaxVal, yMinVal, yMaxVal];
@@ -46652,7 +46652,7 @@ function GeoChart(props) {
    * @param {number[] | undefined} theYSliderValues - The slider values for Y
    */
   var processAxesValues = function processAxesValues(uiOptions, xMinVal, xMaxVal, yMinVal, yMaxVal, theXSliderValues, theYSliderValues) {
-    var _uiOptions$xSlider4, _uiOptions$ySlider4;
+    var _uiOptions$xSlider4, _uiOptions$ySlider3;
     // If still not set
     var valuesComeFromState = false;
     if (uiOptions !== null && uiOptions !== void 0 && (_uiOptions$xSlider4 = uiOptions.xSlider) !== null && _uiOptions$xSlider4 !== void 0 && _uiOptions$xSlider4.display) {
@@ -46668,7 +46668,7 @@ function GeoChart(props) {
       }
     }
     // If still not set
-    if (uiOptions !== null && uiOptions !== void 0 && (_uiOptions$ySlider4 = uiOptions.ySlider) !== null && _uiOptions$ySlider4 !== void 0 && _uiOptions$ySlider4.display) {
+    if (uiOptions !== null && uiOptions !== void 0 && (_uiOptions$ySlider3 = uiOptions.ySlider) !== null && _uiOptions$ySlider3 !== void 0 && _uiOptions$ySlider3.display) {
       if (yMaxVal && !theYSliderValues) {
         // Set the state
         setYSliderValues([yMinVal, yMaxVal]);
@@ -48223,11 +48223,11 @@ function App(props) {
   var w = window;
   // Fetch the cgpv module
   var cgpv = w.cgpv;
-  var react = cgpv.react,
-    ui = cgpv.ui;
-  var useEffect = react.useEffect,
-    useState = react.useState,
-    useCallback = react.useCallback;
+  var ui = cgpv.ui;
+  var _cgpv$reactUtilities$ = cgpv.reactUtilities.react,
+    useEffect = _cgpv$reactUtilities$.useEffect,
+    useState = _cgpv$reactUtilities$.useState,
+    useCallback = _cgpv$reactUtilities$.useCallback;
   var Box = ui.elements.Box;
   var schemaValidator = props.schemaValidator;
 
@@ -50828,8 +50828,9 @@ if (root) {
   var w = window;
   // Fetch the cgpv module
   var src_cgpv = w.cgpv;
-  var react = src_cgpv.react,
-    createRoot = src_cgpv.createRoot;
+  var _cgpv$reactUtilities = src_cgpv.reactUtilities,
+    react = _cgpv$reactUtilities.react,
+    createRoot = _cgpv$reactUtilities.createRoot;
   var container = createRoot(root);
 
   // Create the schema validator object
