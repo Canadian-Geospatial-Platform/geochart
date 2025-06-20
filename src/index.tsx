@@ -16,7 +16,7 @@ if (root) {
   const w = window as any;
   // Fetch the cgpv module
   const { cgpv } = w;
-  const { react, createRoot } = cgpv;
+  const { react, createRoot } = cgpv.reactUtilities;
   const container = createRoot(root);
 
   // Create the schema validator object

@@ -128,7 +128,7 @@ const DEFAULT_OPTIONS: ChartOptions<ChartType> = {
 };
 
 /** Default data */
-const DEFAULT_DATA: ChartData<ChartType, GeoDefaultDataPoint<ChartType>>  = { datasets: [], labels: [] };
+const DEFAULT_DATA: ChartData<ChartType, GeoDefaultDataPoint<ChartType>> = { datasets: [], labels: [] };
 
 /**
  * Create a customized Chart UI
@@ -150,7 +150,7 @@ export function GeoChart<
   // Fetch the cgpv module
   const { cgpv } = w;
   const { logger } = cgpv;
-  const { useEffect, useState, useRef, useCallback, CSSProperties } = cgpv.react;
+  const { useEffect, useState, useRef, useCallback, CSSProperties } = cgpv.reactUtilities.react;
   // Leaving the code commented purposely in case we want it fast
   // const { useWhatChanged } = cgpv.ui;
   const {
@@ -196,8 +196,8 @@ export function GeoChart<
     onError,
   } = props;
   const parentChart = props.chart || DEFAULT_CHART;
-  const parentOptions = props.options || DEFAULT_OPTIONS as ChartOptions<TType>;
-  const parentData = props.data || DEFAULT_DATA as ChartData<TType, TData, TLabel>;
+  const parentOptions = props.options || (DEFAULT_OPTIONS as ChartOptions<TType>);
+  const parentData = props.data || (DEFAULT_DATA as ChartData<TType, TData, TLabel>);
   const sxClasses = getSxClasses(cgpvTheme);
 
   // Translation
@@ -335,25 +335,27 @@ export function GeoChart<
     // If has a ySlider and property
     let yMinVal = uiOptions?.ySlider?.min;
     let yMaxVal = uiOptions?.ySlider?.max;
-    if (uiOptions?.ySlider?.display) {
-      // If using numbers as data value
-      if (datasourceItems && datasourceItems.length > 0) {
-        // If either min or max isn't preset
-        if (yMinVal === undefined || yMaxVal === undefined) {
-          // Dynamically calculate them only focusing on the values that are numeric (if any)
-          const values = datasourceItems!.map((x: TypeJsonObject) => {
-            return x[geochart.yAxis.property] as number;
-          }).filter((number) => isNumber(number));
-          yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min(...values));
-          yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max(...values));
-        }
-        setYSliderMin(yMinVal);
-        setYSliderMax(yMaxVal);
 
-        // If steps are determined by config
-        if (uiOptions?.ySlider!.step) {
-          setYSliderSteps(uiOptions?.ySlider!.step);
-        }
+    // Always set y axis values, even if not displayed
+    // If using numbers as data value
+    if (datasourceItems && datasourceItems.length > 0) {
+      // If either min or max isn't preset
+      if (yMinVal === undefined || yMaxVal === undefined) {
+        // Dynamically calculate them only focusing on the values that are numeric (if any)
+        const values = datasourceItems!
+          .map((x: TypeJsonObject) => {
+            return x[geochart.yAxis.property] as number;
+          })
+          .filter((number) => isNumber(number));
+        yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min(...values));
+        yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max(...values));
+      }
+      setYSliderMin(yMinVal);
+      setYSliderMax(yMaxVal);
+
+      // If steps are determined by config
+      if (uiOptions?.ySlider!.step) {
+        setYSliderSteps(uiOptions?.ySlider!.step);
       }
     }
 
@@ -1160,7 +1162,7 @@ export function GeoChart<
     // If chart options. Validate the parsing we did do follow ChartJS options schema validating
     if (chartOptions) {
       // Validate the options inputs
-      var validRes = schemaValidator.validateOptions(chartOptions)
+      var validRes = schemaValidator.validateOptions(chartOptions);
       if (!validRes.valid) {
         // Log
         logger.logError('Failed when validating data options for Chart', validRes);
@@ -1581,10 +1583,7 @@ export function GeoChart<
       }
     }
     return sliderMarks;
-  }, []) as (
-    sliderValues: number | number[],
-    handleSliderValueDisplay: (value: number) => string
-  ) => void;
+  }, []) as (sliderValues: number | number[], handleSliderValueDisplay: (value: number) => string) => void;
 
   /**
    * Renders the X Chart Slider JSX.Element or an empty box
@@ -1665,7 +1664,12 @@ export function GeoChart<
     if (inputs?.ui?.download) {
       return (
         <>
-          <IconButton sx={sxClasses.downloadButton} onClick={handleClick} tooltip={t('geochart.exportBtn') as string} className="buttonOutline">
+          <IconButton
+            sx={sxClasses.downloadButton}
+            onClick={handleClick}
+            tooltip={t('geochart.exportBtn') as string}
+            className="buttonOutline"
+          >
             <DownloadIcon />
           </IconButton>
           <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -1880,7 +1884,7 @@ export function GeoChart<
     return (
       <Paper sx={{ ...sx, ...sxClasses.mainGeoChartContainer }}>
         <Grid container sx={{ m: '20px' }}>
-          <Grid item size={{xs: 12}}>
+          <Grid item size={{ xs: 12 }}>
             <Box sx={sxClasses.header}>
               {renderDatasourceSelector()}
               {renderUIOptions()}
@@ -1893,25 +1897,25 @@ export function GeoChart<
             </Box>
           </Grid>
 
-          <Grid item size={{xs: 1}}>
+          <Grid item size={{ xs: 1 }}>
             {renderYAxisLabel()}
           </Grid>
-          <Grid item sx={sxClasses.chartContent} size={{xs: 10}}>
+          <Grid item sx={sxClasses.chartContent} size={{ xs: 10 }}>
             {isLoadingDatasource && <CircularProgress sx={sxClasses.loadingDatasource} />}
             {renderChart()}
           </Grid>
-          <Grid item size={{xs: 1}}>
+          <Grid item size={{ xs: 1 }}>
             {renderYSlider()}
           </Grid>
 
-          <Grid item size={{xs: 1.25}} />
-          <Grid item size={{xs: 9.75}}>
+          <Grid item size={{ xs: 1.25 }} />
+          <Grid item size={{ xs: 9.75 }}>
             {renderXAxisLabel()}
             {renderXSlider()}
           </Grid>
-          <Grid item size={{xs: 1}} />
+          <Grid item size={{ xs: 1 }} />
 
-          <Grid item size={{xs: 12}}>
+          <Grid item size={{ xs: 12 }}>
             {renderDescription()}
           </Grid>
         </Grid>

@@ -20,8 +20,8 @@ export function App(props: TypeAppProps): JSX.Element {
   const w = window as any;
   // Fetch the cgpv module
   const { cgpv } = w;
-  const { react, ui } = cgpv;
-  const { useEffect, useState, useCallback } = react;
+  const { ui } = cgpv;
+  const { useEffect, useState, useCallback } = cgpv.reactUtilities.react;
   const { Box } = ui.elements;
   const { schemaValidator } = props;
 
