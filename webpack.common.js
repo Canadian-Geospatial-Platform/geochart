@@ -22,7 +22,6 @@ const config = {
   },
   externals: {
     react: 'cgpv.reactUtilities.react',
-    'react-dom': 'cgpv.reactUtilities.reactDOM',
   },
   module: {
     rules: [
