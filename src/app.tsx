@@ -18,6 +18,7 @@ export function App(props: TypeAppProps): JSX.Element {
   // Can't type the window object to a 'TypeWindow', because we don't have access to the cgpv library when this line runs.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any;
+
   // Fetch the cgpv module
   const { cgpv } = w;
   const { ui } = cgpv;

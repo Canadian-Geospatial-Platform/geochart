@@ -147,6 +147,7 @@ export function GeoChart<
   // Can't type the window object to a 'TypeWindow', because we don't have access to the cgpv library when this line runs.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any;
+
   // Fetch the cgpv module
   const { cgpv } = w;
   const { logger } = cgpv;
@@ -336,26 +337,28 @@ export function GeoChart<
     let yMinVal = uiOptions?.ySlider?.min;
     let yMaxVal = uiOptions?.ySlider?.max;
 
-    // Always set y axis values, even if not displayed
-    // If using numbers as data value
-    if (datasourceItems && datasourceItems.length > 0) {
-      // If either min or max isn't preset
-      if (yMinVal === undefined || yMaxVal === undefined) {
-        // Dynamically calculate them only focusing on the values that are numeric (if any)
-        const values = datasourceItems!
-          .map((x: TypeJsonObject) => {
-            return x[geochart.yAxis.property] as number;
-          })
-          .filter((number) => isNumber(number));
-        yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min(...values));
-        yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max(...values));
-      }
-      setYSliderMin(yMinVal);
-      setYSliderMax(yMaxVal);
+    // If using the slider, otherwise no point in setting min/max
+    if (uiOptions?.ySlider?.display) {
+      // If using numbers as data value
+      if (datasourceItems && datasourceItems.length > 0) {
+        // If either min or max isn't preset
+        if (yMinVal === undefined || yMaxVal === undefined) {
+          // Dynamically calculate them only focusing on the values that are numeric (if any)
+          const values = datasourceItems!
+            .map((x: TypeJsonObject) => {
+              return x[geochart.yAxis.property] as number;
+            })
+            .filter((number) => isNumber(number));
+          yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min(...values));
+          yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max(...values));
+        }
+        setYSliderMin(yMinVal);
+        setYSliderMax(yMaxVal);
 
-      // If steps are determined by config
-      if (uiOptions?.ySlider!.step) {
-        setYSliderSteps(uiOptions?.ySlider!.step);
+        // If steps are determined by config
+        if (uiOptions?.ySlider!.step) {
+          setYSliderSteps(uiOptions?.ySlider!.step);
+        }
       }
     }
 
@@ -772,8 +775,8 @@ export function GeoChart<
       theSteps: StepsPossibilities,
       theYScale: ScalePossibilities,
       records: TypeJsonObject[] | undefined,
-      xValues: number | number[],
-      yValues: number | number[]
+      xValues: number | number[] | undefined,
+      yValues: number | number[] | undefined
     ): void => {
       // Log
       logger.logTraceUseCallback(
@@ -841,8 +844,8 @@ export function GeoChart<
     theSteps: StepsPossibilities,
     theYScale: ScalePossibilities,
     records: TypeJsonObject[] | undefined,
-    xValues: number | number[],
-    yValues: number | number[]
+    xValues: number | number[] | undefined,
+    yValues: number | number[] | undefined
   ) => void;
 
   // #endregion
@@ -1117,8 +1120,8 @@ export function GeoChart<
           selectedSteps,
           selectedScale,
           selectedDatasource.items,
-          [xMinVal!, xMaxVal!],
-          [yMinVal!, yMaxVal!]
+          xMinVal !== undefined && xMaxVal !== undefined ? [xMinVal, xMaxVal] : undefined,
+          yMinVal !== undefined && yMaxVal !== undefined ? [yMinVal, yMaxVal] : undefined
         );
       } else {
         // Load records without filtering for nothing
