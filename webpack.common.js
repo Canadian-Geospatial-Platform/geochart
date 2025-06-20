@@ -21,8 +21,7 @@ const config = {
     extensions: ['.mjs', '.ts', '.tsx', '.js', '.jsx', '.css'],
   },
   externals: {
-    react: 'cgpv.react',
-    'react-dom': 'cgpv.reactDOM',
+    react: 'cgpv.reactUtilities.react',
   },
   module: {
     rules: [

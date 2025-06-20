@@ -14,9 +14,10 @@ if (root) {
   // Can't type the window object to a 'TypeWindow', because we don't have access to the cgpv library when this line runs.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const w = window as any;
+
   // Fetch the cgpv module
   const { cgpv } = w;
-  const { react, createRoot } = cgpv;
+  const { react, createRoot } = cgpv.reactUtilities;
   const container = createRoot(root);
 
   // Create the schema validator object
