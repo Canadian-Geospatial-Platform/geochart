@@ -3,7 +3,6 @@ import {
   GeoChartConfig,
   GeoChartXYData,
   GeoDefaultDataPoint,
-  TypeJsonObject,
   GeoChartCategoriesGroup,
   GeoChartQuery,
   GeoChartQueryOptionClause,
@@ -22,7 +21,7 @@ import { isNumber } from './utils';
 
 /**
  * Sorts all ChartDatasets based on the X values of their data.
- * @param datasets ChartDataset<TType, TData>[] the array of ChartDataset that we each want to sort on their X value.
+ * @param {ChartDataset<TType, TData>[]} datasets - The array of ChartDataset that we each want to sort on their X value.
  */
 function sortOnX<TType extends ChartType, TData = GeoDefaultDataPoint<TType>>(datasets: ChartDataset<TType, TData>[]): void {
   // For each dataset
@@ -49,7 +48,7 @@ function sortOnX<TType extends ChartType, TData = GeoDefaultDataPoint<TType>>(da
 
 /**
  * Sorts all ChartDatasets in the given ChartData based on their label values.
- * @param data ChartData<TType, TData, TLabel> the data holding the datasets to be sorted.
+ * @param {ChartData<TType, TData, TLabel>} data - The data holding the datasets to be sorted.
  */
 function sortOnDatasetLabels<TType extends ChartType, TData = GeoDefaultDataPoint<TType>, TLabel = string>(
   data: ChartData<TType, TData, TLabel>
@@ -67,11 +66,11 @@ function sortOnDatasetLabels<TType extends ChartType, TData = GeoDefaultDataPoin
 
 /**
  * Builds a where clause string, to be used in an url, given the array of GeoChartQueryOptionClause.
- * @param whereClauses GeoChartQueryOptionClause[] The array of where clauses objects.
- * @param sourceItem TypeJsonObject The source to read the information from when building the clause in case 'valueFrom' is needed.
- * @returns string Returns the where clause string
+ * @param {GeoChartQueryOptionClause[]} whereClauses - The array of where clauses objects.
+ * @param {Record<string, unknown> | undefined} sourceItem - The source to read the information from when building the clause in case 'valueFrom' is needed.
+ * @returns {string} Returns the where clause string
  */
-const buildQueryWhereClause = (whereClauses: GeoChartQueryOptionClause[], sourceItem: TypeJsonObject | undefined): string => {
+const buildQueryWhereClause = (whereClauses: GeoChartQueryOptionClause[], sourceItem: Record<string, unknown> | undefined): string => {
   // Loop on each url options
   let theWhereClause = '';
   if (whereClauses) {
@@ -101,91 +100,92 @@ const buildQueryWhereClause = (whereClauses: GeoChartQueryOptionClause[], source
 
 /**
  * Transforms the query results of an Esri features service response.
- * The transformation reads the Esri formatted information and return a list of `TypeJsonObject` records.
- * @param results TypeJsonObject The Json Object representing the data from Esri.
- * @returns TypeJsonObject[] an array of relared records of type TypeJsonObject
+ * The transformation reads the Esri formatted information and return a list of `unknown` records.
+ * @param {any[]} records - The Json Object representing the data from Esri.
+ * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
  */
-export function parseFeatureInfoEsriEntries(records: TypeJsonObject[]): TypeJsonObject[] {
+export function parseFeatureInfoEsriEntries(records: any[]): Record<string, unknown>[] {
   // Loop on the Esri results
-  return records.map((rec: TypeJsonObject) => {
-    // Prep the TypeJsonObject
-    const featInfo: TypeJsonObject = {};
+  return records.map((rec) => {
+    // Prep the any
+    const featInfo = {} as Record<string, unknown>;
 
     // Loop on the object attributes
-    Object.entries(rec.attributes).forEach((tupleAttrValue: [string, TypeJsonObject]) => {
+    Object.entries(rec.attributes).forEach((tupleAttrValue: [string, unknown]) => {
       // eslint-disable-next-line prefer-destructuring
       featInfo[tupleAttrValue[0]] = tupleAttrValue[1];
     });
 
-    // Return the TypeJsonObject
+    // Return the record
     return featInfo;
   });
 }
 
 /**
  * Transforms the query results of an OGC API features service response.
- * The transformation reads the GeoJson formatted information and return a list of `TypeJsonObject` records.
- * @param results TypeJsonObject The Json Object representing the data from Esri.
- * @returns TypeJsonObject[] an array of relared records of type TypeJsonObject
+ * The transformation reads the GeoJson formatted information and return a list of `unknown` records.
+ * @param {any[]} records - The Json Object representing the data from OGC.
+ * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
  */
-export function parseFeatureInfoOGCEntries(records: TypeJsonObject[]): TypeJsonObject[] {
+export function parseFeatureInfoOGCEntries(records: any[]): Record<string, unknown>[] {
   // Loop on the Esri results
-  return records.map((rec: TypeJsonObject) => {
-    // Prep the TypeJsonObject
-    const featInfo: TypeJsonObject = {};
+  return records.map((rec) => {
+    // Prep the record
+    const featInfo = {} as Record<string, unknown>;
 
     // Loop on the object properties
-    Object.entries(rec.properties).forEach((tupleAttrValue: [string, TypeJsonObject]) => {
+    Object.entries(rec.properties).forEach((tupleAttrValue: [string, unknown]) => {
       // eslint-disable-next-line prefer-destructuring
       featInfo[tupleAttrValue[0]] = tupleAttrValue[1];
     });
 
-    // Return the TypeJsonObject
+    // Return the record
     return featInfo;
   });
 }
 
 /**
- * Asynchronously queries an Esri Features endpoint given the url and returns an array of `TypeJsonObject` records.
- * @param url string An Esri Features url indicating a feature layer to query
- * @returns TypeJsonObject[] An array of relared records of type TypeJsonObject, or an empty array.
+ * Asynchronously queries an Esri Features endpoint given the url and returns an array of `unknown` records.
+ * @param {string} url - An Esri Features url indicating a feature layer to query
+ * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
  */
-export async function queryEsriFeaturesByUrl(url: string): Promise<TypeJsonObject[]> {
+export async function queryEsriFeaturesByUrl(url: string): Promise<Record<string, unknown>[]> {
   // Query the data
   const response = await fetch(url);
   const respJson = await response.json();
 
-  // Return the array of TypeJsonObject
+  // Return the array of records
   return parseFeatureInfoEsriEntries(respJson.features);
 }
 
 /**
- * Asynchronously queries an OGC API Features endpoint given the url and returns an array of `TypeJsonObject` records.
- * @param url string An OGC API Features url indicating a feature layer to query
- * @returns TypeJsonObject[] An array of relared records of type TypeJsonObject, or an empty array.
+ * Asynchronously queries an OGC API Features endpoint given the url and returns an array of `unknown` records.
+ * @param {string} url - An OGC API Features url indicating a feature layer to query
+ * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
  */
-export async function queryOGCFeaturesByUrl(url: string): Promise<TypeJsonObject[]> {
+export async function queryOGCFeaturesByUrl(url: string): Promise<Record<string, unknown>[]> {
   // Query the data
   const response = await fetch(url);
   const respJson = await response.json();
 
-  // Return the array of TypeJsonObject
+  // Return the array of records
   return parseFeatureInfoOGCEntries(respJson.features);
 }
 
 /**
  * Fetches the items that should be attached to the given Datasource.
- * @param layerConfig GeoViewGeoChartConfigLayer The layer configuration we're currently using.
- * @param sourceItem TypeJsonObject The source item to grab items form
- * @returns TypeJsonObject[] Returns the items that should be attached to the Datasource
+ * @param {GeoChartQuery} queryConfig - The layer configuration we're currently using.
+ * @param {string} language - The language
+ * @param {Record<string, unknown> | undefined} sourceItem - The source item to grab items form
+ * @returns {Promise<Record<string, unknown>[]>} Returns the items that should be attached to the Datasource
  */
 export const fetchItemsViaQueryForDatasource = async (
   queryConfig: GeoChartQuery,
   language: string,
-  sourceItem: TypeJsonObject | undefined
-): Promise<TypeJsonObject[]> => {
+  sourceItem: Record<string, unknown> | undefined
+): Promise<Record<string, unknown>[]> => {
   // Depending on the type of query
-  let entries: TypeJsonObject[];
+  let entries: Record<string, unknown>[];
   if (queryConfig.type === 'ogcAPIFeatures') {
     // Base query url
     let { url } = queryConfig;
@@ -243,14 +243,14 @@ export const fetchItemsViaQueryForDatasource = async (
 };
 
 /**
- * Creates a GeoChartXYData data value by reading attributes from a TypeJsonObject.
+ * Creates a GeoChartXYData data value by reading attributes from a Record<string, unknown>.
  * The GeoChartXYData has x and y properties and functions similar to the DefaultDataPoint, like ChartJS supports, but with additional
  * support of Dates on the 'x' property.
- * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
- * @param attributes TypeJsonObject The data opbject containing the attributes to use to create the GeoChartXYData
- * @returns The GeoChartXYData object
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {Record<string, unknown>} attributes - The data opbject containing the attributes to use to create the GeoChartXYData
+ * @returns {GeoChartXYData} The GeoChartXYData object
  */
-function createDataXYFormat<TType extends ChartType>(chartConfig: GeoChartConfig<TType>, attributes: TypeJsonObject): GeoChartXYData {
+function createDataXYFormat<TType extends ChartType>(chartConfig: GeoChartConfig<TType>, attributes: Record<string, unknown>): GeoChartXYData {
   // Read the unknown value in x
   const valRawX: unknown = attributes[chartConfig.geochart.xAxis!.property];
 
@@ -276,30 +276,30 @@ function createDataXYFormat<TType extends ChartType>(chartConfig: GeoChartConfig
 /**
  * Compresses the data for the given dataset in a data array format expected for the Pie/Doughnut charts. This function also
  * considers the categorization when one must be done.
- * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
- * @param dataset ChartDataset<TType, TData> The current dataset being parsed
- * @param labels string[] The current labels array for the whole Chart (all ChartDatasets) being parsed
- * @param records TypeJsonObject[] The records for the whole Chart
- * @returns The TData object representing the expected data array of expected dimension based on the labels array
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {ChartDataset<TType, TData>} dataset - The current dataset being parsed
+ * @param {string[]} labels - The current labels array for the whole Chart (all ChartDatasets) being parsed
+ * @param {Record<string, unknown>[]} records - The records for the whole Chart
+ * @returns {TData} The object representing the expected data array of expected dimension based on the labels array
  */
 function createDataCompressedForPieDoughnut<
   TType extends ChartType,
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
   TLabel extends string = string
->(chartConfig: GeoChartConfig<TType>, dataset: ChartDataset<TType, TData>, labels: string[], records: TypeJsonObject[]): TData {
+>(chartConfig: GeoChartConfig<TType>, dataset: ChartDataset<TType, TData>, labels: string[], records: Record<string, unknown>[]): TData {
   // Create a new data array of expected length containing only 'null' values
   const newData: TData = Array.from({ length: labels.length }, () => null) as TData;
 
   // If categorizing, filter on the current dataset label
   let subRecords = records;
   if (chartConfig.category) {
-    subRecords = records.filter((rec: TypeJsonObject) => {
+    subRecords = records.filter((rec) => {
       return (rec[chartConfig.category!.property] as string as TLabel) === dataset.label;
     });
   }
 
   // For each data to compress in the array
-  subRecords.forEach((rec: TypeJsonObject) => {
+  subRecords.forEach((rec) => {
     const valX: TLabel = rec[chartConfig.geochart.xAxis!.property] as string as TLabel;
     // Find the index for that value
     const labelIndex = labels!.indexOf(valX);
@@ -312,11 +312,12 @@ function createDataCompressedForPieDoughnut<
 
 /**
  * Creates a ChartDataset object, for ChartJS, based on the GeoChart configuration.
- * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
- * @param creationIndex number The index of the ChartDataset being created (used for the loop in 'createDtasets')
- * @param label string The ChartDataset label
- * @param attributes TypeJsonObject All attributes to use for the ChartDataset
- * @returns The ChartDataset object
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {string | string[] | undefined} backgroundColor - The background color if any
+ * @param {string | string[] | undefined} borderColor - The border color if any
+ * @param {StepsPossibilities | undefined} steps - The steps if any
+ * @param {string?} label - The label if any
+ * @returns {ChartDataset} The object
  */
 function createDataset<TType extends ChartType, TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>>(
   chartConfig: GeoChartConfig<TType>,
@@ -357,10 +358,11 @@ function createDataset<TType extends ChartType, TData extends GeoDefaultDataPoin
 /**
  * Creates all ChartDataset objects for line chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
- * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
- * @param datasource GeoChartDatasource The datasource to read to create the datasets with
- * @param records TypeJsonObject[] The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
- * @returns The ChartData object containing the ChartDatasets
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The dataset registry
+ * @param {StepsPossibilities | undefined} steps - The steps if any
+ * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
+ * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
  */
 function createDatasetsLineBar<
   TType extends ChartType = 'line' | 'bar',
@@ -369,8 +371,8 @@ function createDatasetsLineBar<
 >(
   chartConfig: GeoChartConfig<TType>,
   datasetsRegistry: GeoChartSelectedDataset,
-  steps: StepsPossibilities,
-  records: TypeJsonObject[]
+  steps: StepsPossibilities | undefined,
+  records: Record<string, unknown>[]
 ): ChartData<TType, TData, TLabel> {
   // Transform the TypeFeatureJson data to ChartData<TType, TData, string>
   const returnedChartData: ChartData<TType, TData, TLabel> = {
@@ -383,7 +385,7 @@ function createDatasetsLineBar<
   if (chartConfig.category?.property) {
     // 1 category = 1 dataset
     const categoriesRead: GeoChartCategoriesGroup<TData> = {};
-    records.forEach((rec: TypeJsonObject) => {
+    records.forEach((rec) => {
       // Read the category as a string
       const catName = rec[chartConfig.category!.property] as string;
 
@@ -418,7 +420,7 @@ function createDatasetsLineBar<
     returnedChartData.datasets.push(newDataset);
 
     // For each record
-    records.forEach((rec: TypeJsonObject) => {
+    records.forEach((rec) => {
       // Parse data
       const dataParsed = createDataXYFormat<TType>(chartConfig, rec);
       newDataset.data.push(dataParsed);
@@ -432,10 +434,11 @@ function createDatasetsLineBar<
 /**
  * Creates all ChartDataset objects for line and bar chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
- * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
- * @param datasource GeoChartDatasource The datasource to read to create the datasets with
- * @param records TypeJsonObject[] The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
- * @returns The ChartData object containing the ChartDatasets
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry The datas registry
+ * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
+ * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
  */
 function createDatasetsPieDoughnut<
   TType extends ChartType = 'pie' | 'doughnut',
@@ -445,7 +448,7 @@ function createDatasetsPieDoughnut<
   chartConfig: GeoChartConfig<TType>,
   datasetsRegistry: GeoChartSelectedDataset,
   datasRegistry: GeoChartSelectedDataset,
-  records: TypeJsonObject[]
+  records: Record<string, unknown>[]
 ): ChartData<TType, TData, TLabel> {
   // Transform the TypeFeatureJson data to ChartData<TType, TData, string>
   const returnedChartData: ChartData<TType, TData, TLabel> = {
@@ -454,7 +457,7 @@ function createDatasetsPieDoughnut<
   };
 
   // For Pie and Doughnut, all values for x axis will go in labels
-  records.forEach((rec: TypeJsonObject) => {
+  records.forEach((rec) => {
     // Read the value on x axis for each
     const valX: TLabel = rec[chartConfig.geochart.xAxis!.property] as string as TLabel;
     if (!returnedChartData.labels!.includes(valX)) returnedChartData.labels!.push(valX);
@@ -473,7 +476,7 @@ function createDatasetsPieDoughnut<
     // 1 category = 1 dataset
     const categoriesRead: GeoChartCategoriesGroup<TData> = {};
     let idx = 0;
-    records.forEach((rec: TypeJsonObject) => {
+    records.forEach((rec) => {
       // Read the category as a string
       const catName = rec[chartConfig.category!.property] as string;
 
@@ -519,10 +522,12 @@ function createDatasetsPieDoughnut<
 /**
  * Creates all ChartDataset objects, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
- * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
- * @param datasource GeoChartDatasource The datasource to read to create the datasets with
- * @param records TypeJsonObject[] The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
- * @returns The ChartData object containing the ChartDatasets
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry The datas registry
+ * @param {StepsPossibilities  | undefined} steps - The steps, if any
+ * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
+ * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
  */
 function createDatasets<
   TType extends ChartType = ChartType,
@@ -532,8 +537,8 @@ function createDatasets<
   chartConfig: GeoChartConfig<TType>,
   datasetsRegistry: GeoChartSelectedDataset,
   datasRegistry: GeoChartSelectedDataset,
-  steps: StepsPossibilities,
-  records: TypeJsonObject[]
+  steps: StepsPossibilities  | undefined,
+  records: Record<string, unknown>[]
 ): ChartData<TType, TData, TLabel> {
   // Depending on the ChartType
   if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
@@ -555,7 +560,7 @@ function createDatasets<
  *     used (not letting ChartJS make it by magic).
  *   - when no paletteBackgrounds or paletteBorders are specified via the configuration, and usePalette is true, a custom palette
  *     is explicitely used.
- * @param chartConfig The GeoChart Inputs to use to build the ChartJS ingestable information.
+ * @param {GeoChartConfig<TType> | undefined} chartConfig The Inputs to use to build the ChartJS ingestable information.
  */
 export function setColorPalettes<TType extends ChartType>(chartConfig: GeoChartConfig<TType> | undefined): void {
   // If there's a category
@@ -604,15 +609,16 @@ export function setColorPalettes<TType extends ChartType>(chartConfig: GeoChartC
 
 /**
  * Creates the ChartJS Options object necessary for ChartJS process.
- * @param chartConfig GeoChartConfig<TType>The GeoChart Inputs to use to build the ChartJS ingestable information.
- * @param defaultOptions ChartOptions<TType>The default, basic, necessary Options for ChartJS.
- * @param language string The current language of the UI.
- * @returns The ChartJS ingestable Options properties
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart Inputs to use to build the ChartJS ingestable information.
+ * @param {ChartOptions<TType> }defaultOptions - The default, basic, necessary Options for ChartJS.
+ * @param {ScalePossibilities | undefined} yAxisType - The scale possibilities, if any
+ * @param {string} language The current language of the UI.
+ * @returns {ChartOptions<TType>} The ingestable Options properties
  */
 export function createChartJSOptions<TType extends ChartType>(
   chartConfig: GeoChartConfig<TType>,
   defaultOptions: ChartOptions<TType>,
-  yAxisType: ScalePossibilities,
+  yAxisType: ScalePossibilities | undefined,
   language: string
 ): ChartOptions<TType> {
   // The Chart JS Options as entered or the default options
@@ -696,10 +702,13 @@ export function createChartJSOptions<TType extends ChartType>(
  * Creates the ChartJS Data object necessary for ChartJS process.
  * The datasets are being sorted by labels.
  * When the xAxis reprensents time, the datasets are internally sorted by date.
- * @param chartConfig GeoChartConfig<TType>The GeoChart Inputs to use to build the ChartJS ingestable information.
- * @param records TypeJsonObject[] | undefined The Records to build the data from.
- * @param defaultData ChartData<TType, TData, TLabel>The default, basic, necessary Data for ChartJS.
- * @returns The ChartJS ingestable Data properties
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry The datas registry
+ * @param {StepsPossibilities  | undefined} steps - The steps, if any
+ * @param {Record<string, unknown>[]} records - The records to build the data from.
+ * @param {ChartData<TType, TData, TLabel>} defaultData - The default, basic, necessary Data for ChartJS.
+ * @returns {ChartData<TType, TData, TLabel>} The ChartJS ingestable Data properties
  */
 export function createChartJSData<
   TType extends ChartType,
@@ -710,7 +719,7 @@ export function createChartJSData<
   datasetsRegistry: GeoChartSelectedDataset,
   datasRegistry: GeoChartSelectedDataset,
   steps: StepsPossibilities,
-  records: TypeJsonObject[] | undefined,
+  records: Record<string, unknown>[] | undefined,
   defaultData: ChartData<TType, TData, TLabel>
 ): ChartData<TType, TData, TLabel> {
   // If there's a data source, parse it to a GeoChart data
