@@ -1,4 +1,5 @@
 import type React from 'react';
+import { Theme } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables, ChartConfiguration, Plugin } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
@@ -99,10 +100,10 @@ export interface TypeChartChartProps<
   onDownloadClicked?: (value: GeoChartDatasource) => string;
 
   // Callback executed when user has selected another steps value from the ui (top right corner in the ui)
-  onStepSwitcherChanged?: (value: string) => void;
+  onStepSwitcherChanged?: (value: StepsPossibilities) => void;
 
   // Callback executed when user has selected another scale value from the ui (top right corner in the ui)
-  onScaleSwitcherChanged?: (value: string) => void;
+  onScaleSwitcherChanged?: (value: ScalePossibilities) => void;
 
   // Callback executed when user has clicked the reset states button (top right corner in the ui)
   onResetStates?: () => void;
@@ -111,7 +112,7 @@ export interface TypeChartChartProps<
   onParsed?: (chart: TType, options: ChartOptions<TType>, data: ChartData<TType, TData>) => void;
 
   // Callback executed when an error has happened
-  onError?: (error: string, exception: unknown | undefined) => void;
+  onError?: (error: string, exception: unknown) => void;
 }
 
 /** Default Chart type */
@@ -152,7 +153,7 @@ export function GeoChart<
   const { cgpv } = w;
   const { logger } = cgpv;
   const { useEffect, useState, useCallback, useRef } = cgpv.reactUtilities.react as typeof React;
-  const { CSSProperties } = cgpv.reactUtilities.react
+  const { CSSProperties } = cgpv.reactUtilities.react;
 
   const {
     Paper,
@@ -169,8 +170,11 @@ export function GeoChart<
     Typography,
     Slider,
     CircularProgress,
-    cgpvTheme,
   } = cgpv.ui.elements;
+
+  // Cast
+  const cgpvTheme = cgpv.ui.elements.cgpvTheme as Theme;
+
   const {
     sx: elStyle,
     container: containerElement,
@@ -271,9 +275,9 @@ export function GeoChart<
 
   /**
    * Helper function to set the x and y axes based on the inputs and values.
-   * @param {GeoChartOptionsGeochart} geochart The Geochart options
-   * @param {GeoChartOptionsUI | undefined} uiOptions The Geochart options
-   * @param {Record<string, unknown>[]} datasourceItems The Datasource items
+   * @param {GeoChartOptionsGeochart} geochart - The Geochart options
+   * @param {GeoChartOptionsUI | undefined} uiOptions - The Geochart options
+   * @param {Record<string, unknown>[]} datasourceItems - The Datasource items
    */
   const processAxes = (
     geochart: GeoChartOptionsGeochart,
@@ -289,7 +293,7 @@ export function GeoChart<
         // If either min or max isn't preset
         if (xMinVal === undefined || xMaxVal === undefined) {
           // Dynamically calculate them
-          const values = datasourceItems!.map((x) => {
+          const values = datasourceItems.map((x) => {
             // If date
             if (geochart.xAxis.type === 'time' || geochart.xAxis.type === 'timeseries') {
               return new Date(x[geochart.xAxis.property] as string).getTime();
@@ -303,10 +307,11 @@ export function GeoChart<
         setXSliderMax(xMaxVal);
 
         // If steps are determined by config
-        if (uiOptions?.xSlider!.step) {
-          setXSliderSteps(uiOptions?.xSlider!.step);
+        if (uiOptions?.xSlider.step) {
+          setXSliderSteps(uiOptions?.xSlider.step);
         } else {
           // If date axis
+          // eslint-disable-next-line no-lonely-if
           if (geochart.xAxis.type === 'time' || geochart.xAxis.type === 'timeseries') {
             // Get an estimated stepping value
             setXSliderSteps(guessEstimatedStep(xMinVal, xMaxVal));
@@ -326,7 +331,7 @@ export function GeoChart<
         // If either min or max isn't preset
         if (yMinVal === undefined || yMaxVal === undefined) {
           // Dynamically calculate them only focusing on the values that are numeric (if any)
-          const values = datasourceItems!
+          const values = datasourceItems
             .map((x) => {
               return x[geochart.yAxis.property] as number;
             })
@@ -338,8 +343,8 @@ export function GeoChart<
         setYSliderMax(yMaxVal);
 
         // If steps are determined by config
-        if (uiOptions?.ySlider!.step) {
-          setYSliderSteps(uiOptions?.ySlider!.step);
+        if (uiOptions?.ySlider.step) {
+          setYSliderSteps(uiOptions?.ySlider.step);
         }
       }
     }
@@ -349,6 +354,7 @@ export function GeoChart<
 
   /**
    * Helper function to set the x and y axes values based on the min and max of the data or if the values were already set in state.
+   * @param {GeoChartOptionsUI | undefined} uiOptions - The ui options
    * @param {number | undefined} xMinVal - The min value for X
    * @param {number | undefined} xMaxVal - The max value for X
    * @param {number | undefined} yMinVal - The min value for Y
@@ -370,7 +376,7 @@ export function GeoChart<
     if (uiOptions?.xSlider?.display) {
       if (xMaxVal && !theXSliderValues) {
         // Set the values for x axis to min/max
-        setXSliderValues([xMinVal!, xMaxVal!]);
+        setXSliderValues([xMinVal!, xMaxVal]);
       } else if (theXSliderValues) {
         // eslint-disable-next-line no-param-reassign
         [xMinVal, xMaxVal] = theXSliderValues;
@@ -381,7 +387,7 @@ export function GeoChart<
     if (uiOptions?.ySlider?.display) {
       if (yMaxVal && !theYSliderValues) {
         // Set the state
-        setYSliderValues([yMinVal!, yMaxVal!]);
+        setYSliderValues([yMinVal!, yMaxVal]);
       } else if (theYSliderValues) {
         // eslint-disable-next-line no-param-reassign
         [yMinVal, yMaxVal] = theYSliderValues;
@@ -397,14 +403,14 @@ export function GeoChart<
    * Fetches the items to associated to the given Datasource and then sets the Datasource in GeoChart
    * @param {GeoViewGeoChartConfig} chartQuery - The chart query being used
    * @param {string} theLanguage - The language being used
-   * @param {Record<string, unknown> | undefined} sourceItem - The source item to fetch for
+   * @param {Record<string, unknown>} sourceItem - The source item to fetch for
    * @param {Function} errorCallback - Callback called when an error happens while fetching data
    */
   const fetchDatasourceItems = async (
     chartQuery: GeoChartQuery,
     theLanguage: string,
     sourceItem: Record<string, unknown> | undefined,
-    errorCallback: ((error: string, exception: unknown | undefined) => void) | undefined
+    errorCallback: ((error: string, exception: unknown) => void) | undefined
   ): Promise<Record<string, unknown>[]> => {
     try {
       // Loading
@@ -696,14 +702,14 @@ export function GeoChart<
         theDatasRegistry,
         theSteps,
         records,
-        parentData!
+        parentData
       );
 
       // Callback
-      onParsed?.(theInputs!.chart, parsedOptions, parsedData);
+      onParsed?.(theInputs.chart, parsedOptions, parsedData);
 
       // Override
-      setChartType(theInputs!.chart);
+      setChartType(theInputs.chart);
       setChartOptions(parsedOptions);
       setChartData(parsedData);
 
@@ -859,9 +865,9 @@ export function GeoChart<
     logger.logTraceUseEffect(USE_EFFECT_FUNC);
 
     // Override
-    setChartType(parentChart!);
+    setChartType(parentChart);
     setChartOptions(parentOptions!);
-    setChartData(parentData!);
+    setChartData(parentData);
 
     return () => {
       // Log
@@ -994,7 +1000,10 @@ export function GeoChart<
       // Init the datasource items for the first record and sets it
       if (!ds.items && inputs.query) {
         // Must fetch straight away
-        fetchAndSetSelectedDatasource(inputs.query, i18n.language, ds);
+        fetchAndSetSelectedDatasource(inputs.query, i18n.language, ds).catch((error: unknown) => {
+          // Log error
+          logger.logPromiseFailed('in fetchAndSetSelectedDatasource in INPUTS useEffect', error);
+        });
       } else setSelectedDatasource(ds);
     } else setSelectedDatasource(undefined);
 
@@ -1053,7 +1062,7 @@ export function GeoChart<
       // Process the axes values
       let valuesComeFromState = false;
       [valuesComeFromState, [xMinVal, xMaxVal, yMinVal, yMaxVal]] = processAxesValues(
-        inputs!.ui,
+        inputs.ui,
         xMinVal,
         xMaxVal,
         yMinVal,
@@ -1118,7 +1127,7 @@ export function GeoChart<
     // If chart options. Validate the parsing we did do follow ChartJS options schema validating
     if (chartOptions) {
       // Validate the options inputs
-      var validRes = schemaValidator.validateOptions(chartOptions);
+      const validRes = schemaValidator.validateOptions(chartOptions);
       if (!validRes.valid) {
         // Log
         logger.logError('Failed when validating data options for Chart', validRes);
@@ -1129,7 +1138,7 @@ export function GeoChart<
     // If chart data. Validate the parsing we did do follow ChartJS data schema validating
     if (chartData) {
       // Validate the data inputs
-      var validRes = schemaValidator.validateData(chartData);
+      const validRes = schemaValidator.validateData(chartData);
       if (!validRes.valid) {
         // Log
         logger.logError('Failed when validating data inputs for Chart', validRes);
@@ -1228,9 +1237,12 @@ export function GeoChart<
     // If redraw is true, reset the property in the action, set the redraw property to true for the chart, then prep a timer to reset it to false after the redraw has happened.
     // A bit funky, but only way I could find without having code the logic within the Parent Component.
     if (action?.shouldRedraw) {
-      action!.shouldRedraw = false;
+      action.shouldRedraw = false;
       // Redraw
-      performRedraw();
+      performRedraw().catch((error: unknown) => {
+        // Log error
+        logger.logPromiseFailed('in performRedraw in ACTION useEffect', error);
+      });
     }
 
     return () => {
@@ -1332,10 +1344,10 @@ export function GeoChart<
    */
   const handleStepsSwitcherChanged = (e: unknown, item: typeof MenuItem): void => {
     // Set the step switcher
-    setSelectedSteps(item.props.value);
+    setSelectedSteps(item.props.value as StepsPossibilities);
 
     // Callback
-    onStepSwitcherChanged?.(item.props.value);
+    onStepSwitcherChanged?.(item.props.value as StepsPossibilities);
   };
 
   /**
@@ -1345,10 +1357,10 @@ export function GeoChart<
    */
   const handleScaleSwitcherChanged = (e: unknown, item: typeof MenuItem): void => {
     // Set the scale switcher
-    setSelectedScale(item.props.value);
+    setSelectedScale(item.props.value as ScalePossibilities);
 
     // Callback
-    onScaleSwitcherChanged?.(item.props.value);
+    onScaleSwitcherChanged?.(item.props.value as ScalePossibilities);
   };
 
   /**
@@ -1411,28 +1423,30 @@ export function GeoChart<
   /**
    * Show export menu.
    */
-  const handleClick = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
-    // Log
-    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
+  const handleClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      // Log
+      logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
 
-    setAnchorEl(event.currentTarget);
-  }, []);
+      setAnchorEl(event.currentTarget);
+    },
+    [logger]
+  );
 
   /**
    * Close export menu.
    */
-
   const handleClose = useCallback(() => {
     // Log
     logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClose');
 
     setAnchorEl(null);
-  }, []);
+  }, [logger]);
 
   /**
    * Handles when the download filtered button is clicked
    */
-  const handleDownloadFiltered = (): void => {
+  const handleDownloadFiltered = useCallback((): void => {
     // Get the data
     const data = { ...selectedDatasource! } as GeoChartDatasource;
 
@@ -1471,12 +1485,21 @@ export function GeoChart<
 
     // Download the data as json
     downloadJson(data, fileName);
-  };
+  }, [
+    chartType,
+    datasRegistry,
+    datasetRegistry,
+    filteredRecords,
+    inputs?.category,
+    inputs?.geochart.xAxis.property,
+    onDownloadClicked,
+    selectedDatasource,
+  ]);
 
   /**
    * Handles when the download all button is clicked
    */
-  const handleDownloadAll = (): void => {
+  const handleDownloadAll = useCallback((): void => {
     // Get the data
     const data = { ...selectedDatasource! } as GeoChartDatasource;
 
@@ -1486,7 +1509,7 @@ export function GeoChart<
 
     // Download the data as json
     downloadJson(data, fileName);
-  };
+  }, [onDownloadClicked, selectedDatasource]);
 
   // #endregion
 
@@ -1497,7 +1520,7 @@ export function GeoChart<
    * @returns The Chart JSX.Element itself using Line as default
    */
   const renderChart = (): JSX.Element => {
-    return <ChartReact ref={chartRef} type={chartType!} data={chartData} options={chartOptions} plugins={plugins} redraw={redraw} />;
+    return <ChartReact ref={chartRef} type={chartType} data={chartData} options={chartOptions} plugins={plugins} redraw={redraw} />;
   };
 
   /**
@@ -1620,12 +1643,7 @@ export function GeoChart<
     if (inputs?.ui?.download) {
       return (
         <>
-          <IconButton
-            sx={sxClasses.downloadButton}
-            onClick={handleClick}
-            tooltip={t('geochart.exportBtn') as string}
-            className="buttonOutline"
-          >
+          <IconButton sx={sxClasses.downloadButton} onClick={handleClick} tooltip={t('geochart.exportBtn')} className="buttonOutline">
             <DownloadIcon />
           </IconButton>
           <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
@@ -1766,7 +1784,7 @@ export function GeoChart<
               })
               .map(([dsLabel, dsOption]: [string, GeoChartDatasetOption], idx: number) => {
                 let color;
-                if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor as string;
+                if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
                 return (
                   <Box sx={sxClasses.checkDatasetWrapper} key={dsLabel || idx}>
                     <Checkbox

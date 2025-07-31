@@ -156,7 +156,7 @@ export type GeoChartOptionsSlider = {
  * points to a ScatterDataPoint which is only supporting x: number and y: number, which isn't try for us with the Date support on the x property.
  */
 export type GeoChartXYData = {
-  x: string | number | Date | unknown;
+  x: unknown;
   y: number;
 };
 
@@ -223,7 +223,7 @@ export const DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT: string[] = [
  */
 export const DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT.map((color: string) => {
   // Extract the alpha-less color code for better output
-  return extractColor(color)!;
+  return extractColor(color);
 });
 
 /**
@@ -246,7 +246,7 @@ export const DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT: string[] = [
  */
 export const DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT.map((color: string) => {
   // Extract the alpha-less color code for better output
-  return extractColor(color)!;
+  return extractColor(color);
 });
 
 /**
@@ -268,7 +268,7 @@ export const DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT: string[] = [
  */
 export const DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT.map((color: string) => {
   // Extract the alpha-less color code for better output
-  return extractColor(color)!;
+  return extractColor(color);
 });
 
 /**

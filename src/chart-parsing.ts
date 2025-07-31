@@ -29,8 +29,8 @@ function sortOnX<TType extends ChartType, TData = GeoDefaultDataPoint<TType>>(da
     const dataInDataset = ds.data as { x: number | string | Date | undefined }[];
     const dataOrdered = dataInDataset.sort((a: { x: number | string | Date | undefined }, b: { x: number | string | Date | undefined }) => {
       if (a.x instanceof Date) {
-        if ((a.x as Date) === (b.x as Date)) return 0;
-        if ((a.x as Date) < (b.x as Date)) return -1;
+        if (a.x === (b.x as Date)) return 0;
+        if (a.x < (b.x as Date)) return -1;
         return 1;
       }
       if (isNumber(a.x) && isNumber(b.x)) return (a.x as number) - (b.x as number);
@@ -55,7 +55,7 @@ function sortOnDatasetLabels<TType extends ChartType, TData = GeoDefaultDataPoin
 ): void {
   // For each dataset
   const datasetsOrdered = data.datasets.sort((a: ChartDataset<TType, TData>, b: ChartDataset<TType, TData>) => {
-    if (a.label && b.label) return (a.label as string).localeCompare(b.label as string);
+    if (a.label && b.label) return a.label.localeCompare(b.label);
     return 0;
   });
 
@@ -104,6 +104,7 @@ const buildQueryWhereClause = (whereClauses: GeoChartQueryOptionClause[], source
  * @param {any[]} records - The Json Object representing the data from Esri.
  * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseFeatureInfoEsriEntries(records: any[]): Record<string, unknown>[] {
   // Loop on the Esri results
   return records.map((rec) => {
@@ -111,7 +112,7 @@ export function parseFeatureInfoEsriEntries(records: any[]): Record<string, unkn
     const featInfo = {} as Record<string, unknown>;
 
     // Loop on the object attributes
-    Object.entries(rec.attributes).forEach((tupleAttrValue: [string, unknown]) => {
+    Object.entries(rec.attributes as { [s: string]: unknown }).forEach((tupleAttrValue: [string, unknown]) => {
       // eslint-disable-next-line prefer-destructuring
       featInfo[tupleAttrValue[0]] = tupleAttrValue[1];
     });
@@ -127,6 +128,7 @@ export function parseFeatureInfoEsriEntries(records: any[]): Record<string, unkn
  * @param {any[]} records - The Json Object representing the data from OGC.
  * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function parseFeatureInfoOGCEntries(records: any[]): Record<string, unknown>[] {
   // Loop on the Esri results
   return records.map((rec) => {
@@ -134,7 +136,7 @@ export function parseFeatureInfoOGCEntries(records: any[]): Record<string, unkno
     const featInfo = {} as Record<string, unknown>;
 
     // Loop on the object properties
-    Object.entries(rec.properties).forEach((tupleAttrValue: [string, unknown]) => {
+    Object.entries(rec.properties as { [s: string]: unknown }).forEach((tupleAttrValue: [string, unknown]) => {
       // eslint-disable-next-line prefer-destructuring
       featInfo[tupleAttrValue[0]] = tupleAttrValue[1];
     });
@@ -155,7 +157,8 @@ export async function queryEsriFeaturesByUrl(url: string): Promise<Record<string
   const respJson = await response.json();
 
   // Return the array of records
-  return parseFeatureInfoEsriEntries(respJson.features);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return parseFeatureInfoEsriEntries(respJson.features as any[]);
 }
 
 /**
@@ -169,7 +172,8 @@ export async function queryOGCFeaturesByUrl(url: string): Promise<Record<string,
   const respJson = await response.json();
 
   // Return the array of records
-  return parseFeatureInfoOGCEntries(respJson.features);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return parseFeatureInfoOGCEntries(respJson.features as any[]);
 }
 
 /**
@@ -250,21 +254,27 @@ export const fetchItemsViaQueryForDatasource = async (
  * @param {Record<string, unknown>} attributes - The data opbject containing the attributes to use to create the GeoChartXYData
  * @returns {GeoChartXYData} The GeoChartXYData object
  */
-function createDataXYFormat<TType extends ChartType>(chartConfig: GeoChartConfig<TType>, attributes: Record<string, unknown>): GeoChartXYData {
+function createDataXYFormat<TType extends ChartType>(
+  chartConfig: GeoChartConfig<TType>,
+  attributes: Record<string, unknown>
+): GeoChartXYData {
   // Read the unknown value in x
-  const valRawX: unknown = attributes[chartConfig.geochart.xAxis!.property];
+  const valRawX: unknown = attributes[chartConfig.geochart.xAxis.property];
 
   // If the value is expected to be a time
-  let xVal: number | Date | string | unknown = valRawX;
+  let xVal: unknown = valRawX;
   if (chartConfig.geochart.xAxis?.type === 'time' || chartConfig.geochart.xAxis?.type === 'timeseries') {
     // Make sure it's a date object
-    if (valRawX instanceof Date) xVal = valRawX as Date;
-    // Do our best to convert to date
-    xVal = new Date(valRawX as string);
+    if (valRawX instanceof Date) {
+      xVal = valRawX;
+    } else {
+      // Do our best to convert to date
+      xVal = new Date(valRawX as string);
+    }
   }
 
   // Read the value in y, hopefully it's a number, that's what GeoChartXYPair supports for now (there's a TODO there)
-  const valRawY: number = attributes[chartConfig.geochart.yAxis!.property] as number;
+  const valRawY: number = attributes[chartConfig.geochart.yAxis.property] as number;
 
   // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
   return {
@@ -300,10 +310,10 @@ function createDataCompressedForPieDoughnut<
 
   // For each data to compress in the array
   subRecords.forEach((rec) => {
-    const valX: TLabel = rec[chartConfig.geochart.xAxis!.property] as string as TLabel;
+    const valX: TLabel = rec[chartConfig.geochart.xAxis.property] as string as TLabel;
     // Find the index for that value
-    const labelIndex = labels!.indexOf(valX);
-    newData[labelIndex] = rec[chartConfig.geochart.yAxis!.property] as number;
+    const labelIndex = labels.indexOf(valX);
+    newData[labelIndex] = rec[chartConfig.geochart.yAxis.property] as number;
   });
 
   // Return the compressed data
@@ -352,7 +362,7 @@ function createDataset<TType extends ChartType, TData extends GeoDefaultDataPoin
   if (chartConfig.geochart.borderWidth) {
     theDataset.borderWidth = chartConfig.geochart.borderWidth;
   }
-  return theDataset!;
+  return theDataset;
 }
 
 /**
@@ -435,8 +445,8 @@ function createDatasetsLineBar<
  * Creates all ChartDataset objects for line and bar chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
  * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {GeoChartSelectedDataset} datasetsRegistry The datasets registry
- * @param {GeoChartSelectedDataset} datasRegistry The datas registry
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
  * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
  * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
  */
@@ -459,7 +469,7 @@ function createDatasetsPieDoughnut<
   // For Pie and Doughnut, all values for x axis will go in labels
   records.forEach((rec) => {
     // Read the value on x axis for each
-    const valX: TLabel = rec[chartConfig.geochart.xAxis!.property] as string as TLabel;
+    const valX: TLabel = rec[chartConfig.geochart.xAxis.property] as string as TLabel;
     if (!returnedChartData.labels!.includes(valX)) returnedChartData.labels!.push(valX);
   });
 
@@ -485,7 +495,13 @@ function createDatasetsPieDoughnut<
         // If new category
         if (!Object.keys(categoriesRead).includes(catName)) {
           // Create dataset
-          const newDataset = createDataset<TType, TData>(chartConfig, paletteBackgroundAll, ChartJS.defaults.color as string, undefined, catName);
+          const newDataset = createDataset<TType, TData>(
+            chartConfig,
+            paletteBackgroundAll,
+            ChartJS.defaults.color as string,
+            undefined,
+            catName
+          );
           categoriesRead[catName] = { index: idx++, data: newDataset.data };
           returnedChartData.datasets.push(newDataset);
         }
@@ -523,8 +539,8 @@ function createDatasetsPieDoughnut<
  * Creates all ChartDataset objects, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
  * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {GeoChartSelectedDataset} datasetsRegistry The datasets registry
- * @param {GeoChartSelectedDataset} datasRegistry The datas registry
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
  * @param {StepsPossibilities  | undefined} steps - The steps, if any
  * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
  * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
@@ -537,7 +553,7 @@ function createDatasets<
   chartConfig: GeoChartConfig<TType>,
   datasetsRegistry: GeoChartSelectedDataset,
   datasRegistry: GeoChartSelectedDataset,
-  steps: StepsPossibilities  | undefined,
+  steps: StepsPossibilities | undefined,
   records: Record<string, unknown>[]
 ): ChartData<TType, TData, TLabel> {
   // Depending on the ChartType
@@ -560,7 +576,7 @@ function createDatasets<
  *     used (not letting ChartJS make it by magic).
  *   - when no paletteBackgrounds or paletteBorders are specified via the configuration, and usePalette is true, a custom palette
  *     is explicitely used.
- * @param {GeoChartConfig<TType> | undefined} chartConfig The Inputs to use to build the ChartJS ingestable information.
+ * @param {GeoChartConfig<TType> | undefined} chartConfig - The Inputs to use to build the ChartJS ingestable information.
  */
 export function setColorPalettes<TType extends ChartType>(chartConfig: GeoChartConfig<TType> | undefined): void {
   // If there's a category
@@ -612,7 +628,7 @@ export function setColorPalettes<TType extends ChartType>(chartConfig: GeoChartC
  * @param {GeoChartConfig<TType>} chartConfig - The GeoChart Inputs to use to build the ChartJS ingestable information.
  * @param {ChartOptions<TType> }defaultOptions - The default, basic, necessary Options for ChartJS.
  * @param {ScalePossibilities | undefined} yAxisType - The scale possibilities, if any
- * @param {string} language The current language of the UI.
+ * @param {string} language - The current language of the UI.
  * @returns {ChartOptions<TType>} The ingestable Options properties
  */
 export function createChartJSOptions<TType extends ChartType>(
@@ -703,8 +719,8 @@ export function createChartJSOptions<TType extends ChartType>(
  * The datasets are being sorted by labels.
  * When the xAxis reprensents time, the datasets are internally sorted by date.
  * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {GeoChartSelectedDataset} datasetsRegistry The datasets registry
- * @param {GeoChartSelectedDataset} datasRegistry The datas registry
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
  * @param {StepsPossibilities  | undefined} steps - The steps, if any
  * @param {Record<string, unknown>[]} records - The records to build the data from.
  * @param {ChartData<TType, TData, TLabel>} defaultData - The default, basic, necessary Data for ChartJS.
