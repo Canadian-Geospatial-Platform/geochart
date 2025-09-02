@@ -45081,9 +45081,6 @@ var guessEstimatedStep = function guessEstimatedStep(minValue, maxValue) {
 
 // Export all ChartJS types
 
-// Simulate the types in cgpv
-// TODO: Refactor - Think about it, do we fetch cgpv, even in '.ts' classes!?
-
 /**
  * The Main GeoChart Configuration used by the GeoChart Component
  */
@@ -45109,7 +45106,7 @@ var GeoChartQueryTypesConst = (/* unused pure expression or super */ null && (['
  * The steps possibilities explicitely typed.
  */
 var StepsPossibilitiesConst = ['before', 'after', 'middle', false];
-var ScalePossibilitiesConst = ['linear', 'logarithmic'];
+var ScalePossibilitiesConst = ['linear', 'logarithmic', 'category', 'time', 'timeseries'];
 
 /**
  * The Configuration about using GeoChart specific parameters.
@@ -45332,6 +45329,11 @@ const schema_chartjs_options_namespaceObject = /*#__PURE__*/JSON.parse('{"$schem
 
 
 var _SchemaValidator;
+function _classPrivateFieldInitSpec(e, t, a) { _checkPrivateRedeclaration(e, t), t.set(e, a); }
+function _checkPrivateRedeclaration(e, t) { if (t.has(e)) throw new TypeError("Cannot initialize the same private elements twice on an object"); }
+function _classPrivateFieldGet(s, a) { return s.get(_assertClassBrand(s, a)); }
+function _classPrivateFieldSet(s, a, r) { return s.set(_assertClassBrand(s, a), r), r; }
+function _assertClassBrand(e, t, n) { if ("function" == typeof e ? e === t : e.has(t)) return arguments.length < 3 ? t : n; throw new TypeError("Private element is not present on this object"); }
 
 
 
@@ -45341,19 +45343,19 @@ var _SchemaValidator;
 /**
  * Represents the result of a Chart data or options inputs validations.
  */
-
+var _ajv = /*#__PURE__*/new WeakMap();
 /**
  * The Schema Validator class to validate json objects.
  */
 var SchemaValidator = /*#__PURE__*/_createClass(
-// The embedded JSON validator
-
 /**
  * Constructs a Chart Validate object to validate schemas.
  */
 function SchemaValidator() {
   var _this = this;
   _classCallCheck(this, SchemaValidator);
+  // The embedded JSON validator
+  _classPrivateFieldInitSpec(this, _ajv, void 0);
   /**
    * Validates the GeoChart input parameters.
    * @param data object the data json object to validate
@@ -45386,7 +45388,7 @@ function SchemaValidator() {
   _defineProperty(this, "validateJsonSchema", function (schema, anyObject) {
     var _validate$errors;
     // Compile
-    var validate = _this.ajv.compile(schema);
+    var validate = _classPrivateFieldGet(_ajv, _this).compile(schema);
 
     // Validate
     var valid = validate(anyObject);
@@ -45401,8 +45403,8 @@ function SchemaValidator() {
     };
   });
   // The embedded JSON validator
-  this.ajv = new (ajv_default())();
-  dist_default()(this.ajv);
+  _classPrivateFieldSet(_ajv, this, new (ajv_default())());
+  dist_default()(_classPrivateFieldGet(_ajv, this));
 });
 _SchemaValidator = SchemaValidator;
 /**
@@ -45444,7 +45446,7 @@ function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t =
 
 /**
  * Sorts all ChartDatasets based on the X values of their data.
- * @param datasets ChartDataset<TType, TData>[] the array of ChartDataset that we each want to sort on their X value.
+ * @param {ChartDataset<TType, TData>[]} datasets - The array of ChartDataset that we each want to sort on their X value.
  */
 function sortOnX(datasets) {
   // For each dataset
@@ -45471,7 +45473,7 @@ function sortOnX(datasets) {
 
 /**
  * Sorts all ChartDatasets in the given ChartData based on their label values.
- * @param data ChartData<TType, TData, TLabel> the data holding the datasets to be sorted.
+ * @param {ChartData<TType, TData, TLabel>} data - The data holding the datasets to be sorted.
  */
 function sortOnDatasetLabels(data) {
   // For each dataset
@@ -45487,9 +45489,9 @@ function sortOnDatasetLabels(data) {
 
 /**
  * Builds a where clause string, to be used in an url, given the array of GeoChartQueryOptionClause.
- * @param whereClauses GeoChartQueryOptionClause[] The array of where clauses objects.
- * @param sourceItem TypeJsonObject The source to read the information from when building the clause in case 'valueFrom' is needed.
- * @returns string Returns the where clause string
+ * @param {GeoChartQueryOptionClause[]} whereClauses - The array of where clauses objects.
+ * @param {Record<string, unknown> | undefined} sourceItem - The source to read the information from when building the clause in case 'valueFrom' is needed.
+ * @returns {string} Returns the where clause string
  */
 var buildQueryWhereClause = function buildQueryWhereClause(whereClauses, sourceItem) {
   // Loop on each url options
@@ -45521,14 +45523,15 @@ var buildQueryWhereClause = function buildQueryWhereClause(whereClauses, sourceI
 
 /**
  * Transforms the query results of an Esri features service response.
- * The transformation reads the Esri formatted information and return a list of `TypeJsonObject` records.
- * @param results TypeJsonObject The Json Object representing the data from Esri.
- * @returns TypeJsonObject[] an array of relared records of type TypeJsonObject
+ * The transformation reads the Esri formatted information and return a list of `unknown` records.
+ * @param {any[]} records - The Json Object representing the data from Esri.
+ * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseFeatureInfoEsriEntries(records) {
   // Loop on the Esri results
   return records.map(function (rec) {
-    // Prep the TypeJsonObject
+    // Prep the any
     var featInfo = {};
 
     // Loop on the object attributes
@@ -45537,21 +45540,22 @@ function parseFeatureInfoEsriEntries(records) {
       featInfo[tupleAttrValue[0]] = tupleAttrValue[1];
     });
 
-    // Return the TypeJsonObject
+    // Return the record
     return featInfo;
   });
 }
 
 /**
  * Transforms the query results of an OGC API features service response.
- * The transformation reads the GeoJson formatted information and return a list of `TypeJsonObject` records.
- * @param results TypeJsonObject The Json Object representing the data from Esri.
- * @returns TypeJsonObject[] an array of relared records of type TypeJsonObject
+ * The transformation reads the GeoJson formatted information and return a list of `unknown` records.
+ * @param {any[]} records - The Json Object representing the data from OGC.
+ * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function parseFeatureInfoOGCEntries(records) {
   // Loop on the Esri results
   return records.map(function (rec) {
-    // Prep the TypeJsonObject
+    // Prep the record
     var featInfo = {};
 
     // Loop on the object properties
@@ -45560,24 +45564,24 @@ function parseFeatureInfoOGCEntries(records) {
       featInfo[tupleAttrValue[0]] = tupleAttrValue[1];
     });
 
-    // Return the TypeJsonObject
+    // Return the record
     return featInfo;
   });
 }
 
 /**
- * Asynchronously queries an Esri Features endpoint given the url and returns an array of `TypeJsonObject` records.
- * @param url string An Esri Features url indicating a feature layer to query
- * @returns TypeJsonObject[] An array of relared records of type TypeJsonObject, or an empty array.
+ * Asynchronously queries an Esri Features endpoint given the url and returns an array of `unknown` records.
+ * @param {string} url - An Esri Features url indicating a feature layer to query
+ * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
  */
 function queryEsriFeaturesByUrl(_x) {
   return _queryEsriFeaturesByUrl.apply(this, arguments);
 }
 
 /**
- * Asynchronously queries an OGC API Features endpoint given the url and returns an array of `TypeJsonObject` records.
- * @param url string An OGC API Features url indicating a feature layer to query
- * @returns TypeJsonObject[] An array of relared records of type TypeJsonObject, or an empty array.
+ * Asynchronously queries an OGC API Features endpoint given the url and returns an array of `unknown` records.
+ * @param {string} url - An OGC API Features url indicating a feature layer to query
+ * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
  */
 function _queryEsriFeaturesByUrl() {
   _queryEsriFeaturesByUrl = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(url) {
@@ -45608,9 +45612,10 @@ function queryOGCFeaturesByUrl(_x2) {
 
 /**
  * Fetches the items that should be attached to the given Datasource.
- * @param layerConfig GeoViewGeoChartConfigLayer The layer configuration we're currently using.
- * @param sourceItem TypeJsonObject The source item to grab items form
- * @returns TypeJsonObject[] Returns the items that should be attached to the Datasource
+ * @param {GeoChartQuery} queryConfig - The layer configuration we're currently using.
+ * @param {string} language - The language
+ * @param {Record<string, unknown> | undefined} sourceItem - The source item to grab items form
+ * @returns {Promise<Record<string, unknown>[]>} Returns the items that should be attached to the Datasource
  */
 function _queryOGCFeaturesByUrl() {
   _queryOGCFeaturesByUrl = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(url) {
@@ -45719,12 +45724,12 @@ var fetchItemsViaQueryForDatasource = /*#__PURE__*/function () {
 }();
 
 /**
- * Creates a GeoChartXYData data value by reading attributes from a TypeJsonObject.
+ * Creates a GeoChartXYData data value by reading attributes from a Record<string, unknown>.
  * The GeoChartXYData has x and y properties and functions similar to the DefaultDataPoint, like ChartJS supports, but with additional
  * support of Dates on the 'x' property.
- * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
- * @param attributes TypeJsonObject The data opbject containing the attributes to use to create the GeoChartXYData
- * @returns The GeoChartXYData object
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {Record<string, unknown>} attributes - The data opbject containing the attributes to use to create the GeoChartXYData
+ * @returns {GeoChartXYData} The GeoChartXYData object
  */
 function createDataXYFormat(chartConfig, attributes) {
   var _chartConfig$geochart, _chartConfig$geochart2;
@@ -45735,9 +45740,12 @@ function createDataXYFormat(chartConfig, attributes) {
   var xVal = valRawX;
   if (((_chartConfig$geochart = chartConfig.geochart.xAxis) === null || _chartConfig$geochart === void 0 ? void 0 : _chartConfig$geochart.type) === 'time' || ((_chartConfig$geochart2 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart2 === void 0 ? void 0 : _chartConfig$geochart2.type) === 'timeseries') {
     // Make sure it's a date object
-    if (valRawX instanceof Date) xVal = valRawX;
-    // Do our best to convert to date
-    xVal = new Date(valRawX);
+    if (valRawX instanceof Date) {
+      xVal = valRawX;
+    } else {
+      // Do our best to convert to date
+      xVal = new Date(valRawX);
+    }
   }
 
   // Read the value in y, hopefully it's a number, that's what GeoChartXYPair supports for now (there's a TODO there)
@@ -45753,11 +45761,11 @@ function createDataXYFormat(chartConfig, attributes) {
 /**
  * Compresses the data for the given dataset in a data array format expected for the Pie/Doughnut charts. This function also
  * considers the categorization when one must be done.
- * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
- * @param dataset ChartDataset<TType, TData> The current dataset being parsed
- * @param labels string[] The current labels array for the whole Chart (all ChartDatasets) being parsed
- * @param records TypeJsonObject[] The records for the whole Chart
- * @returns The TData object representing the expected data array of expected dimension based on the labels array
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {ChartDataset<TType, TData>} dataset - The current dataset being parsed
+ * @param {string[]} labels - The current labels array for the whole Chart (all ChartDatasets) being parsed
+ * @param {Record<string, unknown>[]} records - The records for the whole Chart
+ * @returns {TData} The object representing the expected data array of expected dimension based on the labels array
  */
 function createDataCompressedForPieDoughnut(chartConfig, dataset, labels, records) {
   // Create a new data array of expected length containing only 'null' values
@@ -45789,11 +45797,12 @@ function createDataCompressedForPieDoughnut(chartConfig, dataset, labels, record
 
 /**
  * Creates a ChartDataset object, for ChartJS, based on the GeoChart configuration.
- * @param chartConfig GeoChartConfig<TType> The GeoChart configuration
- * @param creationIndex number The index of the ChartDataset being created (used for the loop in 'createDtasets')
- * @param label string The ChartDataset label
- * @param attributes TypeJsonObject All attributes to use for the ChartDataset
- * @returns The ChartDataset object
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {string | string[] | undefined} backgroundColor - The background color if any
+ * @param {string | string[] | undefined} borderColor - The border color if any
+ * @param {StepsPossibilities | undefined} steps - The steps if any
+ * @param {string?} label - The label if any
+ * @returns {ChartDataset} The object
  */
 function createDataset(chartConfig, backgroundColor, borderColor, steps, label) {
   // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
@@ -45828,10 +45837,11 @@ function createDataset(chartConfig, backgroundColor, borderColor, steps, label) 
 /**
  * Creates all ChartDataset objects for line chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
- * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
- * @param datasource GeoChartDatasource The datasource to read to create the datasets with
- * @param records TypeJsonObject[] The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
- * @returns The ChartData object containing the ChartDatasets
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The dataset registry
+ * @param {StepsPossibilities | undefined} steps - The steps if any
+ * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
+ * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
  */
 function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
   var _chartConfig$category;
@@ -45892,10 +45902,11 @@ function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
 /**
  * Creates all ChartDataset objects for line and bar chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
- * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
- * @param datasource GeoChartDatasource The datasource to read to create the datasets with
- * @param records TypeJsonObject[] The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
- * @returns The ChartData object containing the ChartDatasets
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
+ * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
+ * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
  */
 function createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry, records) {
   var _chartConfig$category2;
@@ -45977,10 +45988,12 @@ function createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry,
 /**
  * Creates all ChartDataset objects, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
- * @param chartConfig  GeoChartConfig<TType> The GeoChart configuration
- * @param datasource GeoChartDatasource The datasource to read to create the datasets with
- * @param records TypeJsonObject[] The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
- * @returns The ChartData object containing the ChartDatasets
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
+ * @param {StepsPossibilities  | undefined} steps - The steps, if any
+ * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
+ * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
  */
 function createDatasets(chartConfig, datasetsRegistry, datasRegistry, steps, records) {
   // Depending on the ChartType
@@ -46003,7 +46016,7 @@ function createDatasets(chartConfig, datasetsRegistry, datasRegistry, steps, rec
  *     used (not letting ChartJS make it by magic).
  *   - when no paletteBackgrounds or paletteBorders are specified via the configuration, and usePalette is true, a custom palette
  *     is explicitely used.
- * @param chartConfig The GeoChart Inputs to use to build the ChartJS ingestable information.
+ * @param {GeoChartConfig<TType> | undefined} chartConfig - The Inputs to use to build the ChartJS ingestable information.
  */
 function setColorPalettes(chartConfig) {
   // If there's a category
@@ -46052,10 +46065,11 @@ function setColorPalettes(chartConfig) {
 
 /**
  * Creates the ChartJS Options object necessary for ChartJS process.
- * @param chartConfig GeoChartConfig<TType>The GeoChart Inputs to use to build the ChartJS ingestable information.
- * @param defaultOptions ChartOptions<TType>The default, basic, necessary Options for ChartJS.
- * @param language string The current language of the UI.
- * @returns The ChartJS ingestable Options properties
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart Inputs to use to build the ChartJS ingestable information.
+ * @param {ChartOptions<TType> }defaultOptions - The default, basic, necessary Options for ChartJS.
+ * @param {ScalePossibilities | undefined} yAxisType - The scale possibilities, if any
+ * @param {string} language - The current language of the UI.
+ * @returns {ChartOptions<TType>} The ingestable Options properties
  */
 function createChartJSOptions(chartConfig, defaultOptions, yAxisType, language) {
   var _chartConfig$geochart3, _chartConfig$geochart4;
@@ -46137,10 +46151,13 @@ function createChartJSOptions(chartConfig, defaultOptions, yAxisType, language) 
  * Creates the ChartJS Data object necessary for ChartJS process.
  * The datasets are being sorted by labels.
  * When the xAxis reprensents time, the datasets are internally sorted by date.
- * @param chartConfig GeoChartConfig<TType>The GeoChart Inputs to use to build the ChartJS ingestable information.
- * @param records TypeJsonObject[] | undefined The Records to build the data from.
- * @param defaultData ChartData<TType, TData, TLabel>The default, basic, necessary Data for ChartJS.
- * @returns The ChartJS ingestable Data properties
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+ * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
+ * @param {StepsPossibilities  | undefined} steps - The steps, if any
+ * @param {Record<string, unknown>[]} records - The records to build the data from.
+ * @param {ChartData<TType, TData, TLabel>} defaultData - The default, basic, necessary Data for ChartJS.
+ * @returns {ChartData<TType, TData, TLabel>} The ChartJS ingestable Data properties
  */
 function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, records, defaultData) {
   var _chartConfig$geochart6, _chartConfig$geochart7;
@@ -46360,14 +46377,12 @@ function GeoChart(props) {
   // Fetch the cgpv module
   var cgpv = w.cgpv;
   var logger = cgpv.logger;
-  var _cgpv$reactUtilities$ = cgpv.reactUtilities.react,
-    useEffect = _cgpv$reactUtilities$.useEffect,
-    useState = _cgpv$reactUtilities$.useState,
-    useRef = _cgpv$reactUtilities$.useRef,
-    useCallback = _cgpv$reactUtilities$.useCallback,
-    CSSProperties = _cgpv$reactUtilities$.CSSProperties;
-  // Leaving the code commented purposely in case we want it fast
-  // const { useWhatChanged } = cgpv.ui;
+  var _ref = cgpv.reactUtilities.react,
+    useEffect = _ref.useEffect,
+    useState = _ref.useState,
+    useCallback = _ref.useCallback,
+    useRef = _ref.useRef;
+  var CSSProperties = cgpv.reactUtilities.react.CSSProperties;
   var _cgpv$ui$elements = cgpv.ui.elements,
     Paper = _cgpv$ui$elements.Paper,
     Box = _cgpv$ui$elements.Box,
@@ -46382,8 +46397,10 @@ function GeoChart(props) {
     TypeMenuItemProps = _cgpv$ui$elements.TypeMenuItemProps,
     Typography = _cgpv$ui$elements.Typography,
     Slider = _cgpv$ui$elements.Slider,
-    CircularProgress = _cgpv$ui$elements.CircularProgress,
-    cgpvTheme = _cgpv$ui$elements.cgpvTheme;
+    CircularProgress = _cgpv$ui$elements.CircularProgress;
+
+  // Cast
+  var cgpvTheme = cgpv.ui.elements.cgpvTheme;
   var elStyle = props.sx,
     containerElement = props.container,
     schemaValidator = props.schemaValidator,
@@ -46426,133 +46443,133 @@ function GeoChart(props) {
   // so that things remain typed instead of becoming 'any' when using functions such as 'useState', 'useCallback', 'useRef', etc.
 
   // Inner component states attached to the parent component
-  var _ref = useState(parentInputs),
-    _ref2 = _slicedToArray(_ref, 2),
-    inputs = _ref2[0],
-    setInputs = _ref2[1];
-  var _ref3 = useState(parentChart),
-    _ref4 = _slicedToArray(_ref3, 2),
-    chartType = _ref4[0],
-    setChartType = _ref4[1];
-  var _ref5 = useState(parentData),
-    _ref6 = _slicedToArray(_ref5, 2),
-    chartData = _ref6[0],
-    setChartData = _ref6[1];
-  var _ref7 = useState(parentOptions),
-    _ref8 = _slicedToArray(_ref7, 2),
-    chartOptions = _ref8[0],
-    setChartOptions = _ref8[1];
-  var _ref9 = useState(parentDatasource),
-    _ref10 = _slicedToArray(_ref9, 2),
-    selectedDatasource = _ref10[0],
-    setSelectedDatasource = _ref10[1];
-  var _ref11 = useState(parentAction),
-    _ref12 = _slicedToArray(_ref11, 2),
-    action = _ref12[0],
-    setAction = _ref12[1];
-  var _ref13 = useState(parentAction === null || parentAction === void 0 ? void 0 : parentAction.shouldRedraw),
-    _ref14 = _slicedToArray(_ref13, 2),
-    redraw = _ref14[0],
-    setRedraw = _ref14[1];
-  var _ref15 = useState(parentLoadingDatasource),
-    _ref16 = _slicedToArray(_ref15, 2),
-    isLoadingDatasource = _ref16[0],
-    setIsLoadingDatasource = _ref16[1];
+  var _useState = useState(parentInputs),
+    _useState2 = _slicedToArray(_useState, 2),
+    inputs = _useState2[0],
+    setInputs = _useState2[1];
+  var _useState3 = useState(parentChart),
+    _useState4 = _slicedToArray(_useState3, 2),
+    chartType = _useState4[0],
+    setChartType = _useState4[1];
+  var _useState5 = useState(parentData),
+    _useState6 = _slicedToArray(_useState5, 2),
+    chartData = _useState6[0],
+    setChartData = _useState6[1];
+  var _useState7 = useState(parentOptions),
+    _useState8 = _slicedToArray(_useState7, 2),
+    chartOptions = _useState8[0],
+    setChartOptions = _useState8[1];
+  var _useState9 = useState(parentDatasource),
+    _useState10 = _slicedToArray(_useState9, 2),
+    selectedDatasource = _useState10[0],
+    setSelectedDatasource = _useState10[1];
+  var _useState11 = useState(parentAction),
+    _useState12 = _slicedToArray(_useState11, 2),
+    action = _useState12[0],
+    setAction = _useState12[1];
+  var _useState13 = useState(parentAction === null || parentAction === void 0 ? void 0 : parentAction.shouldRedraw),
+    _useState14 = _slicedToArray(_useState13, 2),
+    redraw = _useState14[0],
+    setRedraw = _useState14[1];
+  var _useState15 = useState(parentLoadingDatasource),
+    _useState16 = _slicedToArray(_useState15, 2),
+    isLoadingDatasource = _useState16[0],
+    setIsLoadingDatasource = _useState16[1];
 
   // Inner component states unrelated to the parent component
-  var _ref17 = useState({}),
-    _ref18 = _slicedToArray(_ref17, 2),
-    datasetRegistry = _ref18[0],
-    setDatasetRegistry = _ref18[1];
-  var _ref19 = useState({}),
-    _ref20 = _slicedToArray(_ref19, 2),
-    datasRegistry = _ref20[0],
-    setDatasRegistry = _ref20[1];
-  var _ref21 = useState(),
-    _ref22 = _slicedToArray(_ref21, 2),
-    filteredRecords = _ref22[0],
-    setFilteredRecords = _ref22[1];
-  var _ref23 = useState(0),
-    _ref24 = _slicedToArray(_ref23, 2),
-    xSliderMin = _ref24[0],
-    setXSliderMin = _ref24[1];
-  var _ref25 = useState(0),
-    _ref26 = _slicedToArray(_ref25, 2),
-    xSliderMax = _ref26[0],
-    setXSliderMax = _ref26[1];
-  var _ref27 = useState(),
-    _ref28 = _slicedToArray(_ref27, 2),
-    xSliderSteps = _ref28[0],
-    setXSliderSteps = _ref28[1];
-  var _ref29 = useState(),
-    _ref30 = _slicedToArray(_ref29, 2),
-    xSliderValues = _ref30[0],
-    setXSliderValues = _ref30[1];
-  var _ref31 = useState(0),
-    _ref32 = _slicedToArray(_ref31, 2),
-    ySliderMin = _ref32[0],
-    setYSliderMin = _ref32[1];
-  var _ref33 = useState(0),
-    _ref34 = _slicedToArray(_ref33, 2),
-    ySliderMax = _ref34[0],
-    setYSliderMax = _ref34[1];
-  var _ref35 = useState(),
-    _ref36 = _slicedToArray(_ref35, 2),
-    ySliderSteps = _ref36[0],
-    setYSliderSteps = _ref36[1];
-  var _ref37 = useState(),
-    _ref38 = _slicedToArray(_ref37, 2),
-    ySliderValues = _ref38[0],
-    setYSliderValues = _ref38[1];
-  var _ref39 = useState(),
-    _ref40 = _slicedToArray(_ref39, 2),
-    validatorInputs = _ref40[0],
-    setValidatorInputs = _ref40[1];
-  var _ref41 = useState(),
-    _ref42 = _slicedToArray(_ref41, 2),
-    validatorOptions = _ref42[0],
-    setValidatorOptions = _ref42[1];
-  var _ref43 = useState(),
-    _ref44 = _slicedToArray(_ref43, 2),
-    validatorData = _ref44[0],
-    setValidatorData = _ref44[1];
-  var _ref45 = useState((inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) || false),
-    _ref46 = _slicedToArray(_ref45, 2),
-    selectedSteps = _ref46[0],
-    setSelectedSteps = _ref46[1];
-  var _ref47 = useState((inputs === null || inputs === void 0 || (_inputs$geochart$yAxi = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi === void 0 ? void 0 : _inputs$geochart$yAxi.type) || 'linear'),
-    _ref48 = _slicedToArray(_ref47, 2),
-    selectedScale = _ref48[0],
-    setSelectedScale = _ref48[1];
-  var _ref49 = useState(),
-    _ref50 = _slicedToArray(_ref49, 2),
-    plugins = _ref50[0],
-    setPlugins = _ref50[1];
-  var _ref51 = useState(0),
-    _ref52 = _slicedToArray(_ref51, 2),
-    colorPaletteCategoryBackgroundIndex = _ref52[0],
-    setColorPaletteCategoryBackgroundIndex = _ref52[1];
-  var _ref53 = useState(0),
-    _ref54 = _slicedToArray(_ref53, 2),
-    colorPaletteCategoryBorderIndex = _ref54[0],
-    setColorPaletteCategoryBorderIndex = _ref54[1];
-  var _ref55 = useState(0),
-    _ref56 = _slicedToArray(_ref55, 2),
-    colorPaletteAxisBackgroundIndex = _ref56[0],
-    setColorPaletteAxisBackgroundIndex = _ref56[1];
-  var _ref57 = useState(0),
-    _ref58 = _slicedToArray(_ref57, 2),
-    colorPaletteAxisBorderIndex = _ref58[0],
-    setColorPaletteAxisBorderIndex = _ref58[1];
-  var _useState = useState(i18nReact),
-    _useState2 = _slicedToArray(_useState, 2),
-    i18n = _useState2[0],
-    seti18n = _useState2[1];
+  var _useState17 = useState({}),
+    _useState18 = _slicedToArray(_useState17, 2),
+    datasetRegistry = _useState18[0],
+    setDatasetRegistry = _useState18[1];
+  var _useState19 = useState({}),
+    _useState20 = _slicedToArray(_useState19, 2),
+    datasRegistry = _useState20[0],
+    setDatasRegistry = _useState20[1];
+  var _useState21 = useState(),
+    _useState22 = _slicedToArray(_useState21, 2),
+    filteredRecords = _useState22[0],
+    setFilteredRecords = _useState22[1];
+  var _useState23 = useState(0),
+    _useState24 = _slicedToArray(_useState23, 2),
+    xSliderMin = _useState24[0],
+    setXSliderMin = _useState24[1];
+  var _useState25 = useState(0),
+    _useState26 = _slicedToArray(_useState25, 2),
+    xSliderMax = _useState26[0],
+    setXSliderMax = _useState26[1];
+  var _useState27 = useState(),
+    _useState28 = _slicedToArray(_useState27, 2),
+    xSliderSteps = _useState28[0],
+    setXSliderSteps = _useState28[1];
+  var _useState29 = useState(),
+    _useState30 = _slicedToArray(_useState29, 2),
+    xSliderValues = _useState30[0],
+    setXSliderValues = _useState30[1];
+  var _useState31 = useState(0),
+    _useState32 = _slicedToArray(_useState31, 2),
+    ySliderMin = _useState32[0],
+    setYSliderMin = _useState32[1];
+  var _useState33 = useState(0),
+    _useState34 = _slicedToArray(_useState33, 2),
+    ySliderMax = _useState34[0],
+    setYSliderMax = _useState34[1];
+  var _useState35 = useState(),
+    _useState36 = _slicedToArray(_useState35, 2),
+    ySliderSteps = _useState36[0],
+    setYSliderSteps = _useState36[1];
+  var _useState37 = useState(),
+    _useState38 = _slicedToArray(_useState37, 2),
+    ySliderValues = _useState38[0],
+    setYSliderValues = _useState38[1];
+  var _useState39 = useState(),
+    _useState40 = _slicedToArray(_useState39, 2),
+    validatorInputs = _useState40[0],
+    setValidatorInputs = _useState40[1];
+  var _useState41 = useState(),
+    _useState42 = _slicedToArray(_useState41, 2),
+    validatorOptions = _useState42[0],
+    setValidatorOptions = _useState42[1];
+  var _useState43 = useState(),
+    _useState44 = _slicedToArray(_useState43, 2),
+    validatorData = _useState44[0],
+    setValidatorData = _useState44[1];
+  var _useState45 = useState((inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) || false),
+    _useState46 = _slicedToArray(_useState45, 2),
+    selectedSteps = _useState46[0],
+    setSelectedSteps = _useState46[1];
+  var _useState47 = useState((inputs === null || inputs === void 0 || (_inputs$geochart$yAxi = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi === void 0 ? void 0 : _inputs$geochart$yAxi.type) || 'linear'),
+    _useState48 = _slicedToArray(_useState47, 2),
+    selectedScale = _useState48[0],
+    setSelectedScale = _useState48[1];
+  var _useState49 = useState(),
+    _useState50 = _slicedToArray(_useState49, 2),
+    plugins = _useState50[0],
+    setPlugins = _useState50[1];
+  var _useState51 = useState(0),
+    _useState52 = _slicedToArray(_useState51, 2),
+    colorPaletteCategoryBackgroundIndex = _useState52[0],
+    setColorPaletteCategoryBackgroundIndex = _useState52[1];
+  var _useState53 = useState(0),
+    _useState54 = _slicedToArray(_useState53, 2),
+    colorPaletteCategoryBorderIndex = _useState54[0],
+    setColorPaletteCategoryBorderIndex = _useState54[1];
+  var _useState55 = useState(0),
+    _useState56 = _slicedToArray(_useState55, 2),
+    colorPaletteAxisBackgroundIndex = _useState56[0],
+    setColorPaletteAxisBackgroundIndex = _useState56[1];
+  var _useState57 = useState(0),
+    _useState58 = _slicedToArray(_useState57, 2),
+    colorPaletteAxisBorderIndex = _useState58[0],
+    setColorPaletteAxisBorderIndex = _useState58[1];
+  var _useState59 = useState(i18nReact),
+    _useState60 = _slicedToArray(_useState59, 2),
+    i18n = _useState60[0],
+    seti18n = _useState60[1];
   var t = i18n.t;
-  var _ref59 = useState(null),
-    _ref60 = _slicedToArray(_ref59, 2),
-    anchorEl = _ref60[0],
-    setAnchorEl = _ref60[1];
+  var _useState61 = useState(null),
+    _useState62 = _slicedToArray(_useState61, 2),
+    anchorEl = _useState62[0],
+    setAnchorEl = _useState62[1];
   var open = Boolean(anchorEl);
   var chartRef = useRef();
 
@@ -46574,9 +46591,9 @@ function GeoChart(props) {
 
   /**
    * Helper function to set the x and y axes based on the inputs and values.
-   * @param {GeoChartOptionsGeochart} geochart The Geochart options
-   * @param {GeoChartOptionsUI | undefined} uiOptions The Geochart options
-   * @param {TypeJsonObject[]} datasourceItems The Datasource items
+   * @param {GeoChartOptionsGeochart} geochart - The Geochart options
+   * @param {GeoChartOptionsUI | undefined} uiOptions - The Geochart options
+   * @param {Record<string, unknown>[]} datasourceItems - The Datasource items
    */
   var processAxes = function processAxes(geochart, uiOptions, datasourceItems) {
     var _uiOptions$xSlider, _uiOptions$xSlider2, _uiOptions$xSlider3, _uiOptions$ySlider, _uiOptions$ySlider2, _uiOptions$ySlider3;
@@ -46607,6 +46624,7 @@ function GeoChart(props) {
           setXSliderSteps(uiOptions === null || uiOptions === void 0 ? void 0 : uiOptions.xSlider.step);
         } else {
           // If date axis
+          // eslint-disable-next-line no-lonely-if
           if (geochart.xAxis.type === 'time' || geochart.xAxis.type === 'timeseries') {
             // Get an estimated stepping value
             setXSliderSteps(guessEstimatedStep(xMinVal, xMaxVal));
@@ -46648,6 +46666,7 @@ function GeoChart(props) {
 
   /**
    * Helper function to set the x and y axes values based on the min and max of the data or if the values were already set in state.
+   * @param {GeoChartOptionsUI | undefined} uiOptions - The ui options
    * @param {number | undefined} xMinVal - The min value for X
    * @param {number | undefined} xMaxVal - The max value for X
    * @param {number | undefined} yMinVal - The min value for Y
@@ -46693,11 +46712,11 @@ function GeoChart(props) {
    * Fetches the items to associated to the given Datasource and then sets the Datasource in GeoChart
    * @param {GeoViewGeoChartConfig} chartQuery - The chart query being used
    * @param {string} theLanguage - The language being used
-   * @param {TypeJsonObject | undefined} sourceItem - The source item to fetch for
+   * @param {Record<string, unknown>} sourceItem - The source item to fetch for
    * @param {Function} errorCallback - Callback called when an error happens while fetching data
    */
   var fetchDatasourceItems = /*#__PURE__*/function () {
-    var _ref61 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
+    var _ref2 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee(chartQuery, theLanguage, sourceItem, errorCallback) {
       return regenerator_default().wrap(function _callee$(_context) {
         while (1) switch (_context.prev = _context.next) {
           case 0:
@@ -46728,7 +46747,7 @@ function GeoChart(props) {
       }, _callee, null, [[0, 7, 11, 14]]);
     }));
     return function fetchDatasourceItems(_x, _x2, _x3, _x4) {
-      return _ref61.apply(this, arguments);
+      return _ref2.apply(this, arguments);
     };
   }();
 
@@ -46763,7 +46782,7 @@ function GeoChart(props) {
 
   /**
    * Updates the selected datasets object in synch with the actual datasets read from the data.
-   * @param {TypeJsonObject[] | undefined} items - The items reprensenting the data
+   * @param {Record<string, unknown>[] | undefined} items - The items reprensenting the data
    * @param {string | undefined} catPropertyName - The property name for the categorization
    * @param {string[] | undefined} paletteBackgrounds - The color palette used for the background colors
    * @param {string[] | undefined} paletteBorders - The color palette used for the border colors
@@ -46829,7 +46848,7 @@ function GeoChart(props) {
   /**
    * Updates the selected data object in synch with the actual labels read from the data.
    * @param {string} theChartType - The chart type
-   * @param {TypeJsonObject[] | undefined} items - The items to process the labels for
+   * @param {Record<string, unknown>[] | undefined} items - The items to process the labels for
    * @param {string | undefined} labelPropertyName - The property name to use for labeling
    * @param {string[] | undefined} paletteBackgrounds - The color palette used for the background colors
    * @param {string[] | undefined} paletteBorders - The color palette used for the border colors
@@ -46962,7 +46981,7 @@ function GeoChart(props) {
    * @param {string} theLanguage - The language
    * @param {StepsPossibilities} theSteps - The steps for the graph
    * @param {ScalePossibilities} theYScale - The scale for the Y axis
-   * @param {TypeJsonObject[] | undefined} records - The records
+   * @param {Record<string, unknown>[] | undefined} records - The records
    */
   var processLoadingRecords = useCallback(function (theInputs, theDatasetRegistry, theDatasRegistry, theLanguage, theSteps, theYScale, records) {
     var _parsedData$datasets;
@@ -47000,7 +47019,7 @@ function GeoChart(props) {
    * @param {string} theLanguage - The language
    * @param {StepsPossibilities} theSteps - The steps for the graph
    * @param {ScalePossibilities} theYScale - The scale for the Y axis
-   * @param {TypeJsonObject[] | undefined} records - The records
+   * @param {Record<string, unknown>[] | undefined} records - The records
    * @param {number | number[]} xValues - The X axis filtering values
    * @param {number | number[]} yValues - The Y axis filtering values
    */
@@ -47213,7 +47232,7 @@ function GeoChart(props) {
 
     // Async function to fetch data from within a sync useEffect :|
     var fetchAndSetSelectedDatasource = /*#__PURE__*/function () {
-      var _ref62 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
+      var _ref3 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
         return regenerator_default().wrap(function _callee2$(_context2) {
           while (1) switch (_context2.prev = _context2.next) {
             case 0:
@@ -47230,7 +47249,7 @@ function GeoChart(props) {
         }, _callee2);
       }));
       return function fetchAndSetSelectedDatasource(_x5, _x6, _x7) {
-        return _ref62.apply(this, arguments);
+        return _ref3.apply(this, arguments);
       };
     }();
 
@@ -47250,7 +47269,10 @@ function GeoChart(props) {
       // Init the datasource items for the first record and sets it
       if (!ds.items && inputs.query) {
         // Must fetch straight away
-        fetchAndSetSelectedDatasource(inputs.query, i18n.language, ds);
+        fetchAndSetSelectedDatasource(inputs.query, i18n.language, ds)["catch"](function (error) {
+          // Log error
+          logger.logPromiseFailed('in fetchAndSetSelectedDatasource in INPUTS useEffect', error);
+        });
       } else setSelectedDatasource(ds);
     } else setSelectedDatasource(undefined);
     return function () {
@@ -47344,12 +47366,12 @@ function GeoChart(props) {
     // If chart data. Validate the parsing we did do follow ChartJS data schema validating
     if (chartData) {
       // Validate the data inputs
-      var validRes = schemaValidator.validateData(chartData);
-      if (!validRes.valid) {
+      var _validRes = schemaValidator.validateData(chartData);
+      if (!_validRes.valid) {
         // Log
-        logger.logError('Failed when validating data inputs for Chart', validRes);
+        logger.logError('Failed when validating data inputs for Chart', _validRes);
       }
-      setValidatorData(validRes);
+      setValidatorData(_validRes);
     }
     return function () {
       // Log
@@ -47440,7 +47462,10 @@ function GeoChart(props) {
     if (action !== null && action !== void 0 && action.shouldRedraw) {
       action.shouldRedraw = false;
       // Redraw
-      performRedraw();
+      performRedraw()["catch"](function (error) {
+        // Log error
+        logger.logPromiseFailed('in performRedraw in ACTION useEffect', error);
+      });
     }
     return function () {
       // Log
@@ -47458,7 +47483,7 @@ function GeoChart(props) {
    * @param {MenuItem} item The selected MenuItem
    */
   var handleDatasourceChanged = /*#__PURE__*/function () {
-    var _ref63 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
+    var _ref4 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
       var ds;
       return regenerator_default().wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
@@ -47494,7 +47519,7 @@ function GeoChart(props) {
       }, _callee3);
     }));
     return function handleDatasourceChanged(_x8, _x9) {
-      return _ref63.apply(this, arguments);
+      return _ref4.apply(this, arguments);
     };
   }();
 
@@ -47647,22 +47672,21 @@ function GeoChart(props) {
     // Log
     logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
     setAnchorEl(event.currentTarget);
-  }, []);
+  }, [logger]);
 
   /**
    * Close export menu.
    */
-
   var handleClose = useCallback(function () {
     // Log
     logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClose');
     setAnchorEl(null);
-  }, []);
+  }, [logger]);
 
   /**
    * Handles when the download filtered button is clicked
    */
-  var handleDownloadFiltered = function handleDownloadFiltered() {
+  var handleDownloadFiltered = useCallback(function () {
     // Get the data
     var data = chart_objectSpread({}, selectedDatasource);
 
@@ -47703,12 +47727,12 @@ function GeoChart(props) {
 
     // Download the data as json
     downloadJson(data, fileName);
-  };
+  }, [chartType, datasRegistry, datasetRegistry, filteredRecords, inputs === null || inputs === void 0 ? void 0 : inputs.category, inputs === null || inputs === void 0 ? void 0 : inputs.geochart.xAxis.property, onDownloadClicked, selectedDatasource]);
 
   /**
    * Handles when the download all button is clicked
    */
-  var handleDownloadAll = function handleDownloadAll() {
+  var handleDownloadAll = useCallback(function () {
     // Get the data
     var data = chart_objectSpread({}, selectedDatasource);
 
@@ -47718,7 +47742,7 @@ function GeoChart(props) {
 
     // Download the data as json
     downloadJson(data, fileName);
-  };
+  }, [onDownloadClicked, selectedDatasource]);
 
   // #endregion
 
@@ -48019,14 +48043,14 @@ function GeoChart(props) {
           children: [/*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
             sx: sxClasses.checkDatasetWrapperLabel,
             children: label
-          }), Object.entries(datasetRegistry).filter(function (_ref64) {
-            var _ref65 = _slicedToArray(_ref64, 2),
-              dsOption = _ref65[1];
+          }), Object.entries(datasetRegistry).filter(function (_ref5) {
+            var _ref6 = _slicedToArray(_ref5, 2),
+              dsOption = _ref6[1];
             return dsOption.visible;
-          }).map(function (_ref66, idx) {
-            var _ref67 = _slicedToArray(_ref66, 2),
-              dsLabel = _ref67[0],
-              dsOption = _ref67[1];
+          }).map(function (_ref7, idx) {
+            var _ref8 = _slicedToArray(_ref7, 2),
+              dsLabel = _ref8[0],
+              dsOption = _ref8[1];
             var color;
             if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
             return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
@@ -48063,14 +48087,14 @@ function GeoChart(props) {
       if (chartType === 'pie' || chartType === 'doughnut') {
         if (Object.keys(datasRegistry).length > 1) {
           return /*#__PURE__*/(0,jsx_runtime.jsx)(jsx_runtime.Fragment, {
-            children: Object.entries(datasRegistry).filter(function (_ref68) {
-              var _ref69 = _slicedToArray(_ref68, 2),
-                dsOption = _ref69[1];
+            children: Object.entries(datasRegistry).filter(function (_ref9) {
+              var _ref10 = _slicedToArray(_ref9, 2),
+                dsOption = _ref10[1];
               return dsOption.visible;
-            }).map(function (_ref70, idx) {
-              var _ref71 = _slicedToArray(_ref70, 2),
-                dsLabel = _ref71[0],
-                dsOption = _ref71[1];
+            }).map(function (_ref11, idx) {
+              var _ref12 = _slicedToArray(_ref11, 2),
+                dsLabel = _ref12[0],
+                dsOption = _ref12[1];
               var color = dsOption.borderColor;
               return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
                 sx: sxClasses.checkDatasetWrapper,
@@ -48229,47 +48253,47 @@ function App(props) {
   // Fetch the cgpv module
   var cgpv = w.cgpv;
   var ui = cgpv.ui;
-  var _cgpv$reactUtilities$ = cgpv.reactUtilities.react,
-    useEffect = _cgpv$reactUtilities$.useEffect,
-    useState = _cgpv$reactUtilities$.useState,
-    useCallback = _cgpv$reactUtilities$.useCallback;
+  var _ref = cgpv.reactUtilities.react,
+    useEffect = _ref.useEffect,
+    useState = _ref.useState,
+    useCallback = _ref.useCallback;
   var Box = ui.elements.Box;
   var schemaValidator = props.schemaValidator;
 
   // #region USE STATE SECTION ****************************************************************************************
 
-  var _ref = useState(),
-    _ref2 = _slicedToArray(_ref, 2),
-    inputs = _ref2[0],
-    setInputs = _ref2[1];
-  var _ref3 = useState(),
-    _ref4 = _slicedToArray(_ref3, 2),
-    chart = _ref4[0],
-    setChart = _ref4[1];
-  var _ref5 = useState(),
-    _ref6 = _slicedToArray(_ref5, 2),
-    data = _ref6[0],
-    setData = _ref6[1];
-  var _ref7 = useState(),
-    _ref8 = _slicedToArray(_ref7, 2),
-    options = _ref8[0],
-    setOptions = _ref8[1];
-  var _ref9 = useState(),
-    _ref10 = _slicedToArray(_ref9, 2),
-    action = _ref10[0],
-    setAction = _ref10[1];
-  var _ref11 = useState(),
-    _ref12 = _slicedToArray(_ref11, 2),
-    language = _ref12[0],
-    setLanguage = _ref12[1];
-  var _ref13 = useState(),
-    _ref14 = _slicedToArray(_ref13, 2),
-    isLoadingChart = _ref14[0],
-    setIsLoadingChart = _ref14[1];
-  var _ref15 = useState(),
-    _ref16 = _slicedToArray(_ref15, 2),
-    isLoadingDatasource = _ref16[0],
-    setIsLoadingDatasource = _ref16[1];
+  var _useState = useState(),
+    _useState2 = _slicedToArray(_useState, 2),
+    inputs = _useState2[0],
+    setInputs = _useState2[1];
+  var _useState3 = useState(),
+    _useState4 = _slicedToArray(_useState3, 2),
+    chart = _useState4[0],
+    setChart = _useState4[1];
+  var _useState5 = useState(),
+    _useState6 = _slicedToArray(_useState5, 2),
+    data = _useState6[0],
+    setData = _useState6[1];
+  var _useState7 = useState(),
+    _useState8 = _slicedToArray(_useState7, 2),
+    options = _useState8[0],
+    setOptions = _useState8[1];
+  var _useState9 = useState(),
+    _useState10 = _slicedToArray(_useState9, 2),
+    action = _useState10[0],
+    setAction = _useState10[1];
+  var _useState11 = useState(),
+    _useState12 = _slicedToArray(_useState11, 2),
+    language = _useState12[0],
+    setLanguage = _useState12[1];
+  var _useState13 = useState(false),
+    _useState14 = _slicedToArray(_useState13, 2),
+    isLoadingChart = _useState14[0],
+    setIsLoadingChart = _useState14[1];
+  var _useState15 = useState(false),
+    _useState16 = _slicedToArray(_useState15, 2),
+    isLoadingDatasource = _useState16[0],
+    setIsLoadingDatasource = _useState16[1];
 
   // #endregion
 
