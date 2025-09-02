@@ -3,7 +3,7 @@
  */
 import { Palette, Theme } from '@mui/material/styles';
 
-type GeoViewThemePalette = Palette & { geoViewColor: Palette, geoViewFontSize: { default: number } };
+type GeoViewThemePalette = Palette & { geoViewColor: Palette; geoViewFontSize: { default: number } };
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const getSxClasses = (theme: Theme) => {
@@ -53,7 +53,7 @@ export const getSxClasses = (theme: Theme) => {
       marginLeft: 'auto',
       '& button': {
         height: '40px',
-        textTransform: 'capitalize'
+        textTransform: 'capitalize',
       },
     },
     dataset: {

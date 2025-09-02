@@ -1,3 +1,4 @@
+import type React from 'react';
 import { GeoChart } from './chart';
 import { GeoChartConfig, ChartType, ChartOptions, ChartData, GeoChartAction, DefaultDataPoint } from './types';
 import { SchemaValidator } from './chart-schema-validator';
@@ -22,26 +23,20 @@ export function App(props: TypeAppProps): JSX.Element {
   // Fetch the cgpv module
   const { cgpv } = w;
   const { ui } = cgpv;
-  const { useEffect, useState, useCallback } = cgpv.reactUtilities.react;
+  const { useEffect, useState, useCallback } = cgpv.reactUtilities.react as typeof React;
   const { Box } = ui.elements;
   const { schemaValidator } = props;
 
   // #region USE STATE SECTION ****************************************************************************************
 
-  const [inputs, setInputs] = useState() as [
-    GeoChartConfig<ChartType> | undefined,
-    React.Dispatch<React.SetStateAction<GeoChartConfig<ChartType> | undefined>>
-  ];
-  const [chart, setChart] = useState() as [ChartType, React.Dispatch<React.SetStateAction<ChartType>>];
-  const [data, setData] = useState() as [
-    ChartData<ChartType, DefaultDataPoint<ChartType>, string> | undefined,
-    React.Dispatch<React.SetStateAction<ChartData<ChartType, DefaultDataPoint<ChartType>, string> | undefined>>
-  ];
-  const [options, setOptions] = useState() as [ChartOptions | undefined, React.Dispatch<React.SetStateAction<ChartOptions> | undefined>];
-  const [action, setAction] = useState() as [GeoChartAction, React.Dispatch<React.SetStateAction<GeoChartAction>>];
-  const [language, setLanguage] = useState() as [string, React.Dispatch<React.SetStateAction<string>>];
-  const [isLoadingChart, setIsLoadingChart] = useState() as [boolean, React.Dispatch<React.SetStateAction<boolean>>];
-  const [isLoadingDatasource, setIsLoadingDatasource] = useState() as [boolean, React.Dispatch<React.SetStateAction<boolean>>];
+  const [inputs, setInputs] = useState<GeoChartConfig<ChartType> | undefined>();
+  const [chart, setChart] = useState<ChartType | undefined>();
+  const [data, setData] = useState<ChartData<ChartType, DefaultDataPoint<ChartType>, string> | undefined>();
+  const [options, setOptions] = useState<ChartOptions | undefined>();
+  const [action, setAction] = useState<GeoChartAction | undefined>();
+  const [language, setLanguage] = useState<string | undefined>();
+  const [isLoadingChart, setIsLoadingChart] = useState(false);
+  const [isLoadingDatasource, setIsLoadingDatasource] = useState<boolean>(false);
 
   // #endregion
 
@@ -55,17 +50,17 @@ export function App(props: TypeAppProps): JSX.Element {
 
     // If inputs provided
     if (ev.detail.inputs) {
-      setInputs(ev.detail.inputs);
+      setInputs(ev.detail.inputs as GeoChartConfig<ChartType>);
     } else {
       setInputs(undefined); // Clear
       if (ev.detail.chart) {
-        setChart(ev.detail.chart);
+        setChart(ev.detail.chart as ChartType);
       }
       if (ev.detail.options) {
-        setOptions(ev.detail.options);
+        setOptions(ev.detail.options as ChartOptions);
       }
       if (ev.detail.data) {
-        setData(ev.detail.data);
+        setData(ev.detail.data as ChartData<ChartType, DefaultDataPoint<ChartType>, string>);
       }
       setAction({ shouldRedraw: true });
     }
@@ -124,7 +119,7 @@ export function App(props: TypeAppProps): JSX.Element {
    */
   const handleChartLanguage = useCallback((e: Event): void => {
     const ev = e as CustomEvent;
-    setLanguage(ev.detail.language);
+    setLanguage(ev.detail.language as string);
   }, []);
 
   // Effect hook to add and remove event listeners.
@@ -153,7 +148,7 @@ export function App(props: TypeAppProps): JSX.Element {
       <GeoChart
         inputs={inputs}
         schemaValidator={schemaValidator}
-        chart={chart}
+        chart={chart!}
         data={data}
         options={options}
         action={action}

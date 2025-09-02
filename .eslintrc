@@ -6,9 +6,13 @@
     "eslint:recommended",
     "plugin:react/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "plugin:prettier/recommended"
   ],
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": true
+  },
   "env": {
     "browser": true
   },
@@ -28,12 +32,16 @@
     }
   },
   "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
+    "react/prop-types": "off",
+    "no-useless-constructor": "off",
+    "@typescript-eslint/no-useless-constructor": "error",
+    "@typescript-eslint/no-unused-vars": "warn",
+    "@typescript-eslint/no-unnecessary-type-assertion": "error",
     "@typescript-eslint/explicit-function-return-type": "off",
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off",
     "react/jsx-filename-extension": [
-      1,
+      1, // Warning
       {
         "extensions": [".js", ".ts", ".tsx"]
       }
@@ -63,11 +71,15 @@
     "no-shadow": "off",
     "@typescript-eslint/no-shadow": "error",
     "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/no-unsafe-member-access": "off",
+    "@typescript-eslint/no-unsafe-call": "off",
     "react-hooks/rules-of-hooks": "error", // Checks rules of Hooks
     "react-hooks/exhaustive-deps": "warn", // Checks effect dependencies
     "react/jsx-props-no-spreading": "off",
     "import/no-extraneous-dependencies": "off",
     "import/no-unresolved": "off",
+    "react/require-default-props": "off",
     "no-restricted-imports": [
       "error",
       {
@@ -88,7 +100,8 @@
       }
     ],
     "require-await": 1, // Warning
-    "@typescript-eslint/await-thenable": "warn"
+    "@typescript-eslint/await-thenable": "warn",
+    "@typescript-eslint/prefer-promise-reject-errors": "error"
   },
   "overrides": [
     {
@@ -103,6 +116,14 @@
             "allowExpressions": true
           }
         ]
+      }
+    },
+    {
+      "files": ["webpack.*.js"],
+      "parser": "@babel/eslint-parser",
+      "parserOptions": {
+        "requireConfigFile": false,
+        "ecmaVersion": 2018
       }
     }
   ]

@@ -17,15 +17,15 @@ export type ValidatorResult = {
  */
 export class SchemaValidator {
   // The embedded JSON validator
-  private ajv: Ajv;
+  #ajv: Ajv;
 
   /**
    * Constructs a Chart Validate object to validate schemas.
    */
   constructor() {
     // The embedded JSON validator
-    this.ajv = new Ajv();
-    addFormats(this.ajv);
+    this.#ajv = new Ajv();
+    addFormats(this.#ajv);
   }
 
   /**
@@ -62,7 +62,7 @@ export class SchemaValidator {
    */
   validateJsonSchema = (schema: object, anyObject: unknown): ValidatorResult => {
     // Compile
-    const validate = this.ajv.compile(schema);
+    const validate = this.#ajv.compile(schema);
 
     // Validate
     const valid = validate(anyObject) as boolean;

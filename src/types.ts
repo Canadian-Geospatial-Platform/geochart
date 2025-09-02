@@ -5,11 +5,6 @@ import { extractColor } from './utils';
 // Export all ChartJS types
 export type * from 'chart.js';
 
-// Simulate the types in cgpv
-// TODO: Refactor - Think about it, do we fetch cgpv, even in '.ts' classes!?
-export type TypeJsonValue = null | string | number | boolean | TypeJsonObject[] | { [key: string]: TypeJsonObject };
-export type TypeJsonObject = TypeJsonValue & { [key: string]: TypeJsonObject };
-
 /**
  * The Main GeoChart Configuration used by the GeoChart Component
  */
@@ -72,7 +67,7 @@ export type GeoChartCategory = {
 export const StepsPossibilitiesConst = ['before', 'after', 'middle', false] as const;
 export type StepsPossibilities = (typeof StepsPossibilitiesConst)[number];
 
-export const ScalePossibilitiesConst = ['linear', 'logarithmic'] as const;
+export const ScalePossibilitiesConst = ['linear', 'logarithmic', 'category', 'time', 'timeseries'] as const;
 export type ScalePossibilities = (typeof ScalePossibilitiesConst)[number];
 
 /**
@@ -104,9 +99,9 @@ export type GeoChartOptionsUI = {
  */
 export type GeoChartDatasource = {
   display: string;
-  sourceItem?: TypeJsonObject; // Associated source item linking back to the source of the data
+  sourceItem?: Record<string, unknown>; // Associated source item linking back to the source of the data
   value?: string;
-  items?: TypeJsonObject[];
+  items?: Record<string, unknown>[];
 };
 
 /**
@@ -161,7 +156,7 @@ export type GeoChartOptionsSlider = {
  * points to a ScatterDataPoint which is only supporting x: number and y: number, which isn't try for us with the Date support on the x property.
  */
 export type GeoChartXYData = {
-  x: string | number | Date | unknown;
+  x: unknown;
   y: number;
 };
 
@@ -228,7 +223,7 @@ export const DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT: string[] = [
  */
 export const DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT.map((color: string) => {
   // Extract the alpha-less color code for better output
-  return extractColor(color)!;
+  return extractColor(color);
 });
 
 /**
@@ -251,7 +246,7 @@ export const DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT: string[] = [
  */
 export const DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT.map((color: string) => {
   // Extract the alpha-less color code for better output
-  return extractColor(color)!;
+  return extractColor(color);
 });
 
 /**
@@ -273,7 +268,7 @@ export const DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT: string[] = [
  */
 export const DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT.map((color: string) => {
   // Extract the alpha-less color code for better output
-  return extractColor(color)!;
+  return extractColor(color);
 });
 
 /**
