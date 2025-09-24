@@ -1875,7 +1875,7 @@ export function GeoChart<
             </Box>
           </Grid>
 
-          <Grid item size={{ xs: 1 }}>
+          <Grid item sx={sxClasses.yAxisContainer} size={{ xs: 1 }}>
             {renderYAxisLabel()}
           </Grid>
           <Grid item sx={sxClasses.chartContent} size={{ xs: 10 }}>
