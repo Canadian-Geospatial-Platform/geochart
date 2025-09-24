@@ -22,7 +22,8 @@ import {
   ScalePossibilities,
 } from './types';
 import { SchemaValidator, ValidatorResult } from './chart-schema-validator';
-import { createChartJSOptions, createChartJSData, fetchItemsViaQueryForDatasource, setColorPalettes } from './chart-parsing';
+import { ChartCore } from './chart-core';
+import { ChartParsing } from './chart-parsing';
 import { getSxClasses } from './chart-style';
 import { isNumber, downloadJson, getColorFromPalette, guessEstimatedStep } from './utils';
 
@@ -132,7 +133,7 @@ const DEFAULT_OPTIONS: ChartOptions<ChartType> = {
 const DEFAULT_DATA: ChartData<ChartType, GeoDefaultDataPoint<ChartType>> = { datasets: [], labels: [] };
 
 /** Default number of markers per slider axis */
-const DEFAULT_NUMBER_OF_SLIDER_MARKS_X: number = 20;
+const DEFAULT_NUMBER_OF_SLIDER_MARKS_X: number = 5;
 const DEFAULT_NUMBER_OF_SLIDER_MARKS_Y: number = 10;
 
 /** Used for debugging purposes of mocking the data */
@@ -276,7 +277,7 @@ export function GeoChart<
   if (defaultColors?.color) ChartJS.defaults.color = defaultColors?.color;
 
   // Attribute the color palettes
-  setColorPalettes(inputs);
+  ChartParsing.setColorPalettes(inputs);
 
   // #endregion
 
@@ -426,7 +427,7 @@ export function GeoChart<
       setIsLoadingDatasource(true);
 
       // Fetch the items for the data source in question
-      return await fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
+      return await ChartCore.fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
     } catch (ex) {
       // Error
       errorCallback?.('Failed to fetch the data', ex);
@@ -435,18 +436,6 @@ export function GeoChart<
       // Done
       setIsLoadingDatasource(false);
     }
-  };
-
-  /**
-   * Helper function checking for the valid states of a list of ValidatorResults. Returns true if there were no errors found.
-   * @param {(ValidatorResult | undefined)[]} validators - The list of validator results to check for their valid states
-   * @returns true if there were no errors in the schema validations
-   */
-  const hasValidSchemas = (validators: (ValidatorResult | undefined)[]): boolean => {
-    const validatorsInvalid = validators.filter((valResult: ValidatorResult | undefined) => {
-      return valResult && !valResult.valid;
-    });
-    return validatorsInvalid.length === 0;
   };
 
   /**
@@ -704,8 +693,8 @@ export function GeoChart<
       logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
 
       // Parse the data
-      const parsedOptions = createChartJSOptions<TType>(theInputs, parentOptions!, theYScale, theLanguage);
-      const parsedData = createChartJSData<TType, TData, TLabel>(
+      const parsedOptions = ChartParsing.createChartJSOptions<TType>(theInputs, parentOptions!, theYScale, theLanguage);
+      const parsedData = ChartParsing.createChartJSData<TType, TData, TLabel>(
         theInputs,
         theDatasetRegistry,
         theDatasRegistry,
@@ -1199,10 +1188,10 @@ export function GeoChart<
   useEffect(() => {
     // Log
     const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - VALIDATORS - INPUTS';
-    logger.logTraceUseEffect(USE_EFFECT_FUNC, hasValidSchemas([validatorInputs]));
+    logger.logTraceUseEffect(USE_EFFECT_FUNC, ChartCore.hasValidSchemas([validatorInputs]));
 
     // If any error
-    if (!hasValidSchemas([validatorInputs])) {
+    if (!ChartCore.hasValidSchemas([validatorInputs])) {
       // Gather error messages
       const error = SchemaValidator.parseValidatorResultsMessages([validatorInputs]);
       // If a callback is defined
@@ -1222,10 +1211,10 @@ export function GeoChart<
   useEffect(() => {
     // Log
     const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - VALIDATORS - OPTIONS+DATA';
-    logger.logTraceUseEffect(USE_EFFECT_FUNC, hasValidSchemas([validatorOptions, validatorData]));
+    logger.logTraceUseEffect(USE_EFFECT_FUNC, ChartCore.hasValidSchemas([validatorOptions, validatorData]));
 
     // If any error
-    if (!hasValidSchemas([validatorOptions, validatorData])) {
+    if (!ChartCore.hasValidSchemas([validatorOptions, validatorData])) {
       // Gather error messages
       const error = SchemaValidator.parseValidatorResultsMessages([validatorOptions, validatorData]);
       // If a callback is defined
@@ -1945,7 +1934,7 @@ export function GeoChart<
 
   // TODO: Add a check if there's a 'current error', not just a 'valid schemas' error
   // If no errors
-  if (hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {
+  if (ChartCore.hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {
     // Render the chart
     return renderEverything();
   }
