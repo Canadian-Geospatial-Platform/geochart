@@ -223,10 +223,6 @@ export function GeoChart<
 
   // #region USE STATE SECTION ****************************************************************************************
 
-  // TODO: Refactor - Check why the useState and useCallback coming from cgpv lose their generic capabilities.
-  // TO.DO.CONT: This is rather problematic. It forces the devs to explicitely use some "not so pretty" type assertions
-  // so that things remain typed instead of becoming 'any' when using functions such as 'useState', 'useCallback', 'useRef', etc.
-
   // Inner component states attached to the parent component
   const [inputs, setInputs] = useState(parentInputs);
   const [chartType, setChartType] = useState(parentChart);
