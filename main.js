@@ -45800,7 +45800,20 @@ var ChartParsing = /*#__PURE__*/function () {
         // If tooltip
         if (chartConfig.geochart.yAxis.tooltipSuffix) {
           _optionsLine.plugins.tooltip.callbacks.label = function (context) {
-            return "".concat(context.dataset.label, ": ").concat(context.formattedValue, " ").concat(chartConfig.geochart.yAxis.tooltipSuffix);
+            // Read the formatted value by default
+            var value = context.formattedValue;
+
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            var rawValue = context.raw;
+
+            // If we have a context.raw.y value, prioritize that value so that we don't lose decimals
+            if (rawValue.y && utils_isNumber(rawValue.y)) {
+              // Read the raw value as string
+              value = ChartParsing.fixDecimals(Number(rawValue.y)).toString();
+            }
+
+            // Return the tooltip
+            return "".concat(context.dataset.label, ": ").concat(value, " ").concat(chartConfig.geochart.yAxis.tooltipSuffix);
           };
         }
       }
@@ -45917,6 +45930,19 @@ var ChartParsing = /*#__PURE__*/function () {
      * @static
      * @private
      */
+  }, {
+    key: "fixDecimals",
+    value:
+    /**
+     * Fixes some JavaScript decimals non-rounding issues
+     * @param {number} number - The number to fix.
+     * @param {number} fractionDigits - The number of digits to have, max, defaults to 10.
+     * @returns {number} The fixed number with regards to its decimals
+     */
+    function fixDecimals(number) {
+      var fractionDigits = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 10;
+      return Number(number.toFixed(fractionDigits));
+    }
   }]);
 }();
 _ChartParsing = ChartParsing;
@@ -46317,16 +46343,18 @@ var getSxClasses = function getSxClasses(theme) {
       textAlign: 'center',
       margin: '10px 0px'
     },
+    yAxisContainer: {
+      display: 'inline-flex;'
+    },
     yAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
       fontWeight: theme.typography.fontWeightBold,
       fontSize: (_gvThemePalette$geoVi3 = gvThemePalette.geoViewFontSize) === null || _gvThemePalette$geoVi3 === void 0 ? void 0 : _gvThemePalette$geoVi3["default"],
-      position: 'absolute',
-      top: '45%',
-      margin: '0 auto',
-      marginLeft: '20px',
+      margin: 'auto',
       writingMode: 'vertical-rl',
-      transform: 'rotate(-180deg)',
+      position: 'absolute',
+      top: '50%',
+      transform: 'rotate(-180deg) translateY(50%)',
       transformOrigin: 'center'
     },
     uiOptionsResetStates: {
@@ -47852,7 +47880,7 @@ function GeoChart(props) {
       return Array.from({
         length: Math.floor((max - min) / step) + 1
       }, function (_, i) {
-        var value = Number((min + i * step).toFixed(10));
+        var value = ChartParsing.fixDecimals(min + i * step);
         return {
           value: value,
           label: handleSliderValueDisplay(value)
@@ -48211,6 +48239,7 @@ function GeoChart(props) {
           })]
         }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
           item: true,
+          sx: sxClasses.yAxisContainer,
           size: {
             xs: 1
           },
