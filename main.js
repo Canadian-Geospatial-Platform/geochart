@@ -46359,6 +46359,15 @@ var DEFAULT_DATA = {
   labels: []
 };
 
+/** Default number of markers per slider axis */
+var DEFAULT_NUMBER_OF_SLIDER_MARKS_X = 20;
+var DEFAULT_NUMBER_OF_SLIDER_MARKS_Y = 10;
+
+/** Used for debugging purposes of mocking the data */
+var DEBUG_MOCKING_RESULT_FILTERING = false;
+var DEFAULT_FAKE_Y_MIN = 0;
+var DEFAULT_FAKE_Y_MAX = 1;
+
 /**
  * Create a customized Chart UI
  *
@@ -47230,29 +47239,6 @@ function GeoChart(props) {
     var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - INPUTS';
     logger.logTraceUseEffect(USE_EFFECT_FUNC, inputs);
 
-    // Async function to fetch data from within a sync useEffect :|
-    var fetchAndSetSelectedDatasource = /*#__PURE__*/function () {
-      var _ref3 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(query, theLanguage, datasource) {
-        return regenerator_default().wrap(function _callee2$(_context2) {
-          while (1) switch (_context2.prev = _context2.next) {
-            case 0:
-              _context2.next = 2;
-              return fetchDatasourceItems(query, theLanguage, datasource.sourceItem, onError);
-            case 2:
-              datasource.items = _context2.sent;
-              // Set the datasource
-              setSelectedDatasource(datasource);
-            case 4:
-            case "end":
-              return _context2.stop();
-          }
-        }, _callee2);
-      }));
-      return function fetchAndSetSelectedDatasource(_x5, _x6, _x7) {
-        return _ref3.apply(this, arguments);
-      };
-    }();
-
     // Reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
     setSelectedSteps((inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) || false);
 
@@ -47269,7 +47255,21 @@ function GeoChart(props) {
       // Init the datasource items for the first record and sets it
       if (!ds.items && inputs.query) {
         // Must fetch straight away
-        fetchAndSetSelectedDatasource(inputs.query, i18n.language, ds)["catch"](function (error) {
+        fetchDatasourceItems(inputs.query, i18n.language, ds.sourceItem, onError).then(function (result) {
+          // If faking results
+          if (DEBUG_MOCKING_RESULT_FILTERING) {
+            // eslint-disable-next-line no-param-reassign
+            result = result.filter(function (res) {
+              return Number(res[inputs.geochart.yAxis.property]) >= DEFAULT_FAKE_Y_MIN && Number(res[inputs.geochart.yAxis.property]) <= DEFAULT_FAKE_Y_MAX;
+            });
+          }
+
+          // Set the items
+          ds.items = result;
+
+          // Set the datasource
+          setSelectedDatasource(ds);
+        })["catch"](function (error) {
           // Log error
           logger.logPromiseFailed('in fetchAndSetSelectedDatasource in INPUTS useEffect', error);
         });
@@ -47483,29 +47483,29 @@ function GeoChart(props) {
    * @param {MenuItem} item The selected MenuItem
    */
   var handleDatasourceChanged = /*#__PURE__*/function () {
-    var _ref4 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(e, item) {
+    var _ref3 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(e, item) {
       var ds;
-      return regenerator_default().wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
+      return regenerator_default().wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
           case 0:
             // Find the selected datasource reference based on the MenuItem
             ds = inputs.datasources.find(function (datasource) {
               return (datasource.value || datasource.display) === item.props.value;
             });
             if (ds) {
-              _context3.next = 3;
+              _context2.next = 3;
               break;
             }
-            return _context3.abrupt("return");
+            return _context2.abrupt("return");
           case 3:
             if (ds.items) {
-              _context3.next = 7;
+              _context2.next = 7;
               break;
             }
-            _context3.next = 6;
+            _context2.next = 6;
             return fetchDatasourceItems(inputs.query, i18n.language, ds.sourceItem, onError);
           case 6:
-            ds.items = _context3.sent;
+            ds.items = _context2.sent;
           case 7:
             // Set the selected datasource
             setSelectedDatasource(ds);
@@ -47514,12 +47514,12 @@ function GeoChart(props) {
             onDatasourceChanged === null || onDatasourceChanged === void 0 || onDatasourceChanged(ds, i18n.language);
           case 9:
           case "end":
-            return _context3.stop();
+            return _context2.stop();
         }
-      }, _callee3);
+      }, _callee2);
     }));
-    return function handleDatasourceChanged(_x8, _x9) {
-      return _ref4.apply(this, arguments);
+    return function handleDatasourceChanged(_x5, _x6) {
+      return _ref3.apply(this, arguments);
     };
   }();
 
@@ -47792,17 +47792,28 @@ function GeoChart(props) {
    * Generate marker labels for the slider values
    * @returns The array of slider markers
    */
-  var getMarkers = useCallback(function (sliderValues, handleSliderValueDisplay) {
-    var sliderMarks = [];
-    if (Array.isArray(sliderValues)) {
-      for (var i = 0; i < sliderValues.length; i++) {
-        sliderMarks.push({
-          value: sliderValues[i],
-          label: handleSliderValueDisplay(sliderValues[i])
-        });
-      }
+  var getMarkers = useCallback(function (min, max, numberOfMarks, handleSliderValueDisplay) {
+    // Calculate the range of values we're working with
+    var range = max - min;
+    // Calculate the steps we're expecting based on the number of marks we want
+    var step = range / numberOfMarks;
+
+    // If any range
+    if (range) {
+      // Generate marks dynamically based on min, max, and step
+      return Array.from({
+        length: Math.floor((max - min) / step) + 1
+      }, function (_, i) {
+        var value = Number((min + i * step).toFixed(10));
+        return {
+          value: value,
+          label: handleSliderValueDisplay(value)
+        };
+      });
     }
-    return sliderMarks;
+
+    // Empty
+    return [];
   }, []);
 
   /**
@@ -47817,7 +47828,7 @@ function GeoChart(props) {
         return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: sxClasses.xSliderWrapper,
           children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
-            marks: getMarkers([xSliderMin, xSliderMax], handleSliderXValueFormat),
+            marks: getMarkers(xSliderMin, xSliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_X, handleSliderXValueFormat),
             min: xSliderMin,
             max: xSliderMax,
             step: xSliderSteps,
@@ -47846,7 +47857,7 @@ function GeoChart(props) {
         return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: sxClasses.ySliderWrapper,
           children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
-            marks: getMarkers([ySliderMin, ySliderMax], handleSliderYValueFormat),
+            marks: getMarkers(ySliderMin, ySliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_Y, handleSliderYValueFormat),
             min: ySliderMin,
             max: ySliderMax,
             step: ySliderSteps,
@@ -48043,14 +48054,14 @@ function GeoChart(props) {
           children: [/*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
             sx: sxClasses.checkDatasetWrapperLabel,
             children: label
-          }), Object.entries(datasetRegistry).filter(function (_ref5) {
-            var _ref6 = _slicedToArray(_ref5, 2),
-              dsOption = _ref6[1];
+          }), Object.entries(datasetRegistry).filter(function (_ref4) {
+            var _ref5 = _slicedToArray(_ref4, 2),
+              dsOption = _ref5[1];
             return dsOption.visible;
-          }).map(function (_ref7, idx) {
-            var _ref8 = _slicedToArray(_ref7, 2),
-              dsLabel = _ref8[0],
-              dsOption = _ref8[1];
+          }).map(function (_ref6, idx) {
+            var _ref7 = _slicedToArray(_ref6, 2),
+              dsLabel = _ref7[0],
+              dsOption = _ref7[1];
             var color;
             if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
             return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
@@ -48087,14 +48098,14 @@ function GeoChart(props) {
       if (chartType === 'pie' || chartType === 'doughnut') {
         if (Object.keys(datasRegistry).length > 1) {
           return /*#__PURE__*/(0,jsx_runtime.jsx)(jsx_runtime.Fragment, {
-            children: Object.entries(datasRegistry).filter(function (_ref9) {
-              var _ref10 = _slicedToArray(_ref9, 2),
-                dsOption = _ref10[1];
+            children: Object.entries(datasRegistry).filter(function (_ref8) {
+              var _ref9 = _slicedToArray(_ref8, 2),
+                dsOption = _ref9[1];
               return dsOption.visible;
-            }).map(function (_ref11, idx) {
-              var _ref12 = _slicedToArray(_ref11, 2),
-                dsLabel = _ref12[0],
-                dsOption = _ref12[1];
+            }).map(function (_ref10, idx) {
+              var _ref11 = _slicedToArray(_ref10, 2),
+                dsLabel = _ref11[0],
+                dsOption = _ref11[1];
               var color = dsOption.borderColor;
               return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
                 sx: sxClasses.checkDatasetWrapper,
