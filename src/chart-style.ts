@@ -75,16 +75,18 @@ export const getSxClasses = (theme: Theme) => {
       textAlign: 'center',
       margin: '10px 0px',
     },
+    yAxisContainer: {
+      display: 'inline-flex;',
+    },
     yAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
       fontWeight: theme.typography.fontWeightBold,
       fontSize: gvThemePalette.geoViewFontSize?.default,
-      position: 'absolute',
-      top: '45%',
-      margin: '0 auto',
-      marginLeft: '20px',
+      margin: 'auto',
       writingMode: 'vertical-rl',
-      transform: 'rotate(-180deg)',
+      position: 'absolute',
+      top: '50%',
+      transform: 'rotate(-180deg) translateY(50%)',
       transformOrigin: 'center',
     },
     uiOptionsResetStates: {
