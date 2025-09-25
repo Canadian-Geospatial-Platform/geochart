@@ -1556,7 +1556,7 @@ export function GeoChart<
     if (range) {
       // Generate marks dynamically based on min, max, and step
       return Array.from({ length: Math.floor((max - min) / step) + 1 }, (_, i) => {
-        const value = Number((min + i * step).toFixed(10));
+        const value = ChartParsing.fixDecimals(min + i * step);
         return {
           value,
           label: handleSliderValueDisplay(value),

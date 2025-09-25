@@ -104,7 +104,20 @@ export class ChartParsing {
       // If tooltip
       if (chartConfig.geochart.yAxis.tooltipSuffix) {
         optionsLine.plugins.tooltip.callbacks.label = (context): string => {
-          return `${context.dataset.label}: ${context.formattedValue} ${chartConfig.geochart.yAxis.tooltipSuffix}`;
+          // Read the formatted value by default
+          let value = context.formattedValue;
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const rawValue = context.raw as any;
+
+          // If we have a context.raw.y value, prioritize that value so that we don't lose decimals
+          if (rawValue.y && isNumber(rawValue.y)) {
+            // Read the raw value as string
+            value = ChartParsing.fixDecimals(Number(rawValue.y)).toString();
+          }
+
+          // Return the tooltip
+          return `${context.dataset.label}: ${value} ${chartConfig.geochart.yAxis.tooltipSuffix}`;
         };
       }
     }
@@ -613,5 +626,15 @@ export class ChartParsing {
     // Replace
     // eslint-disable-next-line no-param-reassign
     data.datasets = datasetsOrdered;
+  }
+
+  /**
+   * Fixes some JavaScript decimals non-rounding issues
+   * @param {number} number - The number to fix.
+   * @param {number} fractionDigits - The number of digits to have, max, defaults to 10.
+   * @returns {number} The fixed number with regards to its decimals
+   */
+  static fixDecimals(number: number, fractionDigits: number = 10): number {
+    return Number(number.toFixed(fractionDigits));
   }
 }
