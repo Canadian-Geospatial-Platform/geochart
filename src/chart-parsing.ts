@@ -104,7 +104,7 @@ export class ChartParsing {
       // If tooltip
       if (chartConfig.geochart.yAxis.tooltipSuffix) {
         optionsLine.plugins.tooltip.callbacks.label = (context): string => {
-          return `${context.formattedValue} ${chartConfig.geochart.yAxis.tooltipSuffix}`;
+          return `${context.dataset.label}: ${context.formattedValue} ${chartConfig.geochart.yAxis.tooltipSuffix}`;
         };
       }
     }
