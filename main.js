@@ -28920,7 +28920,7 @@ var __webpack_exports__ = {};
 (() => {
 "use strict";
 
-// UNUSED EXPORTS: DATE_OPTIONS_AXIS, DATE_OPTIONS_LONG, DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE, DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT, GeoChart, GeoChartQueryTypesConst, ScalePossibilitiesConst, SchemaValidator, StepsPossibilitiesConst, createChartJSData, createChartJSOptions, fetchItemsViaQueryForDatasource, parseFeatureInfoEsriEntries, parseFeatureInfoOGCEntries, queryEsriFeaturesByUrl, queryOGCFeaturesByUrl, setColorPalettes
+// UNUSED EXPORTS: ChartParsing, DATE_OPTIONS_AXIS, DATE_OPTIONS_LONG, DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE, DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT, DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE, DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT, GeoChart, GeoChartQueryTypesConst, ScalePossibilitiesConst, SchemaValidator, StepsPossibilitiesConst
 
 ;// ./node_modules/@babel/runtime/helpers/esm/arrayWithHoles.js
 function _arrayWithHoles(r) {
@@ -45433,67 +45433,137 @@ _defineProperty(SchemaValidator, "parseValidatorResultMessage", function (valRes
   });
   return msg.replace(/^\n+|\n+$/gm, '');
 });
-;// ./src/chart-parsing.ts
+;// ./src/chart-core.ts
 
 
 
-function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
-function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+var _ChartCore;
 
+var ChartCore = /*#__PURE__*/function () {
+  function ChartCore() {
+    _classCallCheck(this, ChartCore);
+  }
+  return _createClass(ChartCore, null, [{
+    key: "fetchItemsViaQueryForDatasource",
+    value: (
+    /**
+     * Fetches the items that should be attached to the given Datasource.
+     * @param {GeoChartQuery} queryConfig - The layer configuration we're currently using.
+     * @param {string} language - The language
+     * @param {Record<string, unknown> | undefined} sourceItem - The source item to grab items form
+     * @returns {Promise<Record<string, unknown>[]>} Returns the items that should be attached to the Datasource
+     * @static
+     */
+    function () {
+      var _fetchItemsViaQueryForDatasource = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee(queryConfig, language, sourceItem) {
+        var entries, url, urlOptions, _url, _urlOptions, _url2;
+        return regenerator_default().wrap(function _callee$(_context) {
+          while (1) switch (_context.prev = _context.next) {
+            case 0:
+              if (!(queryConfig.type === 'ogcAPIFeatures')) {
+                _context.next = 9;
+                break;
+              }
+              // Base query url
+              url = queryConfig.url; // Append the mandatory params
+              url += "/items?f=json&lang=".concat(language, "&skipGeometry=true&offset=0&filter-lang=cql-text");
 
+              // If any query options
+              if (queryConfig.queryOptions) {
+                // NOTE: The filter clause is only supported in Part 3 of the OGC Features API doc. For some services, this might not work.
+                // The options
+                urlOptions = queryConfig.queryOptions; // Build the where clause of the url
+                url += "&filter=".concat(_buildQueryWhereClause.call(ChartCore, urlOptions.whereClauses, sourceItem));
+              }
 
+              // Query an OGC Features endpoint
+              _context.next = 6;
+              return _queryOGCFeaturesByUrl.call(ChartCore, url);
+            case 6:
+              entries = _context.sent;
+              _context.next = 26;
+              break;
+            case 9:
+              if (!(queryConfig.type === 'esriRegular')) {
+                _context.next = 18;
+                break;
+              }
+              // Base query url
+              _url = queryConfig.url; // Append the mandatory params
+              _url += '/query?outFields=*&f=json';
 
+              // If any query options
+              if (queryConfig.queryOptions) {
+                // The options
+                _urlOptions = queryConfig.queryOptions; // Build the where clause of the url
+                _url += "&where=".concat(_buildQueryWhereClause.call(ChartCore, _urlOptions.whereClauses, sourceItem));
 
-/**
- * Sorts all ChartDatasets based on the X values of their data.
- * @param {ChartDataset<TType, TData>[]} datasets - The array of ChartDataset that we each want to sort on their X value.
- */
-function sortOnX(datasets) {
-  // For each dataset
-  datasets.forEach(function (ds) {
-    var dataInDataset = ds.data;
-    var dataOrdered = dataInDataset.sort(function (a, b) {
-      if (a.x instanceof Date) {
-        if (a.x === b.x) return 0;
-        if (a.x < b.x) return -1;
-        return 1;
+                // Build the order by clause of the url
+                _url += "&orderByFields=".concat(_urlOptions.orderByField);
+              }
+
+              // Query an Esri layer/table regular method
+              _context.next = 15;
+              return _queryEsriFeaturesByUrl.call(ChartCore, _url);
+            case 15:
+              entries = _context.sent;
+              _context.next = 26;
+              break;
+            case 18:
+              if (!(queryConfig.type === 'json')) {
+                _context.next = 25;
+                break;
+              }
+              // Base query url
+              _url2 = queryConfig.url; // Query an Esri layer/table regular method
+              _context.next = 22;
+              return _queryOGCFeaturesByUrl.call(ChartCore, _url2);
+            case 22:
+              entries = _context.sent;
+              _context.next = 26;
+              break;
+            case 25:
+              throw Error('Unsupported query type to fetch the Datasource items.');
+            case 26:
+              return _context.abrupt("return", entries);
+            case 27:
+            case "end":
+              return _context.stop();
+          }
+        }, _callee);
+      }));
+      function fetchItemsViaQueryForDatasource(_x, _x2, _x3) {
+        return _fetchItemsViaQueryForDatasource.apply(this, arguments);
       }
-      if (utils_isNumber(a.x) && utils_isNumber(b.x)) return a.x - b.x;
-      if (a.x && b.x) return a.x.localeCompare(b.x);
-      if (!a.x) return -1;
-      if (!b.x) return 1;
-      return 0;
-    });
+      return fetchItemsViaQueryForDatasource;
+    }()
+    /**
+     * Helper function checking for the valid states of a list of ValidatorResults. Returns true if there were no errors found.
+     * @param {(ValidatorResult | undefined)[]} validators - The list of validator results to check for their valid states
+     * @returns true if there were no errors in the schema validations
+     */
+    )
+  }, {
+    key: "hasValidSchemas",
+    value: function hasValidSchemas(validators) {
+      var validatorsInvalid = validators.filter(function (valResult) {
+        return valResult && !valResult.valid;
+      });
+      return validatorsInvalid.length === 0;
+    }
 
-    // Replace
-    // eslint-disable-next-line no-param-reassign
-    ds.data = dataOrdered;
-  });
-}
-
-/**
- * Sorts all ChartDatasets in the given ChartData based on their label values.
- * @param {ChartData<TType, TData, TLabel>} data - The data holding the datasets to be sorted.
- */
-function sortOnDatasetLabels(data) {
-  // For each dataset
-  var datasetsOrdered = data.datasets.sort(function (a, b) {
-    if (a.label && b.label) return a.label.localeCompare(b.label);
-    return 0;
-  });
-
-  // Replace
-  // eslint-disable-next-line no-param-reassign
-  data.datasets = datasetsOrdered;
-}
-
-/**
- * Builds a where clause string, to be used in an url, given the array of GeoChartQueryOptionClause.
- * @param {GeoChartQueryOptionClause[]} whereClauses - The array of where clauses objects.
- * @param {Record<string, unknown> | undefined} sourceItem - The source to read the information from when building the clause in case 'valueFrom' is needed.
- * @returns {string} Returns the where clause string
- */
-var buildQueryWhereClause = function buildQueryWhereClause(whereClauses, sourceItem) {
+    /**
+     * Builds a where clause string, to be used in an url, given the array of GeoChartQueryOptionClause.
+     * @param {GeoChartQueryOptionClause[]} whereClauses - The array of where clauses objects.
+     * @param {Record<string, unknown> | undefined} sourceItem - The source to read the information from when building the clause in case 'valueFrom' is needed.
+     * @returns {string} Returns the where clause string
+     * @static
+     * @private
+     */
+  }]);
+}();
+_ChartCore = ChartCore;
+function _buildQueryWhereClause(whereClauses, sourceItem) {
   // Loop on each url options
   var theWhereClause = '';
   if (whereClauses) {
@@ -45519,16 +45589,83 @@ var buildQueryWhereClause = function buildQueryWhereClause(whereClauses, sourceI
 
   // Return the where clause
   return theWhereClause;
-};
-
+}
+/**
+ * Asynchronously queries an Esri Features endpoint given the url and returns an array of `unknown` records.
+ * @param {string} url - An Esri Features url indicating a feature layer to query
+ * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
+ * @static
+ * @private
+ */
+function _queryEsriFeaturesByUrl(_x4) {
+  return _queryEsriFeaturesByUrl3.apply(this, arguments);
+}
+function _queryEsriFeaturesByUrl3() {
+  _queryEsriFeaturesByUrl3 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(url) {
+    var response, respJson;
+    return regenerator_default().wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.next = 2;
+          return fetch(url);
+        case 2:
+          response = _context2.sent;
+          _context2.next = 5;
+          return response.json();
+        case 5:
+          respJson = _context2.sent;
+          return _context2.abrupt("return", _parseFeatureInfoEsriEntries.call(_ChartCore, respJson.features));
+        case 7:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2);
+  }));
+  return _queryEsriFeaturesByUrl3.apply(this, arguments);
+}
+/**
+ * Asynchronously queries an OGC API Features endpoint given the url and returns an array of `unknown` records.
+ * @param {string} url - An OGC API Features url indicating a feature layer to query
+ * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
+ * @static
+ * @private
+ */
+function _queryOGCFeaturesByUrl(_x5) {
+  return _queryOGCFeaturesByUrl3.apply(this, arguments);
+}
+function _queryOGCFeaturesByUrl3() {
+  _queryOGCFeaturesByUrl3 = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(url) {
+    var response, respJson;
+    return regenerator_default().wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.next = 2;
+          return fetch(url);
+        case 2:
+          response = _context3.sent;
+          _context3.next = 5;
+          return response.json();
+        case 5:
+          respJson = _context3.sent;
+          return _context3.abrupt("return", _parseFeatureInfoOGCEntries.call(_ChartCore, respJson.features));
+        case 7:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3);
+  }));
+  return _queryOGCFeaturesByUrl3.apply(this, arguments);
+}
 /**
  * Transforms the query results of an Esri features service response.
  * The transformation reads the Esri formatted information and return a list of `unknown` records.
  * @param {any[]} records - The Json Object representing the data from Esri.
  * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
+ * @static
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parseFeatureInfoEsriEntries(records) {
+function _parseFeatureInfoEsriEntries(records) {
   // Loop on the Esri results
   return records.map(function (rec) {
     // Prep the any
@@ -45544,15 +45681,16 @@ function parseFeatureInfoEsriEntries(records) {
     return featInfo;
   });
 }
-
 /**
  * Transforms the query results of an OGC API features service response.
  * The transformation reads the GeoJson formatted information and return a list of `unknown` records.
  * @param {any[]} records - The Json Object representing the data from OGC.
  * @returns {Record<string, unknown>[]} An array of relared records of type Record<string, unknown>
+ * @static
+ * @private
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parseFeatureInfoOGCEntries(records) {
+function _parseFeatureInfoOGCEntries(records) {
   // Loop on the Esri results
   return records.map(function (rec) {
     // Prep the record
@@ -45568,272 +45706,230 @@ function parseFeatureInfoOGCEntries(records) {
     return featInfo;
   });
 }
+;// ./src/chart-parsing.ts
 
-/**
- * Asynchronously queries an Esri Features endpoint given the url and returns an array of `unknown` records.
- * @param {string} url - An Esri Features url indicating a feature layer to query
- * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
- */
-function queryEsriFeaturesByUrl(_x) {
-  return _queryEsriFeaturesByUrl.apply(this, arguments);
-}
 
-/**
- * Asynchronously queries an OGC API Features endpoint given the url and returns an array of `unknown` records.
- * @param {string} url - An OGC API Features url indicating a feature layer to query
- * @returns {Promise<Record<string, unknown>[]>} An array of relared records of type unknown, or an empty array.
- */
-function _queryEsriFeaturesByUrl() {
-  _queryEsriFeaturesByUrl = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee2(url) {
-    var response, respJson;
-    return regenerator_default().wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          _context2.next = 2;
-          return fetch(url);
-        case 2:
-          response = _context2.sent;
-          _context2.next = 5;
-          return response.json();
-        case 5:
-          respJson = _context2.sent;
-          return _context2.abrupt("return", parseFeatureInfoEsriEntries(respJson.features));
-        case 7:
-        case "end":
-          return _context2.stop();
+
+
+var _ChartParsing;
+function ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function _objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
+
+
+
+var ChartParsing = /*#__PURE__*/function () {
+  function ChartParsing() {
+    _classCallCheck(this, ChartParsing);
+  }
+  return _createClass(ChartParsing, null, [{
+    key: "createChartJSOptions",
+    value:
+    /**
+     * Creates the ChartJS Options object necessary for ChartJS process.
+     * @param {GeoChartConfig<TType>} chartConfig - The GeoChart Inputs to use to build the ChartJS ingestable information.
+     * @param {ChartOptions<TType> }defaultOptions - The default, basic, necessary Options for ChartJS.
+     * @param {ScalePossibilities | undefined} yAxisType - The scale possibilities, if any
+     * @param {string} language - The current language of the UI.
+     * @returns {ChartOptions<TType>} The ingestable Options properties
+     * @static
+     */
+    function createChartJSOptions(chartConfig, defaultOptions, yAxisType, language) {
+      var _chartConfig$geochart, _chartConfig$geochart2;
+      // The Chart JS Options as entered or the default options
+      var options = _objectSpread(_objectSpread(_objectSpread({}, defaultOptions), chartConfig.chartjsOptions), {}, {
+        plugins: _objectSpread({}, defaultOptions.plugins)
+      });
+
+      // If line and using a time series
+      if (chartConfig.chart === 'line' && (((_chartConfig$geochart = chartConfig.geochart.xAxis) === null || _chartConfig$geochart === void 0 ? void 0 : _chartConfig$geochart.type) === 'time' || ((_chartConfig$geochart2 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart2 === void 0 ? void 0 : _chartConfig$geochart2.type) === 'timeseries')) {
+        var _chartConfig$geochart3;
+        // Generate the options object
+        var optionsLine = options;
+        optionsLine.scales = _objectSpread(_objectSpread({}, optionsLine.scales), {}, {
+          x: {
+            type: (_chartConfig$geochart3 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart3 === void 0 ? void 0 : _chartConfig$geochart3.type,
+            ticks: {
+              autoSkip: true,
+              major: {
+                enabled: true
+              },
+              padding: 10,
+              source: 'auto',
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              callback: function callback(tickValue, index, ticks) {
+                // Make it a date
+                var d = new Date(tickValue);
+                var label = d.toLocaleString(language, DATE_OPTIONS_AXIS);
+
+                // Trick by keeping the previously calculated label in an extra property (for performance)
+                // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+                ticks[index].geoLabel = label;
+
+                // If the generated label is major or different than the one prior
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (ticks[index].major || index > 0 && label !== ticks[index - 1].geoLabel) {
+                  return label;
+                }
+
+                // No label, redundant
+                return '';
+              }
+            },
+            offset: true
+          }
+        });
       }
-    }, _callee2);
-  }));
-  return _queryEsriFeaturesByUrl.apply(this, arguments);
-}
-function queryOGCFeaturesByUrl(_x2) {
-  return _queryOGCFeaturesByUrl.apply(this, arguments);
-}
 
-/**
- * Fetches the items that should be attached to the given Datasource.
- * @param {GeoChartQuery} queryConfig - The layer configuration we're currently using.
- * @param {string} language - The language
- * @param {Record<string, unknown> | undefined} sourceItem - The source item to grab items form
- * @returns {Promise<Record<string, unknown>[]>} Returns the items that should be attached to the Datasource
- */
-function _queryOGCFeaturesByUrl() {
-  _queryOGCFeaturesByUrl = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee3(url) {
-    var response, respJson;
-    return regenerator_default().wrap(function _callee3$(_context3) {
-      while (1) switch (_context3.prev = _context3.next) {
-        case 0:
-          _context3.next = 2;
-          return fetch(url);
-        case 2:
-          response = _context3.sent;
-          _context3.next = 5;
-          return response.json();
-        case 5:
-          respJson = _context3.sent;
-          return _context3.abrupt("return", parseFeatureInfoOGCEntries(respJson.features));
-        case 7:
-        case "end":
-          return _context3.stop();
+      // If line or bar
+      if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
+        var _optionsLine = options;
+        // If type is set
+        if (yAxisType) {
+          _optionsLine.scales = _objectSpread(_objectSpread({}, _optionsLine.scales), {}, {
+            y: {
+              type: yAxisType
+            }
+          });
+        }
+
+        // Drill
+        _optionsLine.plugins = _optionsLine.plugins || {};
+        _optionsLine.plugins.tooltip = _optionsLine.plugins.tooltip || {};
+        _optionsLine.plugins.tooltip.callbacks = _optionsLine.plugins.tooltip.callbacks || {};
+
+        // If tooltip
+        if (chartConfig.geochart.yAxis.tooltipSuffix) {
+          _optionsLine.plugins.tooltip.callbacks.label = function (context) {
+            return "".concat(context.formattedValue, " ").concat(chartConfig.geochart.yAxis.tooltipSuffix);
+          };
+        }
       }
-    }, _callee3);
-  }));
-  return _queryOGCFeaturesByUrl.apply(this, arguments);
-}
-var fetchItemsViaQueryForDatasource = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator(/*#__PURE__*/regenerator_default().mark(function _callee(queryConfig, language, sourceItem) {
-    var entries, url, urlOptions, _url, _urlOptions, _url2;
-    return regenerator_default().wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          if (!(queryConfig.type === 'ogcAPIFeatures')) {
-            _context.next = 9;
-            break;
-          }
-          // Base query url
-          url = queryConfig.url; // Append the mandatory params
-          url += "/items?f=json&lang=".concat(language, "&skipGeometry=true&offset=0&filter-lang=cql-text");
 
-          // If any query options
-          if (queryConfig.queryOptions) {
-            // NOTE: The filter clause is only supported in Part 3 of the OGC Features API doc. For some services, this might not work.
-            // The options
-            urlOptions = queryConfig.queryOptions; // Build the where clause of the url
-            url += "&filter=".concat(buildQueryWhereClause(urlOptions.whereClauses, sourceItem));
-          }
-
-          // Query an OGC Features endpoint
-          _context.next = 6;
-          return queryOGCFeaturesByUrl(url);
-        case 6:
-          entries = _context.sent;
-          _context.next = 26;
-          break;
-        case 9:
-          if (!(queryConfig.type === 'esriRegular')) {
-            _context.next = 18;
-            break;
-          }
-          // Base query url
-          _url = queryConfig.url; // Append the mandatory params
-          _url += '/query?outFields=*&f=json';
-
-          // If any query options
-          if (queryConfig.queryOptions) {
-            // The options
-            _urlOptions = queryConfig.queryOptions; // Build the where clause of the url
-            _url += "&where=".concat(buildQueryWhereClause(_urlOptions.whereClauses, sourceItem));
-
-            // Build the order by clause of the url
-            _url += "&orderByFields=".concat(_urlOptions.orderByField);
-          }
-
-          // Query an Esri layer/table regular method
-          _context.next = 15;
-          return queryEsriFeaturesByUrl(_url);
-        case 15:
-          entries = _context.sent;
-          _context.next = 26;
-          break;
-        case 18:
-          if (!(queryConfig.type === 'json')) {
-            _context.next = 25;
-            break;
-          }
-          // Base query url
-          _url2 = queryConfig.url; // Query an Esri layer/table regular method
-          _context.next = 22;
-          return queryOGCFeaturesByUrl(_url2);
-        case 22:
-          entries = _context.sent;
-          _context.next = 26;
-          break;
-        case 25:
-          throw Error('Unsupported query type to fetch the Datasource items.');
-        case 26:
-          return _context.abrupt("return", entries);
-        case 27:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  }));
-  return function fetchItemsViaQueryForDatasource(_x3, _x4, _x5) {
-    return _ref.apply(this, arguments);
-  };
-}();
-
-/**
- * Creates a GeoChartXYData data value by reading attributes from a Record<string, unknown>.
- * The GeoChartXYData has x and y properties and functions similar to the DefaultDataPoint, like ChartJS supports, but with additional
- * support of Dates on the 'x' property.
- * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {Record<string, unknown>} attributes - The data opbject containing the attributes to use to create the GeoChartXYData
- * @returns {GeoChartXYData} The GeoChartXYData object
- */
-function createDataXYFormat(chartConfig, attributes) {
-  var _chartConfig$geochart, _chartConfig$geochart2;
-  // Read the unknown value in x
-  var valRawX = attributes[chartConfig.geochart.xAxis.property];
-
-  // If the value is expected to be a time
-  var xVal = valRawX;
-  if (((_chartConfig$geochart = chartConfig.geochart.xAxis) === null || _chartConfig$geochart === void 0 ? void 0 : _chartConfig$geochart.type) === 'time' || ((_chartConfig$geochart2 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart2 === void 0 ? void 0 : _chartConfig$geochart2.type) === 'timeseries') {
-    // Make sure it's a date object
-    if (valRawX instanceof Date) {
-      xVal = valRawX;
-    } else {
-      // Do our best to convert to date
-      xVal = new Date(valRawX);
+      // Return the ChartJS Options
+      return options;
     }
+
+    /**
+     * Creates the ChartJS Data object necessary for ChartJS process.
+     * The datasets are being sorted by labels.
+     * When the xAxis reprensents time, the datasets are internally sorted by date.
+     * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+     * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+     * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
+     * @param {StepsPossibilities  | undefined} steps - The steps, if any
+     * @param {Record<string, unknown>[]} records - The records to build the data from.
+     * @param {ChartData<TType, TData, TLabel>} defaultData - The default, basic, necessary Data for ChartJS.
+     * @returns {ChartData<TType, TData, TLabel>} The ChartJS ingestable Data properties
+     * @static
+     */
+  }, {
+    key: "createChartJSData",
+    value: function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, records, defaultData) {
+      var _chartConfig$geochart4, _chartConfig$geochart5;
+      // If there's a data source, parse it to a GeoChart data
+      var data = _objectSpread({}, defaultData);
+      if (records && records.length > 0) {
+        data = _createDatasets.call(ChartParsing, chartConfig, datasetsRegistry, datasRegistry, steps, records);
+      }
+
+      // Sort the dataset labels
+      _sortOnDatasetLabels.call(ChartParsing, data);
+
+      // If the x axis type is time
+      if (((_chartConfig$geochart4 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart4 === void 0 ? void 0 : _chartConfig$geochart4.type) === 'time' || ((_chartConfig$geochart5 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart5 === void 0 ? void 0 : _chartConfig$geochart5.type) === 'timeseries') {
+        // Make sure the datasets data are sorted on X
+        _sortOnX.call(ChartParsing, data.datasets);
+      }
+
+      // GeoChart Parsed information
+      return data;
+    }
+
+    /**
+     * Validates and Sets the color palette that shall be used by the Chart. This is to best align the UI (notably the checkboxes)
+     * with the possible real display of the Chart. Indeed, ChartJS uses a default color palette when none is set and we'd like to
+     * explicit that so that the rest of the UI can adapt to whatever color palette the Chart is 'really' using.
+     * Logic goes:
+     *   - when a paletteBackgrounds or paletteBorders are specified via the configuration, that's the palette that shall be used
+     *   - when no paletteBackgrounds or paletteBorders are specified via the configuration, the ChartJS palette shall be explicitely
+     *     used (not letting ChartJS make it by magic).
+     *   - when no paletteBackgrounds or paletteBorders are specified via the configuration, and usePalette is true, a custom palette
+     *     is explicitely used.
+     * @param {GeoChartConfig<TType> | undefined} chartConfig - The Inputs to use to build the ChartJS ingestable information.
+     * @static
+     */
+  }, {
+    key: "setColorPalettes",
+    value: function setColorPalettes(chartConfig) {
+      // If there's a category
+      if (chartConfig !== null && chartConfig !== void 0 && chartConfig.category) {
+        // If there's no background palettes
+        if (!chartConfig.category.paletteBackgrounds) {
+          // For line or bar charts, set the ChartJS default color palette
+          if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
+            // eslint-disable-next-line no-param-reassign
+            chartConfig.category.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
+          }
+          // eslint-disable-next-line no-param-reassign
+          if (chartConfig.category.usePalette) chartConfig.category.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT;
+        }
+        // If there's no border palettes
+        if (!chartConfig.category.paletteBorders) {
+          // For line or bar charts, we may want to use ChartJS's color palette
+          if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
+            // eslint-disable-next-line no-param-reassign
+            chartConfig.category.paletteBorders = DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
+          }
+          // eslint-disable-next-line no-param-reassign
+          if (chartConfig.category.usePalette) chartConfig.category.paletteBorders = DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE;
+        }
+      }
+
+      // If there's a X-Axis
+      if (chartConfig !== null && chartConfig !== void 0 && chartConfig.geochart.xAxis) {
+        // If there's no background palettes
+        if (!chartConfig.geochart.xAxis.paletteBackgrounds) {
+          // eslint-disable-next-line no-param-reassign
+          chartConfig.geochart.xAxis.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
+          if (chartConfig.geochart.xAxis.usePalette)
+            // eslint-disable-next-line no-param-reassign
+            chartConfig.geochart.xAxis.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT;
+        }
+        // If there's no border palettes
+        if (!chartConfig.geochart.xAxis.paletteBorders) {
+          // eslint-disable-next-line no-param-reassign
+          chartConfig.geochart.xAxis.paletteBorders = DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
+          // eslint-disable-next-line no-param-reassign
+          if (chartConfig.geochart.xAxis.usePalette) chartConfig.geochart.xAxis.paletteBorders = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE;
+        }
+      }
+    }
+
+    /**
+     * Creates all ChartDataset objects, for ChartJS, based on the GeoChart configuration.
+     * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
+     * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+     * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
+     * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
+     * @param {StepsPossibilities  | undefined} steps - The steps, if any
+     * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
+     * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
+     * @static
+     * @private
+     */
+  }]);
+}();
+_ChartParsing = ChartParsing;
+function _createDatasets(chartConfig, datasetsRegistry, datasRegistry, steps, records) {
+  // Depending on the ChartType
+  if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
+    return _createDatasetsLineBar.call(_ChartParsing, chartConfig, datasetsRegistry, steps, records);
   }
-
-  // Read the value in y, hopefully it's a number, that's what GeoChartXYPair supports for now (there's a TODO there)
-  var valRawY = attributes[chartConfig.geochart.yAxis.property];
-
-  // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
-  return {
-    x: xVal,
-    y: valRawY
-  };
+  if (chartConfig.chart === 'pie' || chartConfig.chart === 'doughnut') {
+    return _createDatasetsPieDoughnut.call(_ChartParsing, chartConfig, datasetsRegistry, datasRegistry, records);
+  }
+  throw Error('Unsupported chart type');
 }
-
-/**
- * Compresses the data for the given dataset in a data array format expected for the Pie/Doughnut charts. This function also
- * considers the categorization when one must be done.
- * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {ChartDataset<TType, TData>} dataset - The current dataset being parsed
- * @param {string[]} labels - The current labels array for the whole Chart (all ChartDatasets) being parsed
- * @param {Record<string, unknown>[]} records - The records for the whole Chart
- * @returns {TData} The object representing the expected data array of expected dimension based on the labels array
- */
-function createDataCompressedForPieDoughnut(chartConfig, dataset, labels, records) {
-  // Create a new data array of expected length containing only 'null' values
-  var newData = Array.from({
-    length: labels.length
-  }, function () {
-    return null;
-  });
-
-  // If categorizing, filter on the current dataset label
-  var subRecords = records;
-  if (chartConfig.category) {
-    subRecords = records.filter(function (rec) {
-      return rec[chartConfig.category.property] === dataset.label;
-    });
-  }
-
-  // For each data to compress in the array
-  subRecords.forEach(function (rec) {
-    var valX = rec[chartConfig.geochart.xAxis.property];
-    // Find the index for that value
-    var labelIndex = labels.indexOf(valX);
-    newData[labelIndex] = rec[chartConfig.geochart.yAxis.property];
-  });
-
-  // Return the compressed data
-  return newData;
-}
-
-/**
- * Creates a ChartDataset object, for ChartJS, based on the GeoChart configuration.
- * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {string | string[] | undefined} backgroundColor - The background color if any
- * @param {string | string[] | undefined} borderColor - The border color if any
- * @param {StepsPossibilities | undefined} steps - The steps if any
- * @param {string?} label - The label if any
- * @returns {ChartDataset} The object
- */
-function createDataset(chartConfig, backgroundColor, borderColor, steps, label) {
-  // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
-  var theDataset = {
-    label: label,
-    data: []
-  };
-
-  // If building a line chart
-  if (chartConfig.chart === 'line') {
-    // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
-    var theDatasetLine = theDataset;
-
-    // If useSteps is defined, set it for each dataset
-    if (steps !== undefined) theDatasetLine.stepped = steps;
-
-    // If tension is defined, set it for each dataset
-    if (chartConfig.geochart.tension) theDatasetLine.tension = chartConfig.geochart.tension;
-  }
-
-  // Set the colors
-  if (backgroundColor) theDataset.backgroundColor = backgroundColor;
-  if (borderColor) theDataset.borderColor = borderColor;
-
-  // If the border width is set (applies to all datasets the same)
-  if (chartConfig.geochart.borderWidth) {
-    theDataset.borderWidth = chartConfig.geochart.borderWidth;
-  }
-  return theDataset;
-}
-
 /**
  * Creates all ChartDataset objects for line chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
@@ -45842,8 +45938,10 @@ function createDataset(chartConfig, backgroundColor, borderColor, steps, label) 
  * @param {StepsPossibilities | undefined} steps - The steps if any
  * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
  * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
+ * @static
+ * @private
  */
-function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
+function _createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
   var _chartConfig$category;
   // Transform the TypeFeatureJson data to ChartData<TType, TData, string>
   var returnedChartData = {
@@ -45866,7 +45964,7 @@ function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
         if (!Object.keys(categoriesRead).includes(catName)) {
           // Get the color using the registry
           // Create dataset
-          var newDataset = createDataset(chartConfig, datasetsRegistry[catName].backgroundColor, datasetsRegistry[catName].borderColor, steps, catName);
+          var newDataset = _createDataset.call(_ChartParsing, chartConfig, datasetsRegistry[catName].backgroundColor, datasetsRegistry[catName].borderColor, steps, catName);
           categoriesRead[catName] = {
             index: idx++,
             data: newDataset.data
@@ -45875,7 +45973,7 @@ function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
         }
 
         // Parse data
-        var dataParsed = createDataXYFormat(chartConfig, rec);
+        var dataParsed = _createDataXYFormat.call(_ChartParsing, chartConfig, rec);
 
         // Find the data array and push in it.
         categoriesRead[catName].data.push(dataParsed);
@@ -45884,13 +45982,13 @@ function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
   } else {
     // 1 feature = 1 dataset
     // Create dataset
-    var newDataset = createDataset(chartConfig, Chart.defaults.color, undefined, steps, undefined);
+    var newDataset = _createDataset.call(_ChartParsing, chartConfig, Chart.defaults.color, undefined, steps, undefined);
     returnedChartData.datasets.push(newDataset);
 
     // For each record
     records.forEach(function (rec) {
       // Parse data
-      var dataParsed = createDataXYFormat(chartConfig, rec);
+      var dataParsed = _createDataXYFormat.call(_ChartParsing, chartConfig, rec);
       newDataset.data.push(dataParsed);
     });
   }
@@ -45898,7 +45996,6 @@ function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
   // Done
   return returnedChartData;
 }
-
 /**
  * Creates all ChartDataset objects for line and bar chart types, for ChartJS, based on the GeoChart configuration.
  * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
@@ -45907,8 +46004,10 @@ function createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records) {
  * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
  * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
  * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
+ * @static
+ * @private
  */
-function createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry, records) {
+function _createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry, records) {
   var _chartConfig$category2;
   // Transform the TypeFeatureJson data to ChartData<TType, TData, string>
   var returnedChartData = {
@@ -45946,7 +46045,7 @@ function createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry,
         // If new category
         if (!Object.keys(categoriesRead).includes(catName)) {
           // Create dataset
-          var newDataset = createDataset(chartConfig, paletteBackgroundAll, Chart.defaults.color, undefined, catName);
+          var newDataset = _createDataset.call(_ChartParsing, chartConfig, paletteBackgroundAll, Chart.defaults.color, undefined, catName);
           categoriesRead[catName] = {
             index: idx++,
             data: newDataset.data
@@ -45962,7 +46061,7 @@ function createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry,
     returnedChartData.datasets.forEach(function (chartDataset) {
       var _categoriesRead$data;
       // Compress the data for the ChartDataset
-      var newData = createDataCompressedForPieDoughnut(chartConfig, chartDataset, returnedChartData.labels, records);
+      var newData = _createDataCompressedForPieDoughnut.call(_ChartParsing, chartConfig, chartDataset, returnedChartData.labels, records);
 
       // Find the data array and push in it.
       (_categoriesRead$data = categoriesRead[chartDataset.label].data).push.apply(_categoriesRead$data, _toConsumableArray(newData));
@@ -45971,11 +46070,11 @@ function createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry,
     var _newDataset$data;
     // 1 feature = 1 dataset
     // Create dataset
-    var newDataset = createDataset(chartConfig, Chart.defaults.color, undefined, undefined, undefined);
+    var newDataset = _createDataset.call(_ChartParsing, chartConfig, Chart.defaults.color, undefined, undefined, undefined);
     returnedChartData.datasets.push(newDataset);
 
     // Compress the data for the ChartDataset
-    var newData = createDataCompressedForPieDoughnut(chartConfig, newDataset, returnedChartData.labels, records);
+    var newData = _createDataCompressedForPieDoughnut.call(_ChartParsing, chartConfig, newDataset, returnedChartData.labels, records);
 
     // Push the data
     (_newDataset$data = newDataset.data).push.apply(_newDataset$data, _toConsumableArray(newData));
@@ -45984,200 +46083,164 @@ function createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry,
   // Done
   return returnedChartData;
 }
-
 /**
- * Creates all ChartDataset objects, for ChartJS, based on the GeoChart configuration.
- * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
+ * Creates a ChartDataset object, for ChartJS, based on the GeoChart configuration.
  * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
- * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
- * @param {StepsPossibilities  | undefined} steps - The steps, if any
- * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
- * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
+ * @param {string | string[] | undefined} backgroundColor - The background color if any
+ * @param {string | string[] | undefined} borderColor - The border color if any
+ * @param {StepsPossibilities | undefined} steps - The steps if any
+ * @param {string?} label - The label if any
+ * @returns {ChartDataset} The object
+ * @static
+ * @private
  */
-function createDatasets(chartConfig, datasetsRegistry, datasRegistry, steps, records) {
-  // Depending on the ChartType
-  if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
-    return createDatasetsLineBar(chartConfig, datasetsRegistry, steps, records);
+function _createDataset(chartConfig, backgroundColor, borderColor, steps, label) {
+  // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
+  var theDataset = {
+    label: label,
+    data: []
+  };
+
+  // If building a line chart
+  if (chartConfig.chart === 'line') {
+    // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
+    var theDatasetLine = theDataset;
+
+    // If useSteps is defined, set it for each dataset
+    if (steps !== undefined) theDatasetLine.stepped = steps;
+
+    // If tension is defined, set it for each dataset
+    if (chartConfig.geochart.tension) theDatasetLine.tension = chartConfig.geochart.tension;
   }
-  if (chartConfig.chart === 'pie' || chartConfig.chart === 'doughnut') {
-    return createDatasetsPieDoughnut(chartConfig, datasetsRegistry, datasRegistry, records);
+
+  // Set the colors
+  if (backgroundColor) theDataset.backgroundColor = backgroundColor;
+  if (borderColor) theDataset.borderColor = borderColor;
+
+  // If the border width is set (applies to all datasets the same)
+  if (chartConfig.geochart.borderWidth) {
+    theDataset.borderWidth = chartConfig.geochart.borderWidth;
   }
-  throw Error('Unsupported chart type');
+  return theDataset;
 }
-
 /**
- * Validates and Sets the color palette that shall be used by the Chart. This is to best align the UI (notably the checkboxes)
- * with the possible real display of the Chart. Indeed, ChartJS uses a default color palette when none is set and we'd like to
- * explicit that so that the rest of the UI can adapt to whatever color palette the Chart is 'really' using.
- * Logic goes:
- *   - when a paletteBackgrounds or paletteBorders are specified via the configuration, that's the palette that shall be used
- *   - when no paletteBackgrounds or paletteBorders are specified via the configuration, the ChartJS palette shall be explicitely
- *     used (not letting ChartJS make it by magic).
- *   - when no paletteBackgrounds or paletteBorders are specified via the configuration, and usePalette is true, a custom palette
- *     is explicitely used.
- * @param {GeoChartConfig<TType> | undefined} chartConfig - The Inputs to use to build the ChartJS ingestable information.
+ * Compresses the data for the given dataset in a data array format expected for the Pie/Doughnut charts. This function also
+ * considers the categorization when one must be done.
+ * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
+ * @param {ChartDataset<TType, TData>} dataset - The current dataset being parsed
+ * @param {string[]} labels - The current labels array for the whole Chart (all ChartDatasets) being parsed
+ * @param {Record<string, unknown>[]} records - The records for the whole Chart
+ * @returns {TData} The object representing the expected data array of expected dimension based on the labels array
+ * @static
+ * @private
  */
-function setColorPalettes(chartConfig) {
-  // If there's a category
-  if (chartConfig !== null && chartConfig !== void 0 && chartConfig.category) {
-    // If there's no background palettes
-    if (!chartConfig.category.paletteBackgrounds) {
-      // For line or bar charts, set the ChartJS default color palette
-      if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
-        // eslint-disable-next-line no-param-reassign
-        chartConfig.category.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
-      }
-      // eslint-disable-next-line no-param-reassign
-      if (chartConfig.category.usePalette) chartConfig.category.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT;
-    }
-    // If there's no border palettes
-    if (!chartConfig.category.paletteBorders) {
-      // For line or bar charts, we may want to use ChartJS's color palette
-      if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
-        // eslint-disable-next-line no-param-reassign
-        chartConfig.category.paletteBorders = DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
-      }
-      // eslint-disable-next-line no-param-reassign
-      if (chartConfig.category.usePalette) chartConfig.category.paletteBorders = DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE;
-    }
-  }
-
-  // If there's a X-Axis
-  if (chartConfig !== null && chartConfig !== void 0 && chartConfig.geochart.xAxis) {
-    // If there's no background palettes
-    if (!chartConfig.geochart.xAxis.paletteBackgrounds) {
-      // eslint-disable-next-line no-param-reassign
-      chartConfig.geochart.xAxis.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
-      if (chartConfig.geochart.xAxis.usePalette)
-        // eslint-disable-next-line no-param-reassign
-        chartConfig.geochart.xAxis.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT;
-    }
-    // If there's no border palettes
-    if (!chartConfig.geochart.xAxis.paletteBorders) {
-      // eslint-disable-next-line no-param-reassign
-      chartConfig.geochart.xAxis.paletteBorders = DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
-      // eslint-disable-next-line no-param-reassign
-      if (chartConfig.geochart.xAxis.usePalette) chartConfig.geochart.xAxis.paletteBorders = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE;
-    }
-  }
-}
-
-/**
- * Creates the ChartJS Options object necessary for ChartJS process.
- * @param {GeoChartConfig<TType>} chartConfig - The GeoChart Inputs to use to build the ChartJS ingestable information.
- * @param {ChartOptions<TType> }defaultOptions - The default, basic, necessary Options for ChartJS.
- * @param {ScalePossibilities | undefined} yAxisType - The scale possibilities, if any
- * @param {string} language - The current language of the UI.
- * @returns {ChartOptions<TType>} The ingestable Options properties
- */
-function createChartJSOptions(chartConfig, defaultOptions, yAxisType, language) {
-  var _chartConfig$geochart3, _chartConfig$geochart4;
-  // The Chart JS Options as entered or the default options
-  var options = _objectSpread(_objectSpread(_objectSpread({}, defaultOptions), chartConfig.chartjsOptions), {}, {
-    plugins: _objectSpread({}, defaultOptions.plugins)
+function _createDataCompressedForPieDoughnut(chartConfig, dataset, labels, records) {
+  // Create a new data array of expected length containing only 'null' values
+  var newData = Array.from({
+    length: labels.length
+  }, function () {
+    return null;
   });
 
-  // If line and using a time series
-  if (chartConfig.chart === 'line' && (((_chartConfig$geochart3 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart3 === void 0 ? void 0 : _chartConfig$geochart3.type) === 'time' || ((_chartConfig$geochart4 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart4 === void 0 ? void 0 : _chartConfig$geochart4.type) === 'timeseries')) {
-    var _chartConfig$geochart5;
-    // Generate the options object
-    var optionsLine = options;
-    optionsLine.scales = _objectSpread(_objectSpread({}, optionsLine.scales), {}, {
-      x: {
-        type: (_chartConfig$geochart5 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart5 === void 0 ? void 0 : _chartConfig$geochart5.type,
-        ticks: {
-          autoSkip: true,
-          major: {
-            enabled: true
-          },
-          padding: 10,
-          source: 'auto',
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          callback: function callback(tickValue, index, ticks) {
-            // Make it a date
-            var d = new Date(tickValue);
-            var label = d.toLocaleString(language, DATE_OPTIONS_AXIS);
-
-            // Trick by keeping the previously calculated label in an extra property (for performance)
-            // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-            ticks[index].geoLabel = label;
-
-            // If the generated label is major or different than the one prior
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (ticks[index].major || index > 0 && label !== ticks[index - 1].geoLabel) {
-              return label;
-            }
-
-            // No label, redundant
-            return '';
-          }
-        },
-        offset: true
-      }
+  // If categorizing, filter on the current dataset label
+  var subRecords = records;
+  if (chartConfig.category) {
+    subRecords = records.filter(function (rec) {
+      return rec[chartConfig.category.property] === dataset.label;
     });
   }
 
-  // If line or bar
-  if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
-    var _optionsLine = options;
-    // If type is set
-    if (yAxisType) {
-      _optionsLine.scales = _objectSpread(_objectSpread({}, _optionsLine.scales), {}, {
-        y: {
-          type: yAxisType
-        }
-      });
-    }
+  // For each data to compress in the array
+  subRecords.forEach(function (rec) {
+    var valX = rec[chartConfig.geochart.xAxis.property];
+    // Find the index for that value
+    var labelIndex = labels.indexOf(valX);
+    newData[labelIndex] = rec[chartConfig.geochart.yAxis.property];
+  });
 
-    // Drill
-    _optionsLine.plugins = _optionsLine.plugins || {};
-    _optionsLine.plugins.tooltip = _optionsLine.plugins.tooltip || {};
-    _optionsLine.plugins.tooltip.callbacks = _optionsLine.plugins.tooltip.callbacks || {};
-
-    // If tooltip
-    if (chartConfig.geochart.yAxis.tooltipSuffix) {
-      _optionsLine.plugins.tooltip.callbacks.label = function (context) {
-        return "".concat(context.formattedValue, " ").concat(chartConfig.geochart.yAxis.tooltipSuffix);
-      };
-    }
-  }
-
-  // Return the ChartJS Options
-  return options;
+  // Return the compressed data
+  return newData;
 }
-
 /**
- * Creates the ChartJS Data object necessary for ChartJS process.
- * The datasets are being sorted by labels.
- * When the xAxis reprensents time, the datasets are internally sorted by date.
+ * Creates a GeoChartXYData data value by reading attributes from a Record<string, unknown>.
+ * The GeoChartXYData has x and y properties and functions similar to the DefaultDataPoint, like ChartJS supports, but with additional
+ * support of Dates on the 'x' property.
  * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
- * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
- * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
- * @param {StepsPossibilities  | undefined} steps - The steps, if any
- * @param {Record<string, unknown>[]} records - The records to build the data from.
- * @param {ChartData<TType, TData, TLabel>} defaultData - The default, basic, necessary Data for ChartJS.
- * @returns {ChartData<TType, TData, TLabel>} The ChartJS ingestable Data properties
+ * @param {Record<string, unknown>} attributes - The data opbject containing the attributes to use to create the GeoChartXYData
+ * @returns {GeoChartXYData} The GeoChartXYData object
+ * @static
+ * @private
  */
-function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, records, defaultData) {
+function _createDataXYFormat(chartConfig, attributes) {
   var _chartConfig$geochart6, _chartConfig$geochart7;
-  // If there's a data source, parse it to a GeoChart data
-  var data = _objectSpread({}, defaultData);
-  if (records && records.length > 0) {
-    data = createDatasets(chartConfig, datasetsRegistry, datasRegistry, steps, records);
-  }
+  // Read the unknown value in x
+  var valRawX = attributes[chartConfig.geochart.xAxis.property];
 
-  // Sort the dataset labels
-  sortOnDatasetLabels(data);
-
-  // If the x axis type is time
+  // If the value is expected to be a time
+  var xVal = valRawX;
   if (((_chartConfig$geochart6 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart6 === void 0 ? void 0 : _chartConfig$geochart6.type) === 'time' || ((_chartConfig$geochart7 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart7 === void 0 ? void 0 : _chartConfig$geochart7.type) === 'timeseries') {
-    // Make sure the datasets data are sorted on X
-    sortOnX(data.datasets);
+    // Make sure it's a date object
+    if (valRawX instanceof Date) {
+      xVal = valRawX;
+    } else {
+      // Do our best to convert to date
+      xVal = new Date(valRawX);
+    }
   }
 
-  // GeoChart Parsed information
-  return data;
+  // Read the value in y, hopefully it's a number, that's what GeoChartXYPair supports for now (there's a TODO there)
+  var valRawY = attributes[chartConfig.geochart.yAxis.property];
+
+  // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
+  return {
+    x: xVal,
+    y: valRawY
+  };
+}
+/**
+ * Sorts all ChartDatasets based on the X values of their data.
+ * @param {ChartDataset<TType, TData>[]} datasets - The array of ChartDataset that we each want to sort on their X value.
+ * @static
+ * @private
+ */
+function _sortOnX(datasets) {
+  // For each dataset
+  datasets.forEach(function (ds) {
+    var dataInDataset = ds.data;
+    var dataOrdered = dataInDataset.sort(function (a, b) {
+      if (a.x instanceof Date) {
+        if (a.x === b.x) return 0;
+        if (a.x < b.x) return -1;
+        return 1;
+      }
+      if (utils_isNumber(a.x) && utils_isNumber(b.x)) return a.x - b.x;
+      if (a.x && b.x) return a.x.localeCompare(b.x);
+      if (!a.x) return -1;
+      if (!b.x) return 1;
+      return 0;
+    });
+
+    // Replace
+    // eslint-disable-next-line no-param-reassign
+    ds.data = dataOrdered;
+  });
+}
+/**
+ * Sorts all ChartDatasets in the given ChartData based on their label values.
+ * @param {ChartData<TType, TData, TLabel>} data - The data holding the datasets to be sorted.
+ * @static
+ * @private
+ */
+function _sortOnDatasetLabels(data) {
+  // For each dataset
+  var datasetsOrdered = data.datasets.sort(function (a, b) {
+    if (a.label && b.label) return a.label.localeCompare(b.label);
+    return 0;
+  });
+
+  // Replace
+  // eslint-disable-next-line no-param-reassign
+  data.datasets = datasetsOrdered;
 }
 ;// ./src/chart-style.ts
 /**
@@ -46333,6 +46396,7 @@ function chart_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { va
 
 
 
+
 /**
  * Main props for the Chart.
  * There are 2 main ways to create a chart:
@@ -46360,7 +46424,7 @@ var DEFAULT_DATA = {
 };
 
 /** Default number of markers per slider axis */
-var DEFAULT_NUMBER_OF_SLIDER_MARKS_X = 20;
+var DEFAULT_NUMBER_OF_SLIDER_MARKS_X = 5;
 var DEFAULT_NUMBER_OF_SLIDER_MARKS_Y = 10;
 
 /** Used for debugging purposes of mocking the data */
@@ -46592,7 +46656,7 @@ function GeoChart(props) {
   if (defaultColors !== null && defaultColors !== void 0 && defaultColors.color) Chart.defaults.color = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.color;
 
   // Attribute the color palettes
-  setColorPalettes(inputs);
+  ChartParsing.setColorPalettes(inputs);
 
   // #endregion
 
@@ -46735,7 +46799,7 @@ function GeoChart(props) {
 
             // Fetch the items for the data source in question
             _context.next = 4;
-            return fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
+            return ChartCore.fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
           case 4:
             return _context.abrupt("return", _context.sent);
           case 7:
@@ -46759,18 +46823,6 @@ function GeoChart(props) {
       return _ref2.apply(this, arguments);
     };
   }();
-
-  /**
-   * Helper function checking for the valid states of a list of ValidatorResults. Returns true if there were no errors found.
-   * @param {(ValidatorResult | undefined)[]} validators - The list of validator results to check for their valid states
-   * @returns true if there were no errors in the schema validations
-   */
-  var hasValidSchemas = function hasValidSchemas(validators) {
-    var validatorsInvalid = validators.filter(function (valResult) {
-      return valResult && !valResult.valid;
-    });
-    return validatorsInvalid.length === 0;
-  };
 
   /**
    * Performs a redraw by changing the 'redraw' property and changing it back after.
@@ -46998,8 +47050,8 @@ function GeoChart(props) {
     logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
 
     // Parse the data
-    var parsedOptions = createChartJSOptions(theInputs, parentOptions, theYScale, theLanguage);
-    var parsedData = createChartJSData(theInputs, theDatasetRegistry, theDatasRegistry, theSteps, records, parentData);
+    var parsedOptions = ChartParsing.createChartJSOptions(theInputs, parentOptions, theYScale, theLanguage);
+    var parsedData = ChartParsing.createChartJSData(theInputs, theDatasetRegistry, theDatasRegistry, theSteps, records, parentData);
 
     // Callback
     onParsed === null || onParsed === void 0 || onParsed(theInputs.chart, parsedOptions, parsedData);
@@ -47411,10 +47463,10 @@ function GeoChart(props) {
   useEffect(function () {
     // Log
     var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - VALIDATORS - INPUTS';
-    logger.logTraceUseEffect(USE_EFFECT_FUNC, hasValidSchemas([validatorInputs]));
+    logger.logTraceUseEffect(USE_EFFECT_FUNC, ChartCore.hasValidSchemas([validatorInputs]));
 
     // If any error
-    if (!hasValidSchemas([validatorInputs])) {
+    if (!ChartCore.hasValidSchemas([validatorInputs])) {
       // Gather error messages
       var error = SchemaValidator.parseValidatorResultsMessages([validatorInputs]);
       // If a callback is defined
@@ -47433,10 +47485,10 @@ function GeoChart(props) {
   useEffect(function () {
     // Log
     var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - VALIDATORS - OPTIONS+DATA';
-    logger.logTraceUseEffect(USE_EFFECT_FUNC, hasValidSchemas([validatorOptions, validatorData]));
+    logger.logTraceUseEffect(USE_EFFECT_FUNC, ChartCore.hasValidSchemas([validatorOptions, validatorData]));
 
     // If any error
-    if (!hasValidSchemas([validatorOptions, validatorData])) {
+    if (!ChartCore.hasValidSchemas([validatorOptions, validatorData])) {
       // Gather error messages
       var error = SchemaValidator.parseValidatorResultsMessages([validatorOptions, validatorData]);
       // If a callback is defined
@@ -48235,7 +48287,7 @@ function GeoChart(props) {
 
   // TODO: Add a check if there's a 'current error', not just a 'valid schemas' error
   // If no errors
-  if (hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {
+  if (ChartCore.hasValidSchemas([validatorInputs, validatorOptions, validatorData])) {
     // Render the chart
     return renderEverything();
   }
