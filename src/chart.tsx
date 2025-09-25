@@ -131,6 +131,15 @@ const DEFAULT_OPTIONS: ChartOptions<ChartType> = {
 /** Default data */
 const DEFAULT_DATA: ChartData<ChartType, GeoDefaultDataPoint<ChartType>> = { datasets: [], labels: [] };
 
+/** Default number of markers per slider axis */
+const DEFAULT_NUMBER_OF_SLIDER_MARKS_X: number = 20;
+const DEFAULT_NUMBER_OF_SLIDER_MARKS_Y: number = 10;
+
+/** Used for debugging purposes of mocking the data */
+const DEBUG_MOCKING_RESULT_FILTERING: boolean = false;
+const DEFAULT_FAKE_Y_MIN: number = 0;
+const DEFAULT_FAKE_Y_MAX: number = 1;
+
 /**
  * Create a customized Chart UI
  *
@@ -970,20 +979,6 @@ export function GeoChart<
     const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - INPUTS';
     logger.logTraceUseEffect(USE_EFFECT_FUNC, inputs);
 
-    // Async function to fetch data from within a sync useEffect :|
-    const fetchAndSetSelectedDatasource = async (
-      query: GeoChartQuery,
-      theLanguage: string,
-      datasource: GeoChartDatasource
-    ): Promise<void> => {
-      // Perform the fetch
-      // eslint-disable-next-line no-param-reassign
-      datasource.items = await fetchDatasourceItems(query, theLanguage, datasource.sourceItem, onError);
-
-      // Set the datasource
-      setSelectedDatasource(datasource);
-    };
-
     // Reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
     setSelectedSteps(inputs?.geochart.useSteps || false);
 
@@ -1000,10 +995,28 @@ export function GeoChart<
       // Init the datasource items for the first record and sets it
       if (!ds.items && inputs.query) {
         // Must fetch straight away
-        fetchAndSetSelectedDatasource(inputs.query, i18n.language, ds).catch((error: unknown) => {
-          // Log error
-          logger.logPromiseFailed('in fetchAndSetSelectedDatasource in INPUTS useEffect', error);
-        });
+        fetchDatasourceItems(inputs.query, i18n.language, ds.sourceItem, onError)
+          .then((result) => {
+            // If faking results
+            if (DEBUG_MOCKING_RESULT_FILTERING) {
+              // eslint-disable-next-line no-param-reassign
+              result = result.filter(
+                (res) =>
+                  Number(res[inputs.geochart.yAxis.property]) >= DEFAULT_FAKE_Y_MIN &&
+                  Number(res[inputs.geochart.yAxis.property]) <= DEFAULT_FAKE_Y_MAX
+              );
+            }
+
+            // Set the items
+            ds.items = result;
+
+            // Set the datasource
+            setSelectedDatasource(ds);
+          })
+          .catch((error: unknown) => {
+            // Log error
+            logger.logPromiseFailed('in fetchAndSetSelectedDatasource in INPUTS useEffect', error);
+          });
       } else setSelectedDatasource(ds);
     } else setSelectedDatasource(undefined);
 
@@ -1548,20 +1561,26 @@ export function GeoChart<
    * Generate marker labels for the slider values
    * @returns The array of slider markers
    */
-  const getMarkers = useCallback((sliderValues: number | number[], handleSliderValueDisplay: (value: number) => string) => {
-    const sliderMarks: {
-      value: number;
-      label: string;
-    }[] = [];
-    if (Array.isArray(sliderValues)) {
-      for (let i = 0; i < sliderValues.length; i++) {
-        sliderMarks.push({
-          value: sliderValues[i],
-          label: handleSliderValueDisplay(sliderValues[i]),
-        });
-      }
+  const getMarkers = useCallback((min: number, max: number, numberOfMarks: number, handleSliderValueDisplay: (value: number) => string) => {
+    // Calculate the range of values we're working with
+    const range = max - min;
+    // Calculate the steps we're expecting based on the number of marks we want
+    const step = range / numberOfMarks;
+
+    // If any range
+    if (range) {
+      // Generate marks dynamically based on min, max, and step
+      return Array.from({ length: Math.floor((max - min) / step) + 1 }, (_, i) => {
+        const value = Number((min + i * step).toFixed(10));
+        return {
+          value,
+          label: handleSliderValueDisplay(value),
+        };
+      });
     }
-    return sliderMarks;
+
+    // Empty
+    return [];
   }, []);
 
   /**
@@ -1575,7 +1594,7 @@ export function GeoChart<
         return (
           <Box sx={sxClasses.xSliderWrapper}>
             <Slider
-              marks={getMarkers([xSliderMin, xSliderMax], handleSliderXValueFormat)}
+              marks={getMarkers(xSliderMin, xSliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_X, handleSliderXValueFormat)}
               min={xSliderMin}
               max={xSliderMax}
               step={xSliderSteps}
@@ -1604,7 +1623,7 @@ export function GeoChart<
         return (
           <Box sx={sxClasses.ySliderWrapper}>
             <Slider
-              marks={getMarkers([ySliderMin, ySliderMax], handleSliderYValueFormat)}
+              marks={getMarkers(ySliderMin, ySliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_Y, handleSliderYValueFormat)}
               min={ySliderMin}
               max={ySliderMax}
               step={ySliderSteps}
