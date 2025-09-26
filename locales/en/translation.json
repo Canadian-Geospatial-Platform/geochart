@@ -9,6 +9,8 @@
     "exportBtn": "Download the graph data",
     "downloadFiltered": "Download visible",
     "downloadAll": "Download all",
-    "resetStates": "Reset states"
+    "lockStates": "Lock user interface",
+    "unlockStates": "Unlock user interface",
+    "resetStates": "Reset"
   }
 }

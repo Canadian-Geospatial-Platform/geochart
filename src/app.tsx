@@ -1,4 +1,5 @@
 import type React from 'react';
+import type { JSX } from 'react';
 import { GeoChart } from './chart';
 import { GeoChartConfig, ChartType, ChartOptions, ChartData, GeoChartAction, DefaultDataPoint } from './types';
 import { SchemaValidator } from './chart-schema-validator';
@@ -111,7 +112,7 @@ export function App(props: TypeAppProps): JSX.Element {
     // eslint-disable-next-line no-console
     console.error(error, exception);
     // eslint-disable-next-line no-alert
-    alert(error);
+    window.alert(error);
   }, []);
 
   /**

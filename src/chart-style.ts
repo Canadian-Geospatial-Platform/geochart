@@ -5,8 +5,8 @@ import { Palette, Theme } from '@mui/material/styles';
 
 type GeoViewThemePalette = Palette & { geoViewColor: Palette; geoViewFontSize: { default: number } };
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-export const getSxClasses = (theme: Theme) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getSxClasses = (theme: Theme): any => {
   // Cast
   const gvThemePalette = theme.palette as GeoViewThemePalette;
 
@@ -16,7 +16,7 @@ export const getSxClasses = (theme: Theme) => {
     },
     mainGeoChartContainer: {
       position: 'relative',
-      padding: '20px',
+      padding: '25px',
       display: 'flex',
       borderColor: gvThemePalette.geoViewColor?.primary.main,
       borderWidth: '2px',
@@ -101,6 +101,7 @@ export const getSxClasses = (theme: Theme) => {
     },
     checkDatasetWrapper: {
       display: 'inline-block',
+      cursor: 'pointer',
       '& .Mui-checked': {
         color: `${gvThemePalette?.primary.main} !important`,
       },

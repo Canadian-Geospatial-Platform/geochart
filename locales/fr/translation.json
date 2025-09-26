@@ -9,6 +9,8 @@
     "exportBtn": "Télécharger les données du graphique",
     "downloadFiltered": "Télécharger visuel",
     "downloadAll": "Télécharger tout",
-    "resetStates": "Réinitialiser états"
+    "lockStates": "Vérouiller l'interface utilisateur",
+    "unlockStates": "Dévérouiller l'interface utilisateur",
+    "resetStates": "Réinitialiser"
   }
 }

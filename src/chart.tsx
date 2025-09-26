@@ -1,9 +1,14 @@
 import type React from 'react';
+import type { JSX } from 'react';
+import type { CSSProperties } from 'react';
 import { Theme } from '@mui/material';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LockIcon from '@mui/icons-material/Lock';
 import { useTranslation } from 'react-i18next';
 import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables, ChartConfiguration, Plugin } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
 import 'chartjs-adapter-moment';
+import 'chartjs-adapter-luxon';
 import {
   GeoChartConfig,
   GeoChartAction,
@@ -15,17 +20,19 @@ import {
   GeoChartDatasource,
   GeoChartSelectedDataset,
   StepsPossibilitiesConst,
-  StepsPossibilities,
-  DATE_OPTIONS_AXIS,
+  StepsPossibility,
   GeoChartDatasetOption,
   ScalePossibilitiesConst,
-  ScalePossibilities,
+  ScalePossibility,
+  isScalePossibilityArray,
+  isStepPossibilityArray,
 } from './types';
 import { SchemaValidator, ValidatorResult } from './chart-schema-validator';
 import { ChartCore } from './chart-core';
 import { ChartParsing } from './chart-parsing';
 import { getSxClasses } from './chart-style';
-import { isNumber, downloadJson, getColorFromPalette, guessEstimatedStep } from './utils';
+import { Utils } from './utils';
+import { CancelledError } from './exceptions';
 
 /**
  * Main props for the Chart.
@@ -36,7 +43,7 @@ import { isNumber, downloadJson, getColorFromPalette, guessEstimatedStep } from 
 export interface TypeChartChartProps<
   TType extends ChartType = ChartType,
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
-  TLabel = string
+  TLabel = string,
 > {
   // Container element, notably used by the 'Select' drop downs
   container?: HTMLElement;
@@ -101,10 +108,10 @@ export interface TypeChartChartProps<
   onDownloadClicked?: (value: GeoChartDatasource) => string;
 
   // Callback executed when user has selected another steps value from the ui (top right corner in the ui)
-  onStepSwitcherChanged?: (value: StepsPossibilities) => void;
+  onStepSwitcherChanged?: (value: StepsPossibility) => void;
 
   // Callback executed when user has selected another scale value from the ui (top right corner in the ui)
-  onScaleSwitcherChanged?: (value: ScalePossibilities) => void;
+  onScalesSwitcherChanged?: (value: ScalePossibility) => void;
 
   // Callback executed when user has clicked the reset states button (top right corner in the ui)
   onResetStates?: () => void;
@@ -133,11 +140,14 @@ const DEFAULT_OPTIONS: ChartOptions<ChartType> = {
 const DEFAULT_DATA: ChartData<ChartType, GeoDefaultDataPoint<ChartType>> = { datasets: [], labels: [] };
 
 /** Default number of markers per slider axis */
-const DEFAULT_NUMBER_OF_SLIDER_MARKS_X: number = 5;
+const DEFAULT_NUMBER_OF_SLIDER_MARKS_X: number = 10;
+const DEFAULT_NUMBER_OF_SLIDER_STEPS_X: number = 100;
 const DEFAULT_NUMBER_OF_SLIDER_MARKS_Y: number = 10;
 
 /** Used for debugging purposes of mocking the data */
 const DEBUG_MOCKING_RESULT_FILTERING: boolean = false;
+const DEFAULT_FAKE_X_MIN: Date = new Date('2024-10-01');
+const DEFAULT_FAKE_X_MAX: Date = new Date('2024-10-31');
 const DEFAULT_FAKE_Y_MIN: number = 0;
 const DEFAULT_FAKE_Y_MAX: number = 1;
 
@@ -150,7 +160,7 @@ const DEFAULT_FAKE_Y_MAX: number = 1;
 export function GeoChart<
   TType extends ChartType = ChartType,
   TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
-  TLabel extends string = string
+  TLabel extends string = string,
 >(props: TypeChartChartProps<TType, TData, TLabel>): JSX.Element {
   // Prep ChartJS
   ChartJS.register(...registerables);
@@ -162,8 +172,8 @@ export function GeoChart<
   // Fetch the cgpv module
   const { cgpv } = w;
   const { logger } = cgpv;
-  const { useEffect, useState, useCallback, useRef } = cgpv.reactUtilities.react as typeof React;
-  const { CSSProperties } = cgpv.reactUtilities.react;
+  const { useEffect, useState, useCallback, useMemo, useRef } = cgpv.reactUtilities.react as typeof React;
+  // const { useWhatChanged } = cgpv.ui;
 
   const {
     Paper,
@@ -176,11 +186,12 @@ export function GeoChart<
     DownloadIcon,
     Menu,
     MenuItem,
-    TypeMenuItemProps,
     Typography,
     Slider,
+    Tooltip,
     CircularProgress,
   } = cgpv.ui.elements;
+  type TypeMenuItemProps = typeof cgpv.ui.elements.TypeMenuItemProps;
 
   // Cast
   const cgpvTheme = cgpv.ui.elements.cgpvTheme as Theme;
@@ -195,7 +206,6 @@ export function GeoChart<
     defaultColors,
     isLoadingChart,
     isLoadingDatasource: parentLoadingDatasource,
-    language,
     onDatasourceChanged,
     onDataChanged,
     onDatasetChanged,
@@ -205,21 +215,22 @@ export function GeoChart<
     onSliderYValueDisplaying,
     onDownloadClicked,
     onStepSwitcherChanged,
-    onScaleSwitcherChanged,
+    onScalesSwitcherChanged,
     onResetStates,
     onParsed,
     onError,
   } = props;
-  const parentChart = props.chart || DEFAULT_CHART;
-  const parentOptions = (props.options || DEFAULT_OPTIONS) as ChartOptions<TType>;
-  const parentData = (props.data || DEFAULT_DATA) as ChartData<TType, TData, TLabel>;
+  const language = props.language ?? 'en';
+  const parentChart = props.chart ?? DEFAULT_CHART;
+  const parentOptions = (props.options ?? DEFAULT_OPTIONS) as ChartOptions<TType>;
+  const parentData = (props.data ?? DEFAULT_DATA) as ChartData<TType, TData, TLabel>;
   const sxClasses = getSxClasses(cgpvTheme);
 
   // Translation
   const { i18n: i18nReact } = useTranslation();
 
   // Cast the style
-  const sx = elStyle as typeof CSSProperties;
+  const sx = elStyle as CSSProperties;
 
   // #region USE STATE SECTION ****************************************************************************************
 
@@ -248,20 +259,44 @@ export function GeoChart<
   const [validatorInputs, setValidatorInputs] = useState<ValidatorResult | undefined>();
   const [validatorOptions, setValidatorOptions] = useState<ValidatorResult | undefined>();
   const [validatorData, setValidatorData] = useState<ValidatorResult | undefined>();
-  const [selectedSteps, setSelectedSteps] = useState<StepsPossibilities>(inputs?.geochart.useSteps || false);
-  const [selectedScale, setSelectedScale] = useState<ScalePossibilities>(inputs?.geochart.yAxis?.type || 'linear');
+  const [selectedSteps, setSelectedSteps] = useState<StepsPossibility>(inputs?.geochart.useSteps ?? false);
+  const [selectedScale, setSelectedScale] = useState<ScalePossibility>(inputs?.geochart.yAxis?.type ?? 'linear');
   const [plugins, setPlugins] = useState<Plugin<TType, unknown>[] | undefined>();
   const [colorPaletteCategoryBackgroundIndex, setColorPaletteCategoryBackgroundIndex] = useState(0);
   const [colorPaletteCategoryBorderIndex, setColorPaletteCategoryBorderIndex] = useState(0);
   const [colorPaletteAxisBackgroundIndex, setColorPaletteAxisBackgroundIndex] = useState(0);
   const [colorPaletteAxisBorderIndex, setColorPaletteAxisBorderIndex] = useState(0);
+  const [lockedUI, setLockedUI] = useState<boolean>(false);
   const [i18n, seti18n] = useState(i18nReact);
   const { t } = i18n;
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
 
-  const chartRef = useRef<ChartJS<TType, TData, TLabel>>();
+  const chartRef = useRef<ChartJS<TType, TData, TLabel>>(null);
+
+  // Track the latest request token
+  const latestFetchToken = useRef(0);
+
+  /**
+   * Memoized array containing the labels for the checked dataset registry items.
+   * @returns {string[]} An array containing the labels of the checked dataset registry items.
+   */
+  const memoDatasetRegistryChecked = useMemo((): string[] => {
+    return Object.entries(datasetRegistry)
+      .filter(([, obj]) => obj.checked)
+      .map(([label]) => label);
+  }, [datasetRegistry]);
+
+  /**
+   * Memoized array containing the labels for the checked data registry items.
+   * @returns {string[]} An array containing the labels of the checked data registry items.
+   */
+  const memoDatasRegistryChecked = useMemo((): string[] => {
+    return Object.entries(datasRegistry)
+      .filter(([, obj]) => obj.checked)
+      .map(([label]) => label);
+  }, [datasRegistry]);
 
   // #endregion
 
@@ -302,7 +337,8 @@ export function GeoChart<
           const values = datasourceItems.map((x) => {
             // If date
             if (geochart.xAxis.type === 'time' || geochart.xAxis.type === 'timeseries') {
-              return new Date(x[geochart.xAxis.property] as string).getTime();
+              // Read the date
+              return ChartParsing.readDateValue(x[geochart.xAxis.property]).getTime();
             }
             return x[geochart.xAxis.property] as number;
           });
@@ -317,10 +353,9 @@ export function GeoChart<
           setXSliderSteps(uiOptions?.xSlider.step);
         } else {
           // If date axis
-          // eslint-disable-next-line no-lonely-if
           if (geochart.xAxis.type === 'time' || geochart.xAxis.type === 'timeseries') {
             // Get an estimated stepping value
-            setXSliderSteps(guessEstimatedStep(xMinVal, xMaxVal));
+            setXSliderSteps(Utils.guessEstimatedStep(xMinVal, xMaxVal, DEFAULT_NUMBER_OF_SLIDER_STEPS_X));
           }
         }
       }
@@ -341,7 +376,7 @@ export function GeoChart<
             .map((x) => {
               return x[geochart.yAxis.property] as number;
             })
-            .filter((number) => isNumber(number));
+            .filter((number) => Utils.isNumber(number));
           yMinVal = yMinVal !== undefined ? yMinVal : Math.floor(Math.min(...values));
           yMaxVal = yMaxVal !== undefined ? yMaxVal : Math.ceil(Math.max(...values));
         }
@@ -365,8 +400,8 @@ export function GeoChart<
    * @param {number | undefined} xMaxVal - The max value for X
    * @param {number | undefined} yMinVal - The min value for Y
    * @param {number | undefined} yMaxVal - The max value for Y
-   * @param {number[] | undefined} theXSliderValues - The slider values for X
-   * @param {number[] | undefined} theYSliderValues - The slider values for Y
+   * @param {number[] | undefined} theXSliderStateValues - The slider values for X
+   * @param {number[] | undefined} theYSliderStateValues - The slider values for Y
    */
   const processAxesValues = (
     uiOptions: GeoChartOptionsUI | undefined,
@@ -374,29 +409,30 @@ export function GeoChart<
     xMaxVal: number | undefined,
     yMinVal: number | undefined,
     yMaxVal: number | undefined,
-    theXSliderValues: number[] | undefined,
-    theYSliderValues: number[] | undefined
+    theXSliderStateValues: number[] | undefined,
+    theYSliderStateValues: number[] | undefined
   ): [boolean, (number | undefined)[]] => {
     // If still not set
     let valuesComeFromState: boolean = false;
     if (uiOptions?.xSlider?.display) {
-      if (xMaxVal && !theXSliderValues) {
+      if (xMaxVal && !theXSliderStateValues) {
         // Set the values for x axis to min/max
         setXSliderValues([xMinVal!, xMaxVal]);
-      } else if (theXSliderValues) {
+      } else if (theXSliderStateValues) {
         // eslint-disable-next-line no-param-reassign
-        [xMinVal, xMaxVal] = theXSliderValues;
+        [xMinVal, xMaxVal] = theXSliderStateValues;
         valuesComeFromState = true;
       }
     }
+
     // If still not set
     if (uiOptions?.ySlider?.display) {
-      if (yMaxVal && !theYSliderValues) {
+      if (yMaxVal && !theYSliderStateValues) {
         // Set the state
         setYSliderValues([yMinVal!, yMaxVal]);
-      } else if (theYSliderValues) {
+      } else if (theYSliderStateValues) {
         // eslint-disable-next-line no-param-reassign
-        [yMinVal, yMaxVal] = theYSliderValues;
+        [yMinVal, yMaxVal] = theYSliderStateValues;
         valuesComeFromState = true;
       }
     }
@@ -410,27 +446,43 @@ export function GeoChart<
    * @param {GeoViewGeoChartConfig} chartQuery - The chart query being used
    * @param {string} theLanguage - The language being used
    * @param {Record<string, unknown>} sourceItem - The source item to fetch for
-   * @param {Function} errorCallback - Callback called when an error happens while fetching data
    */
   const fetchDatasourceItems = async (
     chartQuery: GeoChartQuery,
     theLanguage: string,
-    sourceItem: Record<string, unknown> | undefined,
-    errorCallback: ((error: string, exception: unknown) => void) | undefined
+    sourceItem: Record<string, unknown> | undefined
   ): Promise<Record<string, unknown>[]> => {
+    // Keep in mind the token for this fetch
+    const currentToken = ++latestFetchToken.current;
+
     try {
       // Loading
       setIsLoadingDatasource(true);
 
       // Fetch the items for the data source in question
-      return await ChartCore.fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
-    } catch (ex) {
-      // Error
-      errorCallback?.('Failed to fetch the data', ex);
-      return Promise.resolve([]);
+      const result = await ChartCore.fetchItemsViaQueryForDatasource(chartQuery, theLanguage, sourceItem);
+
+      // Only return if this is the latest request
+      if (currentToken === latestFetchToken.current) {
+        return result;
+      } else {
+        // Cancel
+        throw new CancelledError();
+      }
+    } catch (error: unknown) {
+      // Only care if it is the latest request
+      if (currentToken === latestFetchToken.current) {
+        // Rethrow
+        throw error;
+      }
+
+      // Cancel
+      throw new CancelledError();
     } finally {
-      // Done
-      setIsLoadingDatasource(false);
+      // Only set to done if this is the latest request
+      if (currentToken === latestFetchToken.current) {
+        setIsLoadingDatasource(false);
+      }
     }
   };
 
@@ -445,6 +497,21 @@ export function GeoChart<
         resolve();
       }, 200);
     });
+  };
+
+  /**
+   * Returns a new dataset registry where all entries have `checked: true`.
+   * If all items are already checked, returns the original object for performance optimization.
+   * Otherwise, returns a new object where only unchecked items are updated (immutably).
+   * @param {GeoChartSelectedDataset} prevDataRegistry - The current dataset registry with per-label selection states.
+   * @returns {GeoChartSelectedDataset} A new dataset registry with all `checked` values set to `true`, or the original if no changes were needed.
+   */
+  const delegateToTurnCheckedToTrue = (prevDataRegistry: GeoChartSelectedDataset): GeoChartSelectedDataset => {
+    const allChecked = Object.values(prevDataRegistry).every((item) => item.checked);
+    if (allChecked) return prevDataRegistry;
+    return Object.fromEntries(
+      Object.entries(prevDataRegistry).map(([label, item]) => [label, item.checked ? item : { ...item, checked: true }])
+    );
   };
 
   // #endregion
@@ -485,12 +552,11 @@ export function GeoChart<
 
         // If not set
         if (datasetRegistry[catName] === undefined) {
-          // eslint-disable-next-line no-param-reassign
           datasetRegistry[catName] = {
             visible: true,
             checked: true,
-            backgroundColor: getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
-            borderColor: getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
+            backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
+            borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
           };
           backgroundIndex++;
           borderIndex++;
@@ -499,7 +565,6 @@ export function GeoChart<
 
         // If not visible, make sure it's visible
         if (!datasetRegistry[catName].visible) {
-          // eslint-disable-next-line no-param-reassign
           datasetRegistry[catName].visible = true;
           oneSelectedDatasetUpdated = true;
         }
@@ -510,7 +575,6 @@ export function GeoChart<
       // For any categories that weren't found, make sure they're invisible
       Object.keys(datasetRegistry).forEach((catName: string) => {
         if (!catNames.includes(catName) && datasetRegistry[catName].visible) {
-          // eslint-disable-next-line no-param-reassign
           datasetRegistry[catName].visible = false;
           oneSelectedDatasetUpdated = true;
         }
@@ -562,12 +626,11 @@ export function GeoChart<
 
           // If not set
           if (datasRegistry[labelName] === undefined) {
-            // eslint-disable-next-line no-param-reassign
             datasRegistry[labelName] = {
               visible: true,
               checked: true,
-              backgroundColor: getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
-              borderColor: getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
+              backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
+              borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
             };
             backgroundIndex++;
             borderIndex++;
@@ -576,7 +639,6 @@ export function GeoChart<
 
           // If not visible, make sure it's visible
           if (!datasRegistry[labelName].visible) {
-            // eslint-disable-next-line no-param-reassign
             datasRegistry[labelName].visible = true;
             oneSelectedDataUpdated = true;
           }
@@ -585,7 +647,6 @@ export function GeoChart<
         // For any categories that weren't found, make sure they're invisible
         Object.keys(datasRegistry).forEach((labelName: string) => {
           if (!labelNames.includes(labelName) && datasRegistry[labelName].visible) {
-            // eslint-disable-next-line no-param-reassign
             datasRegistry[labelName].visible = false;
             oneSelectedDataUpdated = true;
           }
@@ -622,7 +683,7 @@ export function GeoChart<
       // Make sure the datasets visibility follow the state
       Object.keys(theDatasetRegistry).forEach((value: string) => {
         const idx = dsLabels.indexOf(value);
-        if (idx >= 0) theChartRef.setDatasetVisibility(idx, theDatasetRegistry[value]?.checked);
+        if (idx >= 0) theChartRef.setDatasetVisibility(idx, theDatasetRegistry[value].checked);
       });
 
       // Update visibility
@@ -671,8 +732,8 @@ export function GeoChart<
    * @param {GeoChartSelectedDataset} theDatasetRegistry - The dataset registry
    * @param {GeoChartSelectedDataset} theDatasRegistry - The datas registry
    * @param {string} theLanguage - The language
-   * @param {StepsPossibilities} theSteps - The steps for the graph
-   * @param {ScalePossibilities} theYScale - The scale for the Y axis
+   * @param {StepsPossibility} theSteps - The steps for the graph
+   * @param {ScalePossibility} theYScale - The scale for the Y axis
    * @param {Record<string, unknown>[] | undefined} records - The records
    */
   const processLoadingRecords = useCallback(
@@ -681,8 +742,8 @@ export function GeoChart<
       theDatasetRegistry: GeoChartSelectedDataset,
       theDatasRegistry: GeoChartSelectedDataset,
       theLanguage: string,
-      theSteps: StepsPossibilities,
-      theYScale: ScalePossibilities,
+      theSteps: StepsPossibility,
+      theYScale: ScalePossibility,
       records: Record<string, unknown>[] | undefined
     ): void => {
       // Log
@@ -710,10 +771,7 @@ export function GeoChart<
       // If the resulting datasets array is empty, force a redraw action, otherwise ChartJS hangs on the last shown graphic
       if (parsedData.datasets?.length === 0) setAction({ shouldRedraw: true });
     },
-    // NO REACT for 'onParsed' (explicitely excluding it here instead of relying on
-    // the parent component to have used useCallback as they should have)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [parentOptions, parentData, logger]
+    [logger, parentOptions, parentData, onParsed]
   );
 
   /**
@@ -723,8 +781,8 @@ export function GeoChart<
    * @param {GeoChartSelectedDataset} theDatasetRegistry - The dataset registry
    * @param {GeoChartSelectedDataset} theDatasRegistry - The datas registry
    * @param {string} theLanguage - The language
-   * @param {StepsPossibilities} theSteps - The steps for the graph
-   * @param {ScalePossibilities} theYScale - The scale for the Y axis
+   * @param {StepsPossibility} theSteps - The steps for the graph
+   * @param {ScalePossibility} theYScale - The scale for the Y axis
    * @param {Record<string, unknown>[] | undefined} records - The records
    * @param {number | number[]} xValues - The X axis filtering values
    * @param {number | number[]} yValues - The Y axis filtering values
@@ -735,8 +793,8 @@ export function GeoChart<
       theDatasetRegistry: GeoChartSelectedDataset,
       theDatasRegistry: GeoChartSelectedDataset,
       theLanguage: string,
-      theSteps: StepsPossibilities,
-      theYScale: ScalePossibilities,
+      theSteps: StepsPossibility,
+      theYScale: ScalePossibility,
       records: Record<string, unknown>[] | undefined,
       xValues: number | number[] | undefined,
       yValues: number | number[] | undefined
@@ -758,12 +816,12 @@ export function GeoChart<
           // If filtering on time values
           if (theInputs?.geochart?.xAxis.type === 'time' || theInputs?.geochart?.xAxis.type === 'timeseries') {
             // Grab the filters
-            const theDateFrom = new Date(xValues[0]);
-            const theDateTo = new Date(xValues[1]);
+            const theDateFrom = ChartParsing.readDateValue(xValues[0]);
+            const theDateTo = ChartParsing.readDateValue(xValues[1]);
 
             // Filter the datasourceItems
             resItemsFinal = records!.filter((item) => {
-              const d = new Date(item[theInputs.geochart.xAxis.property] as string);
+              const d = ChartParsing.readDateValue(item[theInputs.geochart.xAxis.property]);
               return theDateFrom <= d && d <= theDateTo;
             });
           } else {
@@ -801,9 +859,7 @@ export function GeoChart<
     [processLoadingRecords, logger]
   );
 
-  // #endregion
-
-  // #region HOOKS USE CALLBACK CHARTJS SECTION ***********************************************************************
+  // #region EVENT HANDLERS SECTION ***********************************************************************************
 
   /**
    * Handles when the ChartJS has finished initializing and before it started drawing data.
@@ -820,6 +876,378 @@ export function GeoChart<
     },
     [datasRegistry, datasetRegistry, updateDataVisibilityUsingState, updateDatasetVisibilityUsingState, logger]
   );
+
+  /**
+   * Handles errors that occur during a data fetch operation.
+   * - If the error is a `CancelledError`, logs a warning indicating the fetch was aborted.
+   * - Otherwise, invokes the global `onError` handler with a formatted error message and the exception.
+   * @param {string} url - The URL that was being fetched when the error occurred.
+   * @param {unknown} error - The error object thrown during the fetch operation. Can be of any type.
+   */
+  const handleFetchErrorHandler = useCallback(
+    (url: string, error: unknown): void => {
+      // If cancelled
+      if (error instanceof CancelledError) {
+        // Just log a warning
+        logger.logWarning(`Fetching operation aborted for url ${url}`);
+      } else {
+        // Any error
+        onError?.(`Failed to fetch the data for url ${url}`, error);
+      }
+    },
+    [logger, onError]
+  );
+
+  /**
+   * Handles when the Datasource changes
+   * @param {Event} e The Select change event
+   * @param {MenuItem} item The selected MenuItem
+   */
+  const handleDatasourceChanged = useCallback(
+    async (e: Event, item: typeof MenuItem): Promise<void> => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleDatasourceChanged', item);
+
+      // If no inputs, return
+      if (!inputs) return;
+
+      // Find the selected datasource reference based on the MenuItem
+      const ds: GeoChartDatasource | undefined = inputs.datasources.find((datasource: GeoChartDatasource) => {
+        return (datasource.value || datasource.display) === item.props.value;
+      });
+
+      // If no ds, return
+      if (!ds) return;
+
+      try {
+        // If the data source has no items
+        if (!ds.items && inputs.query) {
+          ds.items = await fetchDatasourceItems(inputs.query, language, ds.sourceItem);
+        }
+
+        // Set the selected datasource
+        setSelectedDatasource(ds);
+
+        // Callback
+        onDatasourceChanged?.(ds, language);
+      } catch (error: unknown) {
+        // Handle fetch error
+        handleFetchErrorHandler(inputs.query?.url!, error);
+      }
+    },
+    [language, inputs, onDatasourceChanged, handleFetchErrorHandler, logger]
+  );
+
+  /**
+   * Handles when a dataset was checked/unchecked (via the legend)
+   * @param {number} datasetIndex - Indicates the dataset index that was checked/unchecked
+   * @param {string | undefined} datasetLabel - Indicates the dataset label that was checked/unchecked
+   * @param {boolean} checked - Indicates the checked state
+   */
+  const handleDatasetChecked = useCallback(
+    (datasetIndex: number, datasetLabel: string | undefined, checked: boolean): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleDatasetChecked', datasetRegistry);
+
+      // If already checked
+      const isAlreadyChecked = datasetLabel && memoDatasetRegistryChecked.includes(datasetLabel);
+
+      // Only update if the checked state has changed
+      if (checked !== isAlreadyChecked) {
+        // Create a shallow copy with updated 'checked' flag
+        const updatedRegistry = {
+          ...datasetRegistry,
+          [datasetLabel!]: {
+            ...datasetRegistry[datasetLabel!],
+            checked,
+          },
+        };
+
+        // Set the state
+        setDatasetRegistry(updatedRegistry);
+        onDatasetChanged?.(datasetIndex, datasetLabel, checked);
+      }
+    },
+    [datasetRegistry, memoDatasetRegistryChecked, onDatasetChanged, logger]
+  );
+
+  /**
+   * Handles when a data was checked/unchecked (via the legend). This is only used by Pie and Doughnut Charts.
+   * @param {number} dataIndex - Indicates the data index that was checked/unchecked
+   * @param {string} dataLabel - Indicates the data label that was checked/unchecked
+   * @param {boolean} checked - Indicates the checked state
+   */
+  const handleDataChecked = useCallback(
+    (dataIndex: number, dataLabel: string, checked: boolean): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleDataChecked', datasRegistry);
+
+      // If already checked
+      const isAlreadyChecked = memoDatasRegistryChecked.includes(dataLabel);
+
+      // Only update if the checked state has changed
+      if (checked !== isAlreadyChecked) {
+        // Create a shallow copy with updated 'checked' flag
+        const updatedRegistry = {
+          ...datasRegistry,
+          [dataLabel]: {
+            ...datasRegistry[dataLabel],
+            checked,
+          },
+        };
+
+        // Set the state
+        setDatasRegistry(updatedRegistry);
+        onDataChanged?.(dataIndex, dataLabel, checked);
+      }
+    },
+    [datasRegistry, memoDatasRegistryChecked, onDataChanged, logger]
+  );
+
+  /**
+   * Handles when the X Slider changes
+   * @param {number | number[]} newValue - Indicates the slider value
+   */
+  const handleSliderXChange = useCallback(
+    (newValue: number | number[]): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleSliderXChange', newValue);
+
+      // Set the X State
+      setXSliderValues(newValue);
+
+      // Callback
+      onSliderXChanged?.(newValue);
+    },
+    [onSliderXChanged, logger]
+  );
+
+  /**
+   * Handles when the Y Slider changes
+   * @param {number | number[]} newValue - Indicates the slider value
+   */
+  const handleSliderYChange = useCallback(
+    (newValue: number | number[]): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleSliderYChange', newValue);
+
+      // Set the Y State
+      setYSliderValues(newValue);
+
+      // Callback
+      onSliderYChanged?.(newValue);
+    },
+    [onSliderYChanged, logger]
+  );
+
+  /**
+   * Handles when the Steps Switcher changes
+   * @param {unknown} e
+   * @param {MenuItem} item
+   */
+  const handleStepsSwitcherChanged = useCallback(
+    (e: unknown, item: typeof MenuItem): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleStepsSwitcherChanged', item);
+
+      // Set the step switcher
+      setSelectedSteps(item.props.value as StepsPossibility);
+
+      // Callback
+      onStepSwitcherChanged?.(item.props.value as StepsPossibility);
+    },
+    [onStepSwitcherChanged, logger]
+  );
+
+  /**
+   * Handles when the Scale Switcher changes
+   * @param {unknown} e
+   * @param {MenuItem} item
+   */
+  const handleScalesSwitcherChanged = useCallback(
+    (e: unknown, item: typeof MenuItem): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleScalesSwitcherChanged', item);
+
+      // Set the scale switcher
+      setSelectedScale(item.props.value as ScalePossibility);
+
+      // Callback
+      onScalesSwitcherChanged?.(item.props.value as ScalePossibility);
+    },
+    [onScalesSwitcherChanged, logger]
+  );
+
+  /**
+   * Handles when the States must be cleared
+   */
+  const handleResetStates = useCallback((): void => {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - handleResetStates');
+
+    // Clear all states
+    setDatasetRegistry(delegateToTurnCheckedToTrue);
+    setDatasRegistry(delegateToTurnCheckedToTrue);
+    setSelectedSteps(inputs?.geochart.useSteps ?? false);
+    setXSliderValues(undefined);
+    setYSliderValues(undefined);
+
+    // Callback
+    onResetStates?.();
+  }, [inputs?.geochart.useSteps, onResetStates, logger]);
+
+  /**
+   * Handles the display of the label on the X Slider
+   * @param {number} value - Indicates the slider value
+   */
+  const handleSliderXValueFormat = useCallback(
+    (value: number): string => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleSliderXValueFormat', value);
+
+      // Callback in case we're overriding this behavior
+      const val = onSliderXValueDisplaying?.(value);
+      if (val) return val;
+
+      // Default behavior
+      // If current chart has time as xAxis
+      if (inputs?.geochart?.xAxis.type === 'time' || inputs?.geochart?.xAxis.type === 'timeseries') {
+        const d = ChartParsing.readDateValue(value);
+        return ChartParsing.writeDateValue(
+          d,
+          language,
+          inputs.geochart.xAxis.timeIANA,
+          ChartParsing.calculateTimeFormat(inputs.geochart.xAxis.timeFormat, language)
+        );
+      }
+
+      // Default value as is
+      return value.toString();
+    },
+    [
+      language,
+      inputs?.geochart.xAxis.timeFormat,
+      inputs?.geochart.xAxis.timeIANA,
+      inputs?.geochart.xAxis.type,
+      onSliderXValueDisplaying,
+      logger,
+    ]
+  );
+
+  /**
+   * Handles the display of the label on the Y Slider
+   * @param {number} value - Indicates the slider value
+   */
+  const handleSliderYValueFormat = useCallback(
+    (value: number): string => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleSliderYValueFormat', value);
+
+      // Callback in case we're overriding this behavior
+      const val = onSliderYValueDisplaying?.(value);
+      if (val) return val;
+
+      // Default value as is
+      return value.toString();
+    },
+    [onSliderYValueDisplaying, logger]
+  );
+
+  /**
+   * Show export menu.
+   */
+  const handleExportClick = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      // Log
+      logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
+
+      setAnchorEl(event.currentTarget);
+    },
+    [logger]
+  );
+
+  /**
+   * Close export menu.
+   */
+  const handleExportClose = useCallback(() => {
+    // Log
+    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClose');
+
+    setAnchorEl(null);
+  }, [logger]);
+
+  /**
+   * Handles when the download filtered button is clicked
+   */
+  const handleDownloadFiltered = useCallback((): void => {
+    // Log
+    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleDownloadFiltered');
+
+    // Get the data
+    const data = { ...selectedDatasource! } as GeoChartDatasource;
+
+    // Get either the actually filtered records (via the sliders) or the data.items
+    data.items = filteredRecords || data.items;
+
+    // If using categories
+    if (inputs?.category) {
+      // Filter on the selected datasets
+      data.items = data.items?.filter((value) => {
+        return memoDatasetRegistryChecked.includes(value[inputs.category!.property] as string);
+      });
+
+      // In case of pie/doughnut
+      if (chartType === 'pie' || chartType === 'doughnut') {
+        // Also filter on selected datas
+        data.items = data.items?.filter((value) => {
+          return memoDatasRegistryChecked.includes(value[inputs.geochart.xAxis.property] as string);
+        });
+      }
+    }
+
+    // Callback
+    let fileName = onDownloadClicked?.(data);
+    if (!fileName) fileName = 'chart-data.json';
+
+    // Download the data as json
+    Utils.downloadJson(data, fileName);
+  }, [
+    chartType,
+    memoDatasetRegistryChecked,
+    memoDatasRegistryChecked,
+    filteredRecords,
+    inputs?.category,
+    inputs?.geochart.xAxis.property,
+    onDownloadClicked,
+    selectedDatasource,
+    logger,
+  ]);
+
+  /**
+   * Handles when the download all button is clicked
+   */
+  const handleDownloadAll = useCallback((): void => {
+    // Log
+    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleDownloadAll');
+
+    // Get the data
+    const data = { ...selectedDatasource! } as GeoChartDatasource;
+
+    // Callback
+    let fileName = onDownloadClicked?.(data);
+    if (!fileName) fileName = 'chart-data.json';
+
+    // Download the data as json
+    Utils.downloadJson(data, fileName);
+  }, [onDownloadClicked, selectedDatasource, logger]);
+
+  /**
+   * Handles when the user wants to lock the states
+   */
+  const handleLockStates = useCallback(() => {
+    // Switch the lock
+    setLockedUI(!lockedUI);
+  }, [lockedUI]);
 
   // #endregion
 
@@ -891,7 +1319,9 @@ export function GeoChart<
     logger.logTraceUseEffect(USE_EFFECT_FUNC, parentLoadingDatasource);
 
     // If defined, update the state
-    if (parentLoadingDatasource !== undefined) setIsLoadingDatasource(parentLoadingDatasource);
+    if (parentLoadingDatasource !== undefined) {
+      setIsLoadingDatasource(parentLoadingDatasource);
+    }
 
     return () => {
       // Log
@@ -965,12 +1395,10 @@ export function GeoChart<
     logger.logTraceUseEffect(USE_EFFECT_FUNC, inputs);
 
     // Reset the state of the useSteps to the config, we don't want to be stuck on a setting set by a ui which may not exist anymore
-    setSelectedSteps(inputs?.geochart.useSteps || false);
+    setSelectedSteps(inputs?.geochart.useSteps ?? false);
 
     // Reset the state of the useScale to the config
-    let scale: ScalePossibilities = 'linear';
-    if (inputs?.geochart.yAxis?.type === 'logarithmic') scale = 'logarithmic';
-    setSelectedScale(scale);
+    setSelectedScale(inputs?.geochart.yAxis?.type ?? 'linear');
 
     // If no datasources on the inputs, create a default one
     if (inputs && inputs.datasources && inputs.datasources.length > 0) {
@@ -980,16 +1408,24 @@ export function GeoChart<
       // Init the datasource items for the first record and sets it
       if (!ds.items && inputs.query) {
         // Must fetch straight away
-        fetchDatasourceItems(inputs.query, i18n.language, ds.sourceItem, onError)
+        fetchDatasourceItems(inputs.query, language, ds.sourceItem)
           .then((result) => {
             // If faking results
             if (DEBUG_MOCKING_RESULT_FILTERING) {
               // eslint-disable-next-line no-param-reassign
-              result = result.filter(
-                (res) =>
-                  Number(res[inputs.geochart.yAxis.property]) >= DEFAULT_FAKE_Y_MIN &&
-                  Number(res[inputs.geochart.yAxis.property]) <= DEFAULT_FAKE_Y_MAX
-              );
+              result = result.filter((res) => {
+                // Read values
+                const xValue = ChartParsing.readDateValue(res[inputs.geochart.xAxis.property]);
+                const yValue = Number(res[inputs.geochart.yAxis.property]);
+
+                // If within the range of data we want to mockup
+                return (
+                  xValue >= DEFAULT_FAKE_X_MIN &&
+                  xValue <= DEFAULT_FAKE_X_MAX &&
+                  yValue >= DEFAULT_FAKE_Y_MIN &&
+                  yValue <= DEFAULT_FAKE_Y_MAX
+                );
+              });
             }
 
             // Set the items
@@ -999,8 +1435,8 @@ export function GeoChart<
             setSelectedDatasource(ds);
           })
           .catch((error: unknown) => {
-            // Log error
-            logger.logPromiseFailed('in fetchAndSetSelectedDatasource in INPUTS useEffect', error);
+            // Handle fetch error
+            handleFetchErrorHandler(inputs.query?.url!, error);
           });
       } else setSelectedDatasource(ds);
     } else setSelectedDatasource(undefined);
@@ -1009,12 +1445,9 @@ export function GeoChart<
       // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, inputs);
     };
-    // NO REACT for 'onError' (explicitely excluding it here instead of relying on
-    // the parent component to have used useCallback as they should have)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputs, i18n.language, logger]);
+  }, [inputs, language, handleFetchErrorHandler, logger]);
 
-  // Effect hook when the selected datasource changes - coming from this component.
+  // Effect hook when the inputs and selected datasource changes - coming from this component.
   useEffect(() => {
     // Log
     const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - SELECTED DATASOURCE';
@@ -1049,6 +1482,31 @@ export function GeoChart<
   // Effect hook when the selected datasource changes - coming from this component.
   useEffect(() => {
     // Log
+    const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - SELECTED DATASOURCE LOCK';
+    logger.logTraceUseEffect(USE_EFFECT_FUNC, selectedDatasource);
+
+    // If UI is not locked, reset the states on datasource change
+    if (selectedDatasource && !lockedUI) {
+      // Turn all dataset registry values to checked
+      setDatasetRegistry(delegateToTurnCheckedToTrue);
+
+      // Turn all datas registry values to checked
+      setDatasRegistry(delegateToTurnCheckedToTrue);
+
+      // Resets all x/y slider values
+      setXSliderValues(undefined);
+      setYSliderValues(undefined);
+    }
+
+    return () => {
+      // Log
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
+    };
+  }, [selectedDatasource, lockedUI, logger]);
+
+  // Effect hook when the selected datasource changes - coming from this component.
+  useEffect(() => {
+    // Log
     const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - DATASOURCE STEPS SLIDERS';
     logger.logTraceUseEffect(USE_EFFECT_FUNC, inputs, selectedDatasource);
 
@@ -1076,7 +1534,7 @@ export function GeoChart<
           inputs,
           datasetRegistry,
           datasRegistry,
-          i18n.language,
+          language,
           selectedSteps,
           selectedScale,
           selectedDatasource.items,
@@ -1085,15 +1543,7 @@ export function GeoChart<
         );
       } else {
         // Load records without filtering for nothing
-        processLoadingRecords(
-          inputs,
-          datasetRegistry,
-          datasRegistry,
-          i18n.language,
-          selectedSteps,
-          selectedScale,
-          selectedDatasource.items
-        );
+        processLoadingRecords(inputs, datasetRegistry, datasRegistry, language, selectedSteps, selectedScale, selectedDatasource.items);
       }
     }
 
@@ -1106,7 +1556,7 @@ export function GeoChart<
     selectedDatasource,
     datasRegistry,
     datasetRegistry,
-    i18n.language,
+    language,
     selectedSteps,
     selectedScale,
     xSliderValues,
@@ -1157,7 +1607,7 @@ export function GeoChart<
     logger.logTraceUseEffect(USE_EFFECT_FUNC);
 
     // Make sure the visibility of the chart aligns with the selected datasets
-    updateDatasetVisibilityUsingState(chartRef.current, datasetRegistry);
+    updateDatasetVisibilityUsingState(chartRef.current!, datasetRegistry);
 
     return () => {
       // Log
@@ -1172,7 +1622,7 @@ export function GeoChart<
     logger.logTraceUseEffect(USE_EFFECT_FUNC);
 
     // Make sure the visibility of the chart aligns with the selected datas
-    updateDataVisibilityUsingState(chartRef.current, datasRegistry);
+    updateDataVisibilityUsingState(chartRef.current!, datasRegistry);
 
     return () => {
       // Log
@@ -1198,10 +1648,7 @@ export function GeoChart<
       // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-    // NO REACT for 'onError' (explicitely excluding it here instead of relying on
-    // the parent component to have used useCallback as they should have)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [validatorInputs, t, logger]);
+  }, [logger, t, validatorInputs, onError]);
 
   // Effect hook to validate the schemas of inputs - coming from this component.
   useEffect(() => {
@@ -1221,10 +1668,7 @@ export function GeoChart<
       // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-    // NO REACT for 'onError' (explicitely excluding it here instead of relying on
-    // the parent component to have used useCallback as they should have)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [validatorOptions, validatorData, t, logger]);
+  }, [validatorOptions, validatorData, t, logger, onError]);
 
   // Effect hook when an action needs to happen - coming from this component.
   useEffect(() => {
@@ -1248,266 +1692,6 @@ export function GeoChart<
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
   }, [action, logger]);
-
-  // #endregion
-
-  // #region EVENT HANDLERS SECTION ***********************************************************************************
-
-  /**
-   * Handles when the Datasource changes
-   * @param {Event} e The Select change event
-   * @param {MenuItem} item The selected MenuItem
-   */
-  const handleDatasourceChanged = async (e: Event, item: typeof MenuItem): Promise<void> => {
-    // Find the selected datasource reference based on the MenuItem
-    const ds: GeoChartDatasource | undefined = inputs!.datasources.find((datasource: GeoChartDatasource) => {
-      return (datasource.value || datasource.display) === item.props.value;
-    });
-    if (!ds) return;
-
-    // If the data source has no items
-    if (!ds.items) {
-      ds.items = await fetchDatasourceItems(inputs!.query!, i18n.language, ds.sourceItem, onError);
-    }
-
-    // Set the selected datasource
-    setSelectedDatasource(ds);
-
-    // Callback
-    onDatasourceChanged?.(ds, i18n.language);
-  };
-
-  /**
-   * Handles when a dataset was checked/unchecked (via the legend)
-   * @param {number} datasetIndex - Indicates the dataset index that was checked/unchecked
-   * @param {string | undefined} datasetLabel - Indicates the dataset label that was checked/unchecked
-   * @param {boolean} checked - Indicates the checked state
-   */
-  const handleDatasetChecked = (datasetIndex: number, datasetLabel: string | undefined, checked: boolean): void => {
-    // Keep track
-    datasetRegistry[datasetLabel!].checked = checked;
-
-    // Update the registry
-    setDatasetRegistry({ ...datasetRegistry });
-
-    // Callback
-    onDatasetChanged?.(datasetIndex, datasetLabel, checked);
-  };
-
-  /**
-   * Handles when a data was checked/unchecked (via the legend). This is only used by Pie and Doughnut Charts.
-   * @param {number} dataIndex - Indicates the data index that was checked/unchecked
-   * @param {string} dataLabel - Indicates the data label that was checked/unchecked
-   * @param {boolean} checked - Indicates the checked state
-   */
-  const handleDataChecked = (dataIndex: number, dataLabel: string, checked: boolean): void => {
-    // Keep track
-    datasRegistry[dataLabel].checked = checked;
-
-    // Update the registry
-    setDatasRegistry({ ...datasRegistry });
-
-    // Callback
-    onDataChanged?.(dataIndex, dataLabel, checked);
-  };
-
-  /**
-   * Handles when the X Slider changes
-   * @param {number | number[]} value - Indicates the slider value
-   */
-  const handleSliderXChange = (newValue: number | number[]): void => {
-    // Set the X State
-    setXSliderValues(newValue);
-
-    // Callback
-    onSliderXChanged?.(newValue);
-  };
-
-  /**
-   * Handles when the Y Slider changes
-   * @param {number | number[]} newValue - Indicates the slider value
-   */
-  const handleSliderYChange = (newValue: number | number[]): void => {
-    // Set the Y State
-    setYSliderValues(newValue);
-
-    // Callback
-    onSliderYChanged?.(newValue);
-  };
-
-  /**
-   * Handles when the Steps Switcher changes
-   * @param {unknown} e
-   * @param {MenuItem} item
-   */
-  const handleStepsSwitcherChanged = (e: unknown, item: typeof MenuItem): void => {
-    // Set the step switcher
-    setSelectedSteps(item.props.value as StepsPossibilities);
-
-    // Callback
-    onStepSwitcherChanged?.(item.props.value as StepsPossibilities);
-  };
-
-  /**
-   * Handles when the Scale Switcher changes
-   * @param {unknown} e
-   * @param {MenuItem} item
-   */
-  const handleScaleSwitcherChanged = (e: unknown, item: typeof MenuItem): void => {
-    // Set the scale switcher
-    setSelectedScale(item.props.value as ScalePossibilities);
-
-    // Callback
-    onScaleSwitcherChanged?.(item.props.value as ScalePossibilities);
-  };
-
-  /**
-   * Handles when the States must be cleared
-   */
-  const handleResetStates = (): void => {
-    // Reset all selected datasets to true
-    Object.keys(datasetRegistry).forEach((dataset: string) => {
-      datasetRegistry[dataset].checked = true;
-    });
-
-    // Reset all selected datasets to true
-    Object.keys(datasRegistry).forEach((data: string) => {
-      datasRegistry[data].checked = true;
-    });
-
-    // Clear all states
-    setDatasetRegistry({ ...datasetRegistry });
-    setDatasRegistry({ ...datasRegistry });
-    setSelectedSteps(inputs?.geochart.useSteps || false);
-    setXSliderValues([xSliderMin, xSliderMax]);
-    setYSliderValues([ySliderMin, ySliderMax]);
-
-    // Callback
-    onResetStates?.();
-  };
-
-  /**
-   * Handles the display of the label on the X Slider
-   * @param {number} value - Indicates the slider value
-   */
-  const handleSliderXValueFormat = (value: number): string => {
-    // Callback in case we're overriding this behavior
-    const val = onSliderXValueDisplaying?.(value);
-    if (val) return val;
-
-    // Default behavior
-    // If current chart has time as xAxis
-    if (inputs?.geochart?.xAxis.type === 'time' || inputs?.geochart?.xAxis.type === 'timeseries') {
-      return new Date(value).toLocaleDateString(i18n.language, DATE_OPTIONS_AXIS);
-    }
-
-    // Default value as is
-    return value.toString();
-  };
-
-  /**
-   * Handles the display of the label on the Y Slider
-   * @param {number} value - Indicates the slider value
-   */
-  const handleSliderYValueFormat = (value: number): string => {
-    // Callback in case we're overriding this behavior
-    const val = onSliderYValueDisplaying?.(value);
-    if (val) return val;
-
-    // Default value as is
-    return value.toString();
-  };
-
-  /**
-   * Show export menu.
-   */
-  const handleClick = useCallback(
-    (event: React.MouseEvent<HTMLButtonElement>) => {
-      // Log
-      logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
-
-      setAnchorEl(event.currentTarget);
-    },
-    [logger]
-  );
-
-  /**
-   * Close export menu.
-   */
-  const handleClose = useCallback(() => {
-    // Log
-    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClose');
-
-    setAnchorEl(null);
-  }, [logger]);
-
-  /**
-   * Handles when the download filtered button is clicked
-   */
-  const handleDownloadFiltered = useCallback((): void => {
-    // Get the data
-    const data = { ...selectedDatasource! } as GeoChartDatasource;
-
-    // Get either the actually filtered records (via the sliders) or the data.items
-    data.items = filteredRecords || data.items;
-
-    // If using categories
-    if (inputs?.category) {
-      // The checked datasets strings
-      const checkedDatasetsStrings = Object.keys(datasetRegistry).filter((ds) => {
-        return datasetRegistry[ds].checked;
-      });
-
-      // Also filter on the selected datasets
-      data.items = data.items?.filter((value) => {
-        return checkedDatasetsStrings.includes(value[inputs.category!.property] as string);
-      });
-
-      // In case of pie/doughnut
-      if (chartType === 'pie' || chartType === 'doughnut') {
-        // The checked datas strings
-        const checkedDatasStrings = Object.keys(datasRegistry).filter((ds) => {
-          return datasRegistry[ds].checked;
-        });
-
-        // Also filter on selected datas
-        data.items = data.items?.filter((value) => {
-          return checkedDatasStrings.includes(value[inputs.geochart.xAxis.property] as string);
-        });
-      }
-    }
-
-    // Callback
-    let fileName = onDownloadClicked?.(data);
-    if (!fileName) fileName = 'chart-data.json';
-
-    // Download the data as json
-    downloadJson(data, fileName);
-  }, [
-    chartType,
-    datasRegistry,
-    datasetRegistry,
-    filteredRecords,
-    inputs?.category,
-    inputs?.geochart.xAxis.property,
-    onDownloadClicked,
-    selectedDatasource,
-  ]);
-
-  /**
-   * Handles when the download all button is clicked
-   */
-  const handleDownloadAll = useCallback((): void => {
-    // Get the data
-    const data = { ...selectedDatasource! } as GeoChartDatasource;
-
-    // Callback
-    let fileName = onDownloadClicked?.(data);
-    if (!fileName) fileName = 'chart-data.json';
-
-    // Download the data as json
-    downloadJson(data, fileName);
-  }, [onDownloadClicked, selectedDatasource]);
 
   // #endregion
 
@@ -1647,10 +1831,10 @@ export function GeoChart<
     if (inputs?.ui?.download) {
       return (
         <>
-          <IconButton sx={sxClasses.downloadButton} onClick={handleClick} tooltip={t('geochart.exportBtn')} className="buttonOutline">
+          <IconButton sx={sxClasses.downloadButton} onClick={handleExportClick} tooltip={t('geochart.exportBtn')} className="buttonOutline">
             <DownloadIcon />
           </IconButton>
-          <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+          <Menu anchorEl={anchorEl} open={open} onClose={handleExportClose}>
             <MenuItem onClick={handleDownloadFiltered}>{t('geochart.downloadFiltered')}</MenuItem>
             <MenuItem onClick={handleDownloadAll}>{t('geochart.downloadAll')}</MenuItem>
           </Menu>
@@ -1667,7 +1851,7 @@ export function GeoChart<
   const renderDatasourceSelector = (): JSX.Element => {
     if (inputs) {
       // Create the menu items
-      const menuItems: (typeof TypeMenuItemProps)[] = [];
+      const menuItems: TypeMenuItemProps[] = [];
       inputs.datasources.forEach((s: GeoChartDatasource) => {
         menuItems.push({ key: s.value || s.display, item: { value: s.value || s.display, children: s.display || s.value } });
       });
@@ -1704,9 +1888,17 @@ export function GeoChart<
 
   const renderUIOptionsStepsSwitcher = (): JSX.Element => {
     if (inputs?.ui?.stepsSwitcher) {
+      // Default all values
+      let stepsOptions: StepsPossibility[] = [...StepsPossibilitiesConst];
+
+      // If the stepsSwitcher is an array
+      if (isStepPossibilityArray(inputs.ui.stepsSwitcher)) {
+        stepsOptions = inputs.ui.stepsSwitcher;
+      }
+
       // Create the menu items
-      const menuItems: (typeof TypeMenuItemProps)[] = [];
-      StepsPossibilitiesConst.forEach((stepOption: string | boolean) => {
+      const menuItems: TypeMenuItemProps[] = [];
+      stepsOptions.forEach((stepOption: string | boolean) => {
         menuItems.push({ key: stepOption, item: { value: stepOption, children: stepOption.toString() } });
       });
 
@@ -1717,18 +1909,26 @@ export function GeoChart<
           label={t('geochart.steps')}
           onChange={handleStepsSwitcherChanged}
           menuItems={menuItems}
-          value={selectedSteps || inputs?.geochart.useSteps || false}
+          value={selectedSteps ?? inputs?.geochart.useSteps ?? false}
         />
       );
     }
     return <Box />;
   };
 
-  const renderUIOptionsScaleSwitcher = (): JSX.Element => {
-    if (inputs?.ui?.scaleSwitcher) {
+  const renderUIOptionsScalesSwitcher = (): JSX.Element => {
+    if (inputs?.ui?.scalesSwitcher) {
+      // Default all values
+      let scaleOptions: ScalePossibility[] = [...ScalePossibilitiesConst];
+
+      // If the scalesSwitcher is an array
+      if (isScalePossibilityArray(inputs.ui.scalesSwitcher)) {
+        scaleOptions = inputs.ui.scalesSwitcher;
+      }
+
       // Create the menu items
-      const menuItems: (typeof TypeMenuItemProps)[] = [];
-      ScalePossibilitiesConst.forEach((scaleOption: string | boolean) => {
+      const menuItems: TypeMenuItemProps[] = [];
+      scaleOptions.forEach((scaleOption: string) => {
         menuItems.push({ key: scaleOption, item: { value: scaleOption, children: scaleOption.toString() } });
       });
 
@@ -1737,7 +1937,7 @@ export function GeoChart<
           container={containerElement}
           sx={sxClasses.uiOptionsScaleSelector}
           label={t('geochart.scale')}
-          onChange={handleScaleSwitcherChanged}
+          onChange={handleScalesSwitcherChanged}
           menuItems={menuItems}
           value={selectedScale || inputs?.geochart.yAxis?.type || 'linear'}
         />
@@ -1765,9 +1965,27 @@ export function GeoChart<
     return (
       <>
         {renderUIOptionsStepsSwitcher()}
-        {renderUIOptionsScaleSwitcher()}
-        {false && renderUIOptionsResetStates()}
+        {renderUIOptionsScalesSwitcher()}
+        {renderUIOptionsResetStates()}
       </>
+    );
+  };
+
+  /**
+   * Renders the UI Lock button
+   * @returns The UI Lock Element
+   */
+  const renderLockOptions = (): JSX.Element => {
+    // Depending on the locked state, tweak the tooltip
+    let tooltip = t('geochart.lockStates');
+    if (lockedUI) {
+      tooltip = t('geochart.unlockStates');
+    }
+
+    return (
+      <Button sx={sxClasses.uiOptionsResetStates} onClick={handleLockStates}>
+        <Tooltip title={tooltip}>{lockedUI ? <LockIcon /> : <LockOpenIcon />}</Tooltip>
+      </Button>
     );
   };
 
@@ -1789,13 +2007,15 @@ export function GeoChart<
               .map(([dsLabel, dsOption]: [string, GeoChartDatasetOption], idx: number) => {
                 let color;
                 if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
+                const checkboxId = `checkboxDataset-${dsLabel}`; // Ensure uniqueness if rendering multiple
                 return (
-                  <Box sx={sxClasses.checkDatasetWrapper} key={dsLabel || idx}>
+                  <Box component="label" htmlFor={checkboxId} sx={sxClasses.checkDatasetWrapper} key={checkboxId}>
                     <Checkbox
+                      id={checkboxId}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
                         handleDatasetChecked(idx, dsLabel, e.target?.checked);
                       }}
-                      checked={datasetRegistry[dsLabel].checked !== undefined ? datasetRegistry[dsLabel].checked : true}
+                      checked={memoDatasetRegistryChecked.includes(dsLabel)}
                     />
                     <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
                       {dsLabel}
@@ -1828,14 +2048,16 @@ export function GeoChart<
                 })
                 .map(([dsLabel, dsOption]: [string, GeoChartDatasetOption], idx: number) => {
                   const color = dsOption.borderColor;
+                  const checkboxId = `checkboxDatas-${dsLabel}`; // Ensure uniqueness if rendering multiple
 
                   return (
-                    <Box sx={sxClasses.checkDatasetWrapper} key={dsLabel || idx}>
+                    <Box component="label" htmlFor={checkboxId} sx={sxClasses.checkDatasetWrapper} key={checkboxId}>
                       <Checkbox
+                        id={checkboxId}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>): void => {
                           handleDataChecked(idx, dsLabel, e.target?.checked);
                         }}
-                        checked={datasRegistry[dsLabel].checked !== undefined ? datasRegistry[dsLabel].checked : true}
+                        checked={memoDatasRegistryChecked.includes(dsLabel)}
                       />
                       <Typography sx={{ ...sxClasses.checkDatasetLabel, ...{ color } }} noWrap>
                         {dsLabel}
@@ -1866,6 +2088,7 @@ export function GeoChart<
             <Box sx={sxClasses.header}>
               {renderDatasourceSelector()}
               {renderUIOptions()}
+              {renderLockOptions()}
               {renderDownload()}
             </Box>
             <Box sx={sxClasses.title}>{renderTitle()}</Box>

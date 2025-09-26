@@ -1,0 +1,94 @@
+{
+  "chart": "line",
+  "title": "Line Chart with time on x and sliders",
+  "query": {
+    "type": "esriRegular",
+    "url": "https://maps-cartes.services.geo.ca/server_serveur/rest/services/HC/airborne_radioactivity_en/MapServer/3",
+    "queryOptions": {
+      "whereClauses": [
+        {
+          "field": "Location_Emplacement",
+          "prefix": "'",
+          "valueFrom": "Location_Emplacement",
+          "suffix": "'"
+        }
+      ],
+      "orderByField": "CollectionStart_DebutPrelevement"
+    }
+  },
+  "geochart": {
+    "borderWidth": 2,
+    "xAxis": {
+      "type": "time",
+      "timeFormat": {
+        "en": "MMM d, yyyy, HH:mm",
+        "fr": "d MMM yyyy, HH:mm"
+      },
+      "timeIANA": "America/Toronto",
+      "ticksRule": "auto",
+      "property": "CollectionStart_DebutPrelevement",
+      "label": "Collected date"
+    },
+    "yAxis": {
+      "type": "linear",
+      "property": "Activity_Activite_mBqm3",
+      "label": "Activity mBqm3",
+      "tooltipSuffix": "mBqm3"
+    }
+  },
+  "category": {
+    "property": "Radionuclide_Radionucleide"
+  },
+  "ui": {
+    "xSlider": {
+      "display": true
+    },
+    "ySlider": {
+      "display": true,
+      "step": 0.1
+    },
+    "stepsSwitcher": true,
+    "scalesSwitcher": true,
+    "resetStates": true,
+    "description": "This is a description text",
+    "download": true
+  },
+  "datasources": [
+    {
+      "display": "Saskatoon",
+      "sourceItem": {
+        "Location_Emplacement": "Saskatoon"
+      }
+    },
+    {
+      "display": "Vancouver",
+      "sourceItem": {
+        "Location_Emplacement": "Vancouver"
+      }
+    },
+    {
+      "display": "Regina",
+      "sourceItem": {
+        "Location_Emplacement": "Regina"
+      }
+    },
+    {
+      "display": "Ottawa",
+      "sourceItem": {
+        "Location_Emplacement": "Ottawa"
+      }
+    },
+    {
+      "display": "Montreal",
+      "sourceItem": {
+        "Location_Emplacement": "Montreal"
+      }
+    },
+    {
+      "display": "Quebec",
+      "sourceItem": {
+        "Location_Emplacement": "Quebec"
+      }
+    }
+  ]
+}

@@ -24,6 +24,11 @@ i18n
         translation: translationFr,
       },
     },
+  })
+  .catch((error: unknown) => {
+    // Log the error
+    // eslint-disable-next-line no-console
+    console.error(error);
   });
 
 export default i18n;

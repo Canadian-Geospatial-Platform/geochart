@@ -65,7 +65,7 @@ export class SchemaValidator {
     const validate = this.#ajv.compile(schema);
 
     // Validate
-    const valid = validate(anyObject) as boolean;
+    const valid = validate(anyObject);
 
     // Return a ValidatorResult
     return {
