@@ -56,6 +56,11 @@ const config = {
     new CopyWebpackPlugin({
       patterns: [{ from: './public/locales', to: 'locales', noErrorOnMissing: true }, { from: './favicon.ico' }],
     }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: './public/configs', to: 'configs' }
+      ]
+    })
   ],
 };
 
