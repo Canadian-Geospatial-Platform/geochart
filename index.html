@@ -40,18 +40,18 @@
           <div style="margin-bottom: 10px;">
             <span>Chart Config: </span>
             <select id="selChart">
-              <option value="/configs/config-line-1.json">Import Chart time complete</option>
-              <option value="/configs/config-line-2.json">Import Chart time log. tension</option>
-              <option value="/configs/config-line-2-slim.json">Import Chart no sliders</option>
-              <option value="/configs/config-line-ogc-1.json">Imp. OGC Line (VPN)</option>
-              <option value="/configs/config-bar-1.json">Imp. OGC Bar (all)</option>
-              <option value="/configs/config-bar-1-single.json">Imp. OGC Bar (single)</option>
-              <option value="/configs/config-bar-2.json">Import Data BAR</option>
-              <option value="/configs/config-pie-1.json">Import Data PIE</option>
-              <option value="/configs/config-doughnut-1.json">Import Data DOUGHNUT</option>
-              <option value="/configs/config-bar-3.json">Import Data BAR simple</option>
-              <option value="/configs/config-line-4.json">Import Data w/ nulls</option>
-              <option value="/configs/config-line-5.json">Import Data test apostrophes</option>
+              <option value="./configs/config-line-1.json">Import Chart time complete</option>
+              <option value="./configs/config-line-2.json">Import Chart time log. tension</option>
+              <option value="./configs/config-line-2-slim.json">Import Chart no sliders</option>
+              <option value="./configs/config-line-ogc-1.json">Imp. OGC Line (VPN)</option>
+              <option value="./configs/config-bar-1.json">Imp. OGC Bar (all)</option>
+              <option value="./configs/config-bar-1-single.json">Imp. OGC Bar (single)</option>
+              <option value="./configs/config-bar-2.json">Import Data BAR</option>
+              <option value="./configs/config-pie-1.json">Import Data PIE</option>
+              <option value="./configs/config-doughnut-1.json">Import Data DOUGHNUT</option>
+              <option value="./configs/config-bar-3.json">Import Data BAR simple</option>
+              <option value="./configs/config-line-4.json">Import Data w/ nulls</option>
+              <option value="./configs/config-line-5.json">Import Data test apostrophes</option>
             </select>
           </div>
           <div>
@@ -78,8 +78,8 @@
         <div>
           <div style="display:inline-block; width: 49%;">
             <div>
-              <button onclick="importNativeOptionsParsed('/configs/native-options-1.json')">Import Options (default)</button>
-              <button onclick="importNativeOptionsParsed('/configs/native-options-2.json')">Import Options dummy scale</button>
+              <button onclick="importNativeOptionsParsed('./configs/native-options-1.json')">Import Options (default)</button>
+              <button onclick="importNativeOptionsParsed('./configs/native-options-2.json')">Import Options dummy scale</button>
             </div>
             <div>
               <textarea id="CHARTOPTIONSPARSED" rows="18" style="width: 98%"></textarea>
@@ -87,10 +87,10 @@
           </div>
           <div style="display:inline-block; width: 49%;">
             <div>
-              <button onclick="importNativeDataParsed('/configs/native-data-1.json')">Import Data 1 rec</button>
-              <button onclick="importNativeDataParsed('/configs/native-data-2.json')">Import Data 2 recs</button>
-              <button onclick="importNativeDataParsed('/configs/native-data-3.json')">Import Data 2 recs w/ steps</button>
-              <button onclick="importNativeDataParsed('/configs/native-data-4.json')">Import Data using x,y</button>
+              <button onclick="importNativeDataParsed('./configs/native-data-1.json')">Import Data 1 rec</button>
+              <button onclick="importNativeDataParsed('./configs/native-data-2.json')">Import Data 2 recs</button>
+              <button onclick="importNativeDataParsed('./configs/native-data-3.json')">Import Data 2 recs w/ steps</button>
+              <button onclick="importNativeDataParsed('./configs/native-data-4.json')">Import Data using x,y</button>
             </div>
             <div>
               <textarea id="CHARTDATAPARSED" rows="18" style="width: 98%"></textarea>
@@ -219,13 +219,13 @@
       }
 
       // Load data 1
-      importChartConfig('/configs/config-line-1.json').then((result) => {
+      importChartConfig('./configs/config-line-1.json').then((result) => {
         // Now load the chart
         loadChartFromInputs();
       });
 
-      importNativeOptionsParsed('/configs/native-options-1.json');
-      importNativeDataParsed('/configs/native-data-1.json');
+      importNativeOptionsParsed('./configs/native-options-1.json');
+      importNativeDataParsed('./configs/native-data-1.json');
 
       // Attach the event listener
       const selectElement = document.getElementById("selChart");
