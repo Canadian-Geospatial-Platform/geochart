@@ -1,6 +1,5 @@
 import { ChartType, ChartOptions, ChartTypeRegistry } from 'chart.js';
 import { DistributiveArray } from 'chart.js/dist/types/utils';
-import { extractColor } from './utils';
 
 // Export all ChartJS types
 export type * from 'chart.js';
@@ -34,7 +33,8 @@ export type GeoChartQuery = {
  * The Options to query a layer
  */
 export type GeoChartQueryOption = {
-  whereClauses: GeoChartQueryOptionClause[];
+  format?: string;
+  whereClauses?: GeoChartQueryOptionClause[];
   orderByField?: string;
 };
 
@@ -54,7 +54,7 @@ export type GeoChartQueryOptionClause = {
  */
 export type GeoChartCategory = {
   property: string;
-  usePalette?: boolean;
+  usePalette?: boolean; // TODO: Think about removing this parameter maybe?
   // In the case of a line or bar chart, the palette is always specified. For a pie or doughnut, this might be unspecified for UI looks reasons.
   paletteBackgrounds?: string[];
   // In the case of a line or bar chart, the palette is always specified. For a pie or doughnut, this might be unspecified for UI looks reasons.
@@ -65,10 +65,35 @@ export type GeoChartCategory = {
  * The steps possibilities explicitely typed.
  */
 export const StepsPossibilitiesConst = ['before', 'after', 'middle', false] as const;
-export type StepsPossibilities = (typeof StepsPossibilitiesConst)[number];
+export type StepsPossibility = (typeof StepsPossibilitiesConst)[number];
 
+/**
+ * Type guard that checks whether a given value is an array of valid `StepsPossibility` values.
+ * This is used to validate that a value (typically external input or config) conforms to
+ * the list of supported steps types used in charts (e.g., 'before', 'after', etc.).
+ * @param {unknown} value - The value to validate.
+ * @returns {value is StepsPossibility[]} `true` if the value is an array of valid `StepsPossibility` strings; otherwise `false`.
+ */
+export const isStepPossibilityArray = (value: unknown): value is StepsPossibility[] => {
+  return Array.isArray(value) && value.every((v) => StepsPossibilitiesConst.includes(v as StepsPossibility));
+};
+
+/**
+ * The scales possibilities explicitely typed.
+ */
 export const ScalePossibilitiesConst = ['linear', 'logarithmic', 'category', 'time', 'timeseries'] as const;
-export type ScalePossibilities = (typeof ScalePossibilitiesConst)[number];
+export type ScalePossibility = (typeof ScalePossibilitiesConst)[number];
+
+/**
+ * Type guard that checks whether a given value is an array of valid `ScalePossibility` values.
+ * This is used to validate that a value (typically external input or config) conforms to
+ * the list of supported scale types used in charts (e.g., 'linear', 'logarithmic', etc.).
+ * @param {unknown} value - The value to validate.
+ * @returns {value is ScalePossibility[]} `true` if the value is an array of valid `ScalePossibility` strings; otherwise `false`.
+ */
+export const isScalePossibilityArray = (value: unknown): value is ScalePossibility[] => {
+  return Array.isArray(value) && value.every((v) => ScalePossibilitiesConst.includes(v as ScalePossibility));
+};
 
 /**
  * The Configuration about using GeoChart specific parameters.
@@ -77,7 +102,7 @@ export type GeoChartOptionsGeochart = {
   xAxis: GeoChartOptionsAxis;
   yAxis: GeoChartOptionsAxis;
   borderWidth?: number;
-  useSteps?: StepsPossibilities;
+  useSteps?: StepsPossibility;
   tension?: number;
 };
 
@@ -87,8 +112,8 @@ export type GeoChartOptionsGeochart = {
 export type GeoChartOptionsUI = {
   xSlider?: GeoChartOptionsSlider;
   ySlider?: GeoChartOptionsSlider;
-  stepsSwitcher?: boolean;
-  scaleSwitcher?: boolean;
+  stepsSwitcher?: boolean | StepsPossibility[];
+  scalesSwitcher?: boolean | ScalePossibility[];
   resetStates?: boolean;
   description?: string;
   download?: boolean;
@@ -134,8 +159,11 @@ export type GeoChartDefaultColors = {
 export type GeoChartOptionsAxis = {
   property: string;
   type?: 'linear' | 'logarithmic' | 'category' | 'time' | 'timeseries';
+  ticksRule?: 'data' | 'auto' | 'labels';
+  timeFormat?: string | Record<string, string>;
+  timeIANA?: string;
   label?: string;
-  usePalette?: boolean;
+  usePalette?: boolean; // TODO: Think about removing this parameter maybe?
   paletteBackgrounds?: string[];
   paletteBorders?: string[];
   tooltipSuffix?: string;
@@ -190,102 +218,4 @@ export type GeoChartDatasetOption = {
  */
 export type GeoChartSelectedDataset = {
   [label: string]: GeoChartDatasetOption;
-};
-
-/**
- * The default color palette that ChartJS uses (I couldn't easily find out where that const is stored within ChartJS)
- */
-export const DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT: string[] = [
-  'rgba(54, 162, 235, 0.5)', // light blue
-  'rgba(255, 99, 132, 0.5)', // light red
-  'rgba(75, 192, 192, 0.5)', // light green
-  'rgba(255, 159, 64, 0.5)', // light orange
-  'rgba(153, 102, 255, 0.5)', // light purple
-  'rgba(255, 205, 86, 0.5)', // light yellow
-  'rgba(201, 203, 207, 0.5)', // light gray
-  'rgba(0, 0, 255, 0.5)', // blue
-  'rgba(0, 255, 0, 0.5)', // green
-  'rgba(255, 0, 0, 0.5)', // red
-  'rgba(255, 150, 0, 0.5)', // orange
-  'rgba(255, 0, 255, 0.5)', // pink
-  'rgba(30, 219, 34, 0.5)', // lime green
-  'rgba(190, 0, 190, 0.5)', // purple
-  'rgba(132, 255, 255, 0.5)', // cyan
-  'rgba(255, 250, 0, 0.5)', // yellow
-  'rgba(128, 0, 128, 0.5)', // maroon
-  'rgba(0, 128, 128, 0.5)', // teal
-  'rgba(128, 128, 0, 0.5)', // olive
-  'rgba(128, 128, 128, 0.5)', // gray
-];
-
-/**
- * The default color palette that ChartJS uses (I couldn't easily find out where that const is stored within ChartJS)
- */
-export const DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT.map((color: string) => {
-  // Extract the alpha-less color code for better output
-  return extractColor(color);
-});
-
-/**
- * The default color palette to be used for backgrounds when no color palette is specified
- */
-export const DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT: string[] = [
-  'rgba(0, 0, 255, 0.5)', // blue
-  'rgba(0, 255, 0, 0.5)', // green
-  'rgba(255, 0, 0, 0.5)', // red
-  'rgba(255, 150, 0, 0.5)', // orange
-  'rgba(255, 0, 255, 0.5)', // pink
-  'rgba(30, 219, 34, 0.5)', // lime green
-  'rgba(190, 0, 190, 0.5)', // purple
-  'rgba(132, 255, 255, 0.5)', // cyan
-  'rgba(255, 250, 0, 0.5)', // yellow
-];
-
-/**
- * The default color palette to be used when no color palette is specified
- */
-export const DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT.map((color: string) => {
-  // Extract the alpha-less color code for better output
-  return extractColor(color);
-});
-
-/**
- * The alternate color palette to be used when no alternate color palette is specified, used for pie and doughnut charts
- */
-export const DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT: string[] = [
-  'rgba(30, 219, 34, 0.5)', // lime green
-  'rgba(190, 0, 190, 0.5)', // purple
-  'rgba(255, 150, 0, 0.5)', // orange
-  'rgba(0, 0, 255, 0.5)', // blue
-  'rgba(132, 255, 255, 0.5)', // cyan
-  'rgba(255, 0, 255, 0.5)', // pink
-  'rgba(0, 255, 0, 0.5)', // green
-  'rgba(255, 150, 75, 0.5)', // bisque
-];
-
-/**
- * The alternate color palette to be used when no alternate color palette is specified, used for pie and doughnut charts
- */
-export const DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE: string[] = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT.map((color: string) => {
-  // Extract the alpha-less color code for better output
-  return extractColor(color);
-});
-
-/**
- * The date formatting to show the dates on the Axis.
- */
-export const DATE_OPTIONS_AXIS: Intl.DateTimeFormatOptions = {
-  year: 'numeric',
-  month: 'short',
-  day: 'numeric',
-};
-
-/**
- * The date formatting to show the dates on Slider.
- */
-export const DATE_OPTIONS_LONG: Intl.DateTimeFormatOptions = {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
 };

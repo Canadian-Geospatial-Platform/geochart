@@ -1,0 +1,46 @@
+{
+  "chart": "bar",
+  "title": "Bar Chart with OGC Features",
+  "query": {
+    "type": "ogcAPIFeatures",
+    "url": "https://demo.pygeoapi.io/master/collections/lakes",
+    "queryOptions": {
+      "whereClauses": [
+        {
+          "field": "name",
+          "prefix": "",
+          "valueFrom": "name",
+          "suffix": ""
+        }
+      ]
+    }
+  },
+  "geochart": {
+    "xAxis": {
+      "property": "name",
+      "label": "Name"
+    },
+    "yAxis": {
+      "property": "id",
+      "label": "ID"
+    }
+  },
+  "ui": {
+    "resetStates": true,
+    "download": true
+  },
+  "datasources": [
+    {
+      "display": "Lake Ontario",
+      "sourceItem": {
+        "name": "L. Ontario"
+      }
+    },
+    {
+      "display": "Lake Erie",
+      "sourceItem": {
+        "name": "L. Erie"
+      }
+    }
+  ]
+}

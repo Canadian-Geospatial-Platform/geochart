@@ -1,0 +1,17 @@
+{
+  "labels": ["Hockey", "Baseball", "Baseketball", "Football", "Soccer", "Curling"],
+  "datasets": [
+    {
+      "label": "Dataset 1",
+      "data": [12, 19, 3, 5, 2, 3],
+      "borderColor": "rgb(53, 162, 235)",
+      "backgroundColor": "rgba(53, 162, 235, 0.5)"
+    },
+    {
+      "label": "Dataset 2",
+      "data": [22, 29, 13, 15, 12, 13],
+      "borderColor": "rgb(255, 99, 132)",
+      "backgroundColor": "rgba(255, 99, 132, 0.5)"
+    }
+  ]
+}

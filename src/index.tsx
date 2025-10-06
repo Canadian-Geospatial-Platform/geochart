@@ -9,7 +9,7 @@ export * from './chart-schema-validator';
 export * from './chart';
 
 // Search for a special root in case we are loading the geochart standalone
-const root = document.getElementById('root2aca7b6b288c') as HTMLElement;
+const root = document.getElementById('root2aca7b6b288c') as HTMLElement | undefined;
 if (root) {
   // Can't type the window object to a 'TypeWindow', because we don't have access to the cgpv library when this line runs.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

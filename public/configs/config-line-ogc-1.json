@@ -1,0 +1,62 @@
+{
+  "chart": "line",
+  "title": "Line Chart with OGC Features",
+  "query": {
+    "type": "ogcAPIFeatures",
+    "url": "https://pygeoapi-stage.cdtk.geogc.ca/collections/ft::seismic_reflection:seismic_reflection_imagery",
+    "queryOptions": {
+      "whereClauses": [
+        {
+          "field": "YEAR",
+          "valueFrom": "YEAR"
+        }
+      ]
+    }
+  },
+  "geochart": {
+    "xAxis": {
+      "type": "time",
+      "timeFormat": "MMM d, yyyy, HH:mm",
+      "property": "DATE_START"
+    },
+    "yAxis": {
+      "property": "YEAR"
+    }
+  },
+  "ui": {
+    "resetStates": true,
+    "download": true
+  },
+  "datasources": [
+    {
+      "display": "1996",
+      "sourceItem": {
+        "YEAR": 1996
+      }
+    },
+    {
+      "display": "1997",
+      "sourceItem": {
+        "YEAR": 1997
+      }
+    },
+    {
+      "display": "1998",
+      "sourceItem": {
+        "YEAR": 1998
+      }
+    },
+    {
+      "display": "1999",
+      "sourceItem": {
+        "YEAR": 1999
+      }
+    },
+    {
+      "display": "2000",
+      "sourceItem": {
+        "YEAR": 2000
+      }
+    }
+  ]
+}

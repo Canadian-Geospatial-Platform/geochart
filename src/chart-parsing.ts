@@ -1,28 +1,25 @@
-import { Chart as ChartJS, ChartType, ChartData, ChartDataset, ChartOptions, Tick, PluginChartOptions } from 'chart.js';
+import { Chart as ChartJS, ChartType, ChartData, ChartDataset, ChartOptions, PluginChartOptions, Tick } from 'chart.js';
+import { DateTime } from 'luxon';
 import {
   GeoChartConfig,
   GeoChartXYData,
   GeoDefaultDataPoint,
   GeoChartCategoriesGroup,
   GeoChartSelectedDataset,
-  StepsPossibilities,
-  ScalePossibilities,
-  DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT,
-  DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE,
-  DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT,
-  DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE,
-  DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT,
-  DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE,
-  DATE_OPTIONS_AXIS,
+  StepsPossibility,
+  ScalePossibility,
 } from './types';
-import { isNumber } from './utils';
+import { Utils } from './utils';
 
 export class ChartParsing {
+  /** The default date time format */
+  static readonly DEFAULT_DATE_TIME_FORMAT = 'yyyy-MM-dd HH:mm:ss'; // 'yyyy-MM-dd HH:mm' 'MMM d, yyyy, HH:mm:ss'
+
   /**
    * Creates the ChartJS Options object necessary for ChartJS process.
    * @param {GeoChartConfig<TType>} chartConfig - The GeoChart Inputs to use to build the ChartJS ingestable information.
    * @param {ChartOptions<TType> }defaultOptions - The default, basic, necessary Options for ChartJS.
-   * @param {ScalePossibilities | undefined} yAxisType - The scale possibilities, if any
+   * @param {ScalePossibility | undefined} yAxisType - The scale possibilities, if any
    * @param {string} language - The current language of the UI.
    * @returns {ChartOptions<TType>} The ingestable Options properties
    * @static
@@ -30,7 +27,7 @@ export class ChartParsing {
   static createChartJSOptions<TType extends ChartType>(
     chartConfig: GeoChartConfig<TType>,
     defaultOptions: ChartOptions<TType>,
-    yAxisType: ScalePossibilities | undefined,
+    yAxisType: ScalePossibility | undefined,
     language: string
   ): ChartOptions<TType> {
     // The Chart JS Options as entered or the default options
@@ -45,37 +42,60 @@ export class ChartParsing {
       chartConfig.chart === 'line' &&
       (chartConfig.geochart.xAxis?.type === 'time' || chartConfig.geochart.xAxis?.type === 'timeseries')
     ) {
+      // Calculate the time format
+      const timeFormat = ChartParsing.calculateTimeFormat(chartConfig.geochart.xAxis.timeFormat, language);
+
       // Generate the options object
       const optionsLine = options as ChartOptions<'line'>;
       optionsLine.scales = {
         ...optionsLine.scales,
         x: {
           type: chartConfig.geochart.xAxis?.type,
+          time: {
+            tooltipFormat: timeFormat ?? ChartParsing.DEFAULT_DATE_TIME_FORMAT,
+            displayFormats: {
+              hour: 'HH:mm',
+              minute: 'HH:mm',
+            },
+          },
+          adapters: {
+            date: {
+              zone: chartConfig.geochart.xAxis.timeIANA ?? 'UTC',
+              locale: language,
+            },
+          },
           ticks: {
             autoSkip: true,
             major: {
               enabled: true,
             },
             padding: 10,
-            source: 'auto',
+            source: chartConfig.geochart.xAxis.ticksRule ?? 'auto', // auto  data
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             callback: (tickValue: number | Date | string, index: number, ticks: Tick[]): string => {
               // Make it a date
-              const d = new Date(tickValue);
-              const label = d.toLocaleString(language, DATE_OPTIONS_AXIS);
+              const d = ChartParsing.readDateValue(tickValue);
+              const label = ChartParsing.writeDateValue(d, language, chartConfig.geochart.xAxis.timeIANA, timeFormat);
+              return label;
 
-              // Trick by keeping the previously calculated label in an extra property (for performance)
-              // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
-              (ticks[index] as any).geoLabel = label;
+              // // Commenting this out for now, seems better to me 2025-09-26
+              // // Trick by keeping the previously calculated label in an extra property (for performance)
+              // // eslint-disable-next-line no-param-reassign, @typescript-eslint/no-explicit-any
+              // (ticks[index] as any).geoLabel = label;
 
-              // If the generated label is major or different than the one prior
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              if (ticks[index].major || (index > 0 && label !== (ticks[index - 1] as any).geoLabel)) {
-                return label;
-              }
+              // // If first one or the generated label is major or different than the one prior or last
+              // if (
+              //   index === 0 ||
+              //   ticks[index].major ||
+              //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              //   (index > 0 && label !== (ticks[index - 1] as any).geoLabel) ||
+              //   index === ticks.length - 1
+              // ) {
+              //   return label;
+              // }
 
-              // No label, redundant
-              return '';
+              // // No label, redundant
+              // return '';
             },
           },
           offset: true,
@@ -111,7 +131,7 @@ export class ChartParsing {
           const rawValue = context.raw as any;
 
           // If we have a context.raw.y value, prioritize that value so that we don't lose decimals
-          if (rawValue.y && isNumber(rawValue.y)) {
+          if (rawValue.y && Utils.isNumber(rawValue.y)) {
             // Read the raw value as string
             value = ChartParsing.fixDecimals(Number(rawValue.y)).toString();
           }
@@ -133,7 +153,7 @@ export class ChartParsing {
    * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
    * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
    * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
-   * @param {StepsPossibilities  | undefined} steps - The steps, if any
+   * @param {StepsPossibility} steps - The steps, if any
    * @param {Record<string, unknown>[]} records - The records to build the data from.
    * @param {ChartData<TType, TData, TLabel>} defaultData - The default, basic, necessary Data for ChartJS.
    * @returns {ChartData<TType, TData, TLabel>} The ChartJS ingestable Data properties
@@ -142,12 +162,12 @@ export class ChartParsing {
   static createChartJSData<
     TType extends ChartType,
     TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
-    TLabel extends string = string
+    TLabel extends string = string,
   >(
     chartConfig: GeoChartConfig<TType>,
     datasetsRegistry: GeoChartSelectedDataset,
     datasRegistry: GeoChartSelectedDataset,
-    steps: StepsPossibilities,
+    steps: StepsPossibility,
     records: Record<string, unknown>[] | undefined,
     defaultData: ChartData<TType, TData, TLabel>
   ): ChartData<TType, TData, TLabel> {
@@ -191,20 +211,20 @@ export class ChartParsing {
         // For line or bar charts, set the ChartJS default color palette
         if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
           // eslint-disable-next-line no-param-reassign
-          chartConfig.category.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
+          chartConfig.category.paletteBackgrounds = Utils.DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
         }
         // eslint-disable-next-line no-param-reassign
-        if (chartConfig.category.usePalette) chartConfig.category.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT;
+        if (chartConfig.category.usePalette) chartConfig.category.paletteBackgrounds = Utils.DEFAULT_COLOR_PALETTE_CUSTOM_TRANSPARENT;
       }
       // If there's no border palettes
       if (!chartConfig.category.paletteBorders) {
         // For line or bar charts, we may want to use ChartJS's color palette
         if (chartConfig.chart === 'line' || chartConfig.chart === 'bar') {
           // eslint-disable-next-line no-param-reassign
-          chartConfig.category.paletteBorders = DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
+          chartConfig.category.paletteBorders = Utils.DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
         }
         // eslint-disable-next-line no-param-reassign
-        if (chartConfig.category.usePalette) chartConfig.category.paletteBorders = DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE;
+        if (chartConfig.category.usePalette) chartConfig.category.paletteBorders = Utils.DEFAULT_COLOR_PALETTE_CUSTOM_OPAQUE;
       }
     }
 
@@ -213,17 +233,18 @@ export class ChartParsing {
       // If there's no background palettes
       if (!chartConfig.geochart.xAxis.paletteBackgrounds) {
         // eslint-disable-next-line no-param-reassign
-        chartConfig.geochart.xAxis.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
+        chartConfig.geochart.xAxis.paletteBackgrounds = Utils.DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT;
         if (chartConfig.geochart.xAxis.usePalette)
           // eslint-disable-next-line no-param-reassign
-          chartConfig.geochart.xAxis.paletteBackgrounds = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT;
+          chartConfig.geochart.xAxis.paletteBackgrounds = Utils.DEFAULT_COLOR_PALETTE_CUSTOM_ALT_TRANSPARENT;
       }
       // If there's no border palettes
       if (!chartConfig.geochart.xAxis.paletteBorders) {
         // eslint-disable-next-line no-param-reassign
-        chartConfig.geochart.xAxis.paletteBorders = DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
-        // eslint-disable-next-line no-param-reassign
-        if (chartConfig.geochart.xAxis.usePalette) chartConfig.geochart.xAxis.paletteBorders = DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE;
+        chartConfig.geochart.xAxis.paletteBorders = Utils.DEFAULT_COLOR_PALETTE_CHARTJS_OPAQUE;
+        if (chartConfig.geochart.xAxis.usePalette)
+          // eslint-disable-next-line no-param-reassign
+          chartConfig.geochart.xAxis.paletteBorders = Utils.DEFAULT_COLOR_PALETTE_CUSTOM_ALT_OPAQUE;
       }
     }
   }
@@ -234,7 +255,7 @@ export class ChartParsing {
    * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
    * @param {GeoChartSelectedDataset} datasetsRegistry - The datasets registry
    * @param {GeoChartSelectedDataset} datasRegistry - The datas registry
-   * @param {StepsPossibilities  | undefined} steps - The steps, if any
+   * @param {StepsPossibility | undefined} steps - The steps, if any
    * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
    * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
    * @static
@@ -243,12 +264,12 @@ export class ChartParsing {
   static #createDatasets<
     TType extends ChartType = ChartType,
     TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
-    TLabel extends string = string
+    TLabel extends string = string,
   >(
     chartConfig: GeoChartConfig<TType>,
     datasetsRegistry: GeoChartSelectedDataset,
     datasRegistry: GeoChartSelectedDataset,
-    steps: StepsPossibilities | undefined,
+    steps: StepsPossibility | undefined,
     records: Record<string, unknown>[]
   ): ChartData<TType, TData, TLabel> {
     // Depending on the ChartType
@@ -266,7 +287,7 @@ export class ChartParsing {
    * This function supports various on-the-fly formatting such as the chart config 'category' and the datasource 'compressed' format.
    * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
    * @param {GeoChartSelectedDataset} datasetsRegistry - The dataset registry
-   * @param {StepsPossibilities | undefined} steps - The steps if any
+   * @param {StepsPossibility | undefined} steps - The steps if any
    * @param {Record<string, unknown>[]} records - The records within the dataset. It's a distinct argument than the datasource one, because of on-the-fly filterings with the sliders.
    * @returns {ChartData<TType, TData, TLabel>} The object containing the ChartDatasets
    * @static
@@ -275,11 +296,11 @@ export class ChartParsing {
   static #createDatasetsLineBar<
     TType extends ChartType = 'line' | 'bar',
     TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
-    TLabel extends string = string
+    TLabel extends string = string,
   >(
     chartConfig: GeoChartConfig<TType>,
     datasetsRegistry: GeoChartSelectedDataset,
-    steps: StepsPossibilities | undefined,
+    steps: StepsPossibility | undefined,
     records: Record<string, unknown>[]
   ): ChartData<TType, TData, TLabel> {
     // Transform the TypeFeatureJson data to ChartData<TType, TData, string>
@@ -359,7 +380,7 @@ export class ChartParsing {
   static #createDatasetsPieDoughnut<
     TType extends ChartType = 'pie' | 'doughnut',
     TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
-    TLabel extends string = string
+    TLabel extends string = string,
   >(
     chartConfig: GeoChartConfig<TType>,
     datasetsRegistry: GeoChartSelectedDataset,
@@ -457,7 +478,7 @@ export class ChartParsing {
    * @param {GeoChartConfig<TType>} chartConfig - The GeoChart configuration
    * @param {string | string[] | undefined} backgroundColor - The background color if any
    * @param {string | string[] | undefined} borderColor - The border color if any
-   * @param {StepsPossibilities | undefined} steps - The steps if any
+   * @param {StepsPossibility | undefined} steps - The steps if any
    * @param {string?} label - The label if any
    * @returns {ChartDataset} The object
    * @static
@@ -467,7 +488,7 @@ export class ChartParsing {
     chartConfig: GeoChartConfig<TType>,
     backgroundColor: string | string[] | undefined,
     borderColor: string | string[] | undefined,
-    steps: StepsPossibilities | undefined,
+    steps: StepsPossibility | undefined,
     label?: string
   ): ChartDataset<TType, TData> {
     // Transform the TypeFeatureJson data to ChartDataset<TType, TData>
@@ -513,7 +534,7 @@ export class ChartParsing {
   static #createDataCompressedForPieDoughnut<
     TType extends ChartType,
     TData extends GeoDefaultDataPoint<TType> = GeoDefaultDataPoint<TType>,
-    TLabel extends string = string
+    TLabel extends string = string,
   >(chartConfig: GeoChartConfig<TType>, dataset: ChartDataset<TType, TData>, labels: string[], records: Record<string, unknown>[]): TData {
     // Create a new data array of expected length containing only 'null' values
     const newData: TData = Array.from({ length: labels.length }, () => null) as TData;
@@ -558,13 +579,7 @@ export class ChartParsing {
     // If the value is expected to be a time
     let xVal: unknown = valRawX;
     if (chartConfig.geochart.xAxis?.type === 'time' || chartConfig.geochart.xAxis?.type === 'timeseries') {
-      // Make sure it's a date object
-      if (valRawX instanceof Date) {
-        xVal = valRawX;
-      } else {
-        // Do our best to convert to date
-        xVal = new Date(valRawX as string);
-      }
+      xVal = ChartParsing.readDateValue(valRawX);
     }
 
     // Read the value in y, hopefully it's a number, that's what GeoChartXYPair supports for now (there's a TODO there)
@@ -594,7 +609,7 @@ export class ChartParsing {
             if (a.x < (b.x as Date)) return -1;
             return 1;
           }
-          if (isNumber(a.x) && isNumber(b.x)) return (a.x as number) - (b.x as number);
+          if (Utils.isNumber(a.x) && Utils.isNumber(b.x)) return (a.x as number) - (b.x as number);
           if (a.x && b.x) return (a.x as string).localeCompare(b.x as string);
           if (!a.x) return -1;
           if (!b.x) return 1;
@@ -636,5 +651,68 @@ export class ChartParsing {
    */
   static fixDecimals(number: number, fractionDigits: number = 10): number {
     return Number(number.toFixed(fractionDigits));
+  }
+
+  /**
+   * Calculates the time format in case we want time format per language.
+   * @param {string | Record<string, string>} rawTimeFormat -  The time format or the object with various time format per language.
+   * @param {string} language - The language.
+   * @returns The time format for the specified language or the time format as-is.
+   */
+  static calculateTimeFormat(rawTimeFormat: string | Record<string, string> | undefined, language: string): string | undefined {
+    // Calculate the time format based on the language
+    return typeof rawTimeFormat === 'string' ? rawTimeFormat : rawTimeFormat?.[language];
+  }
+
+  /**
+   * Reads a date value in UTC whatever the raw value is.
+   * @param {unknown} rawValue -  The raw date value to interpret.
+   * @returns {Date} The UTC date.
+   */
+  static readDateValue(rawValue: unknown): Date {
+    // Make sure the date value stays in UTC as received
+    let dateValue: Date;
+
+    if (rawValue instanceof Date) {
+      // Assume already in UTC or handled earlier
+      dateValue = new Date(rawValue.getTime()); // defensively clone
+    } else if (typeof rawValue === 'string') {
+      // Try parsing as ISO 8601 (assumed UTC if 'Z' is present)
+      const isoString = rawValue.trim();
+
+      if (isoString.endsWith('Z') || isoString.match(/\+\d{2}:\d{2}$/)) {
+        // Already an ISO UTC string
+        dateValue = new Date(isoString);
+      } else {
+        // Treat as UTC by appending 'Z'
+        dateValue = new Date(`${isoString}Z`);
+      }
+    } else if (typeof rawValue === 'number') {
+      // Assume it's a timestamp (epoch ms)
+      dateValue = new Date(rawValue);
+    } else {
+      // Fallback: try coercing to string and parsing as UTC
+      const str = String(rawValue);
+      dateValue = new Date(`${str}Z`);
+    }
+
+    // Return the date
+    return dateValue;
+  }
+
+  /**
+   * Converts a JavaScript Date object to a formatted string using Luxon, in UTC time zone.
+   * @param {Date} dateValue - The JavaScript Date object to format.
+   * @param {string} [zone='utc'] - Optional Luxon zone string. Defaults to 'utc'.
+   * @param {string} [format=this.DEFAULT_DATE_TIME_FORMAT] - Optional Luxon format string.
+   *        Defaults to the class-defined `DEFAULT_DATE_TIME_FORMAT`.
+   * @returns {string} The formatted date string in the specified format and UTC time zone.
+   */
+  static writeDateValue(dateValue: Date, locale: string, zone: string = 'utc', format: string = this.DEFAULT_DATE_TIME_FORMAT): string {
+    // Convert JS Date to Luxon DateTime (keep in UTC or specify zone)
+    const dt = DateTime.fromJSDate(dateValue, { zone }).setLocale(locale);
+
+    // Format it as you like
+    return dt.toFormat(format);
   }
 }

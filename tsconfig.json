@@ -10,7 +10,8 @@
     "allowSyntheticDefaultImports": true,
     "strictPropertyInitialization": true,
     "sourceMap": true,
-    "jsx": "preserve",
+    "jsx": "react-jsx",
+    "types": ["react", "node"],
     "allowJs": true,
     //"noEmit": true,
     "isolatedModules": true,
@@ -22,5 +23,5 @@
     "skipLibCheck": true,
     "declaration": true
   },
-  "include": ["src"]
+  "include": ["src", "types", "node_modules/@types/react"]
 }
