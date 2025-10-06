@@ -4,7 +4,6 @@
   "description": "A demo app that uses the GeoView APIs",
   "main": "src/index.tsx",
   "private": true,
-  "type": "module",
   "license": "MIT",
   "repository": {
     "type": "git",
