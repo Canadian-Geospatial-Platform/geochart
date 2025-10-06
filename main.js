@@ -66982,9 +66982,9 @@ var i18next_loadLanguages = instance.loadLanguages;
 
 
 
-;// ./locales/en/translation.json
+;// ./public/locales/en/translation.json
 const translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","steps":"Steps","scale":"Scale","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","exportBtn":"Download the graph data","downloadFiltered":"Download visible","downloadAll":"Download all","lockStates":"Lock user interface","unlockStates":"Unlock user interface","resetStates":"Reset"}}');
-;// ./locales/fr/translation.json
+;// ./public/locales/fr/translation.json
 const fr_translation_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","steps":"Marches","scale":"Échelle","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","exportBtn":"Télécharger les données du graphique","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","lockStates":"Vérouiller l\'interface utilisateur","unlockStates":"Dévérouiller l\'interface utilisateur","resetStates":"Réinitialiser"}}');
 ;// ./src/i18n.ts
 
