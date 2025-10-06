@@ -1,0 +1,41 @@
+{
+  "chart": "line",
+  "title": "Line Chart with time on x and sliders",
+  "query": {
+    "type": "esriRegular",
+    "url": "https://services1.arcgis.com/HsjBaDykC1mjhXz9/ArcGIS/rest/services/EGS_Flood_Product_Current_AGOL/FeatureServer/1",
+    "queryOptions": {
+      "format": "pjson",
+      "orderByField": "datetime_publication_utc"
+    }
+  },
+  "geochart": {
+    "useSteps": "after",
+    "xAxis": {
+      "type": "time",
+      "property": "datetime_publication_utc",
+      "label": "Collected date"
+    },
+    "yAxis": {
+      "type": "linear",
+      "property": "datetime_utc",
+      "label": "Some value"
+    },
+    "borderWidth": 1
+  },
+  "ui": {
+    "xSlider": {
+      "display": true
+    },
+    "ySlider": {
+      "display": true
+    },
+    "description": "This is EGS_Flood_Product_Active_AGOL",
+    "download": true
+  },
+  "datasources": [
+    {
+      "display": "GE7"
+    }
+  ]
+}

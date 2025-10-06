@@ -1,0 +1,27 @@
+{
+  "chart": "bar",
+  "title": "Bar Chart with OGC Features",
+  "query": {
+    "type": "ogcAPIFeatures",
+    "url": "https://demo.pygeoapi.io/master/collections/lakes"
+  },
+  "geochart": {
+    "xAxis": {
+      "property": "name",
+      "label": "Name"
+    },
+    "yAxis": {
+      "property": "id",
+      "label": "ID"
+    }
+  },
+  "ui": {
+    "resetStates": true,
+    "download": true
+  },
+  "datasources": [
+    {
+      "display": "Lakes"
+    }
+  ]
+}

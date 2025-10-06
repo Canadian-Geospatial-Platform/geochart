@@ -1,0 +1,44 @@
+{
+  "chart": "line",
+  "title": "Line Chart with time on x and sliders",
+  "query": {
+    "type": "esriRegular",
+    "url": "https://maps-cartes.services.geo.ca/server_serveur/rest/services/HC/alphabeta_water_fr/MapServer/3",
+    "queryOptions": {
+      "whereClauses": [
+        {
+          "field": "Emplacement_FR",
+          "prefix": "'",
+          "valueFrom": "Emplacement_FR",
+          "suffix": "'"
+        }
+      ],
+      "format": "json",
+      "orderByField": "StartDate_DateDebut"
+    }
+  },
+  "geochart": {
+    "xAxis": {
+      "type": "time",
+      "property": "StartDate_DateDebut",
+      "label": "Collected date"
+    },
+    "yAxis": {
+      "property": "Activity_Activite_BqL",
+      "label": "Some value"
+    },
+    "borderWidth": 1
+  },
+  "ui": {
+    "description": "This is EGS_Flood_Product_Active_AGOL",
+    "download": true
+  },
+  "datasources": [
+    {
+      "display": "Britannia Fr",
+      "sourceItem": {
+        "Emplacement_FR": "Usine de purification de l'eau Britannia"
+      }
+    }
+  ]
+}

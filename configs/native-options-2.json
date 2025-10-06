@@ -1,0 +1,17 @@
+{
+  "responsive": true,
+  "plugins": {
+    "legend": {
+      "display": false
+    }
+  },
+  "scales": {
+    "y": {
+      "border": {
+        "color": "red"
+      },
+      "suggestedMin": 0,
+      "suggestedMax": 50
+    }
+  }
+}

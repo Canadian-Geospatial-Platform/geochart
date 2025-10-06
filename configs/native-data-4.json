@@ -1,0 +1,6 @@
+{
+  "labels": ["Hockey", "Baseball", "Baseketball"],
+  "datasets": [{
+    "data": [{"x": 10, "y": 15}, {"x": 15, "y": 25}, {"x": 20, "y": 10}]
+  }]
+}
