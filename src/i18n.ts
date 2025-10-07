@@ -1,13 +1,13 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import translationEn from '../public/locales/en/translation.json';
-import translationFr from '../public/locales/fr/translation.json';
+import translationEn from '../public/locales/en/geochart.json';
+import translationFr from '../public/locales/fr/geochart.json';
 
-i18n
+const localI18n = i18n.createInstance(); // IMPORTANT: create a new instance
+
+localI18n
   .use(initReactI18next)
-  // init i18next
-  // for all options read: https://www.i18next.com/overview/configuration-options
   .init({
     debug: false,
     lng: 'en',
@@ -18,12 +18,13 @@ i18n
     },
     resources: {
       en: {
-        translation: translationEn,
+        geochart: translationEn,
       },
       fr: {
-        translation: translationFr,
+        geochart: translationFr,
       },
     },
+    defaultNS: 'geochart',
   })
   .catch((error: unknown) => {
     // Log the error
@@ -31,4 +32,4 @@ i18n
     console.error(error);
   });
 
-export default i18n;
+export default localI18n;

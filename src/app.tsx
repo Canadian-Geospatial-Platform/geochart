@@ -1,8 +1,10 @@
 import type React from 'react';
 import type { JSX } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import { GeoChart } from './chart';
 import { GeoChartConfig, ChartType, ChartOptions, ChartData, GeoChartAction, DefaultDataPoint } from './types';
 import { SchemaValidator } from './chart-schema-validator';
+import localI18n from './i18n';
 
 /**
  * Main props for the Application
@@ -143,23 +145,27 @@ export function App(props: TypeAppProps): JSX.Element {
 
   // #region RENDER SECTION START *************************************************************************************
 
+  // GV Use I18nextProvider with localI18n so that we provide a i18n when the GeoChart is running standalone
+
   // Render the Chart
   return (
-    <Box sx={{ padding: '10px' }}>
-      <GeoChart
-        inputs={inputs}
-        schemaValidator={schemaValidator}
-        chart={chart!}
-        data={data}
-        options={options}
-        action={action}
-        language={language}
-        isLoadingChart={isLoadingChart}
-        isLoadingDatasource={isLoadingDatasource}
-        onParsed={handleParsed}
-        onError={handleError}
-      />
-    </Box>
+    <I18nextProvider i18n={localI18n}>
+      <Box sx={{ padding: '10px' }}>
+        <GeoChart
+          inputs={inputs}
+          schemaValidator={schemaValidator}
+          chart={chart!}
+          data={data}
+          options={options}
+          action={action}
+          language={language}
+          isLoadingChart={isLoadingChart}
+          isLoadingDatasource={isLoadingDatasource}
+          onParsed={handleParsed}
+          onError={handleError}
+        />
+      </Box>
+    </I18nextProvider>
   );
 
   // #endregion

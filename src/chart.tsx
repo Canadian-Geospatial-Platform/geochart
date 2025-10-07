@@ -1,10 +1,10 @@
 import type React from 'react';
 import type { JSX } from 'react';
 import type { CSSProperties } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Theme } from '@mui/material';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
-import { useTranslation } from 'react-i18next';
 import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables, ChartConfiguration, Plugin } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
 import 'chartjs-adapter-moment';
@@ -33,6 +33,10 @@ import { ChartParsing } from './chart-parsing';
 import { getSxClasses } from './chart-style';
 import { Utils } from './utils';
 import { CancelledError } from './exceptions';
+import localI18n from './i18n';
+
+/** The i18n namespace to use to bundle geochart locales into */
+const NAMESPACE_I18N = 'geochart';
 
 /**
  * Main props for the Chart.
@@ -227,7 +231,7 @@ export function GeoChart<
   const sxClasses = getSxClasses(cgpvTheme);
 
   // Translation
-  const { i18n: i18nReact } = useTranslation();
+  const { i18n, t } = useTranslation(NAMESPACE_I18N);
 
   // Cast the style
   const sx = elStyle as CSSProperties;
@@ -267,8 +271,6 @@ export function GeoChart<
   const [colorPaletteAxisBackgroundIndex, setColorPaletteAxisBackgroundIndex] = useState(0);
   const [colorPaletteAxisBorderIndex, setColorPaletteAxisBorderIndex] = useState(0);
   const [lockedUI, setLockedUI] = useState<boolean>(false);
-  const [i18n, seti18n] = useState(i18nReact);
-  const { t } = i18n;
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
@@ -1347,22 +1349,29 @@ export function GeoChart<
   // Effect hook when i18n changes - coming from parent component.
   useEffect(() => {
     // Log
-    const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - i18n';
+    const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - language';
     logger.logTraceUseEffect(USE_EFFECT_FUNC);
 
-    // We have to clone i18n, because otherwise the i18n is shared across all GeoCharts (so we can't have GeoChart simultaneously in diff languages per application).
-    // I also couldn't make it work with changeLanguage either, so it's just re-cloning when the language changes.
-    const newi18n = i18nReact.cloneInstance({
-      lng: language,
-      fallbackLng: language,
-    });
-    seti18n(newi18n);
+    // Dynamically inject translations if not already loaded
+    if (!i18n.hasResourceBundle(language, NAMESPACE_I18N)) {
+      // Add the local resource bundle to the provided i18n
+      i18n.addResourceBundle(language, NAMESPACE_I18N, localI18n.getResourceBundle(language, NAMESPACE_I18N), true, true);
+    }
+
+    // If different language
+    if (i18n.language !== language) {
+      // Change the i18n language
+      i18n.changeLanguage(language).catch((error: unknown) => {
+        // Failed
+        logger.logPromiseFailed('in i18n.changeLanguage in language useEffect', error);
+      });
+    }
 
     return () => {
       // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
-  }, [i18nReact, language, logger]);
+  }, [i18n, language, logger]);
 
   // #endregion
 
