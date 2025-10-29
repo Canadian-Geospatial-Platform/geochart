@@ -175,7 +175,7 @@ export class ChartCore {
 
         // Double the quotes to prevent injection
         let rawString = rawValue.toString();
-        rawString = rawString.replace("'", "''");
+        rawString = rawString.replaceAll("'", "''");
 
         // Write prefix/suffix if any
         const prefixedValue = `${clause.prefix || ''}${rawString}${clause.suffix || ''}`;

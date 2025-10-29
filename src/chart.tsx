@@ -1777,6 +1777,7 @@ export function GeoChart<
               max={xSliderMax}
               step={xSliderSteps}
               value={xSliderValues || 0}
+              valueLabelDisplay="auto"
               onChangeCommitted={handleSliderXChange}
               onValueLabelFormat={handleSliderXValueFormat}
               onValueDisplayAriaLabel={handleSliderXValueFormat}
@@ -1807,6 +1808,7 @@ export function GeoChart<
               step={ySliderSteps}
               value={ySliderValues || 0}
               orientation="vertical"
+              valueLabelDisplay="auto"
               onChangeCommitted={handleSliderYChange}
               onValueLabelFormat={handleSliderYValueFormat}
               onValueDisplayAriaLabel={handleSliderYValueFormat}
