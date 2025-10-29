@@ -60710,7 +60710,7 @@ function _buildQueryWhereClause(whereClauses, sourceItem) {
 
     // Double the quotes to prevent injection
     var rawString = rawValue.toString();
-    rawString = rawString.replace("'", "''");
+    rawString = rawString.replaceAll("'", "''");
 
     // Write prefix/suffix if any
     var prefixedValue = "".concat(clause.prefix || '').concat(rawString).concat(clause.suffix || '');
@@ -65927,6 +65927,7 @@ function GeoChart(props) {
             max: xSliderMax,
             step: xSliderSteps,
             value: xSliderValues || 0,
+            valueLabelDisplay: "auto",
             onChangeCommitted: handleSliderXChange,
             onValueLabelFormat: handleSliderXValueFormat,
             onValueDisplayAriaLabel: handleSliderXValueFormat
@@ -65957,6 +65958,7 @@ function GeoChart(props) {
             step: ySliderSteps,
             value: ySliderValues || 0,
             orientation: "vertical",
+            valueLabelDisplay: "auto",
             onChangeCommitted: handleSliderYChange,
             onValueLabelFormat: handleSliderYValueFormat,
             onValueDisplayAriaLabel: handleSliderYValueFormat
