@@ -1866,16 +1866,23 @@ export function GeoChart<
       inputs.datasources.forEach((s: GeoChartDatasource) => {
         menuItems.push({ key: s.value || s.display, item: { value: s.value || s.display, children: s.display || s.value } });
       });
+
+      // The feature(s) label
+      let featureLabel = t('geochart.feature');
+      if (inputs.datasources.length > 1) featureLabel += 's';
+
       return (
         <Box>
-          <Select
-            container={containerElement}
-            sx={sxClasses.datasourceSelector}
-            label={t('geochart.feature')}
-            onChange={handleDatasourceChanged}
-            menuItems={menuItems}
-            value={selectedDatasource?.value || selectedDatasource?.display || ''}
-          />
+          <Tooltip title={t('geochart.featuresTooltip')} arrow placement="top">
+            <Select
+              container={containerElement}
+              sx={sxClasses.datasourceSelector}
+              label={featureLabel}
+              onChange={handleDatasourceChanged}
+              menuItems={menuItems}
+              value={selectedDatasource?.value || selectedDatasource?.display || ''}
+            />
+          </Tooltip>
         </Box>
       );
     }
@@ -1914,14 +1921,16 @@ export function GeoChart<
       });
 
       return (
-        <Select
-          container={containerElement}
-          sx={sxClasses.uiOptionsStepsSelector}
-          label={t('geochart.steps')}
-          onChange={handleStepsSwitcherChanged}
-          menuItems={menuItems}
-          value={selectedSteps ?? inputs?.geochart.useSteps ?? false}
-        />
+        <Tooltip title={t('geochart.stepsTooltip')} arrow placement="top">
+          <Select
+            container={containerElement}
+            sx={sxClasses.uiOptionsStepsSelector}
+            label={t('geochart.steps')}
+            onChange={handleStepsSwitcherChanged}
+            menuItems={menuItems}
+            value={selectedSteps ?? inputs?.geochart.useSteps ?? false}
+          />
+        </Tooltip>
       );
     }
     return <Box />;
@@ -1944,14 +1953,16 @@ export function GeoChart<
       });
 
       return (
-        <Select
-          container={containerElement}
-          sx={sxClasses.uiOptionsScaleSelector}
-          label={t('geochart.scale')}
-          onChange={handleScalesSwitcherChanged}
-          menuItems={menuItems}
-          value={selectedScale || inputs?.geochart.yAxis?.type || 'linear'}
-        />
+        <Tooltip title={t('geochart.scaleTooltip')} arrow placement="top">
+          <Select
+            container={containerElement}
+            sx={sxClasses.uiOptionsScaleSelector}
+            label={t('geochart.scale')}
+            onChange={handleScalesSwitcherChanged}
+            menuItems={menuItems}
+            value={selectedScale || inputs?.geochart.yAxis?.type || 'linear'}
+          />
+        </Tooltip>
       );
     }
     return <Box />;
@@ -1995,7 +2006,9 @@ export function GeoChart<
 
     return (
       <Button sx={sxClasses.uiOptionsResetStates} onClick={handleLockStates}>
-        <Tooltip title={tooltip}>{lockedUI ? <LockIcon /> : <LockOpenIcon />}</Tooltip>
+        <Tooltip title={tooltip} placement="top">
+          {lockedUI ? <LockIcon /> : <LockOpenIcon />}
+        </Tooltip>
       </Button>
     );
   };

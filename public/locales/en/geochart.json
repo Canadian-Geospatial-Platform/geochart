@@ -1,16 +1,19 @@
 {
   "geochart": {
     "feature": "Feature",
+    "featuresTooltip": "Select the feature for which you want to view the chart.",
     "steps": "Steps",
+    "stepsTooltip": "Select how the line steps between values.",
     "scale": "Scale",
+    "scaleTooltip": "Select the type of scale applied to the Y-axis.",
     "category": "Category",
     "parsingError": "There was an error parsing the Chart inputs.",
     "viewConsoleDetails": "View console for details.",
     "exportBtn": "Download the graph data",
     "downloadFiltered": "Download visible",
     "downloadAll": "Download all",
-    "lockStates": "Lock user interface",
-    "unlockStates": "Unlock user interface",
+    "lockStates": "Lock the current chart settings (slider values, selected legend items) to prevent them from resetting when switching between charts.",
+    "unlockStates": "Unlock the current chart settings (slider values, selected legend items) to allow them from resetting when switching between charts.",
     "resetStates": "Reset"
   }
 }
