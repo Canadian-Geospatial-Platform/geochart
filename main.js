@@ -64220,9 +64220,9 @@ const i18next_loadLanguages = instance.loadLanguages;
 
 
 ;// ./public/locales/en/geochart.json
-const geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","steps":"Steps","scale":"Scale","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","exportBtn":"Download the graph data","downloadFiltered":"Download visible","downloadAll":"Download all","lockStates":"Lock user interface","unlockStates":"Unlock user interface","resetStates":"Reset"}}');
+const geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","featuresTooltip":"Select the feature for which you want to view the chart.","steps":"Steps","stepsTooltip":"Select how the line steps between values.","scale":"Scale","scaleTooltip":"Select the type of scale applied to the Y-axis.","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","exportBtn":"Download the graph data","downloadFiltered":"Download visible","downloadAll":"Download all","lockStates":"Lock the current chart settings (slider values, selected legend items) to prevent them from resetting when switching between charts.","unlockStates":"Unlock the current chart settings (slider values, selected legend items) to allow them from resetting when switching between charts.","resetStates":"Reset"}}');
 ;// ./public/locales/fr/geochart.json
-const fr_geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","steps":"Marches","scale":"Échelle","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","exportBtn":"Télécharger les données du graphique","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","lockStates":"Vérouiller l\'interface utilisateur","unlockStates":"Dévérouiller l\'interface utilisateur","resetStates":"Réinitialiser"}}');
+const fr_geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","featuresTooltip":"Sélectionner l\'enregistrement pour lequel vous voulez visualiser le graphique.","steps":"Marches","stepsTooltip":"Sélectionner la façon dont la ligne progresse entre les valeurs.","scale":"Échelle","scaleTooltip":"Sélectionner le type d\'échelle appliqué à l\'axe Y.","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","exportBtn":"Télécharger les données du graphique","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","lockStates":"Verrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) afin d\'éviter leur réinitialisation lors du passage d\'un graphique à un autre.","unlockStates":"Déverrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) pour permettre leur réinitialisation lors du passage d\'un graphique à un autre.","resetStates":"Réinitialiser"}}');
 ;// ./src/i18n.ts
 
 
@@ -66034,14 +66034,23 @@ function GeoChart(props) {
           }
         });
       });
+
+      // The feature(s) label
+      var featureLabel = t('geochart.feature');
+      if (inputs.datasources.length > 1) featureLabel += 's';
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
-        children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
-          container: containerElement,
-          sx: sxClasses.datasourceSelector,
-          label: t('geochart.feature'),
-          onChange: handleDatasourceChanged,
-          menuItems: menuItems,
-          value: (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.value) || (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.display) || ''
+        children: /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
+          title: t('geochart.featuresTooltip'),
+          arrow: true,
+          placement: "top",
+          children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
+            container: containerElement,
+            sx: sxClasses.datasourceSelector,
+            label: featureLabel,
+            onChange: handleDatasourceChanged,
+            menuItems: menuItems,
+            value: (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.value) || (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.display) || ''
+          })
         })
       });
     }
@@ -66088,13 +66097,18 @@ function GeoChart(props) {
           }
         });
       });
-      return /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
-        container: containerElement,
-        sx: sxClasses.uiOptionsStepsSelector,
-        label: t('geochart.steps'),
-        onChange: handleStepsSwitcherChanged,
-        menuItems: menuItems,
-        value: (_ref12 = selectedSteps !== null && selectedSteps !== void 0 ? selectedSteps : inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) !== null && _ref12 !== void 0 ? _ref12 : false
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
+        title: t('geochart.stepsTooltip'),
+        arrow: true,
+        placement: "top",
+        children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
+          container: containerElement,
+          sx: sxClasses.uiOptionsStepsSelector,
+          label: t('geochart.steps'),
+          onChange: handleStepsSwitcherChanged,
+          menuItems: menuItems,
+          value: (_ref12 = selectedSteps !== null && selectedSteps !== void 0 ? selectedSteps : inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) !== null && _ref12 !== void 0 ? _ref12 : false
+        })
       });
     }
     return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
@@ -66122,13 +66136,18 @@ function GeoChart(props) {
           }
         });
       });
-      return /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
-        container: containerElement,
-        sx: sxClasses.uiOptionsScaleSelector,
-        label: t('geochart.scale'),
-        onChange: handleScalesSwitcherChanged,
-        menuItems: menuItems,
-        value: selectedScale || (inputs === null || inputs === void 0 || (_inputs$geochart$yAxi5 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi5 === void 0 ? void 0 : _inputs$geochart$yAxi5.type) || 'linear'
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
+        title: t('geochart.scaleTooltip'),
+        arrow: true,
+        placement: "top",
+        children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
+          container: containerElement,
+          sx: sxClasses.uiOptionsScaleSelector,
+          label: t('geochart.scale'),
+          onChange: handleScalesSwitcherChanged,
+          menuItems: menuItems,
+          value: selectedScale || (inputs === null || inputs === void 0 || (_inputs$geochart$yAxi5 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi5 === void 0 ? void 0 : _inputs$geochart$yAxi5.type) || 'linear'
+        })
       });
     }
     return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
@@ -66170,6 +66189,7 @@ function GeoChart(props) {
       onClick: handleLockStates,
       children: /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
         title: tooltip,
+        placement: "top",
         children: lockedUI ? /*#__PURE__*/(0,jsx_runtime.jsx)(Lock, {}) : /*#__PURE__*/(0,jsx_runtime.jsx)(LockOpen, {})
       })
     });
