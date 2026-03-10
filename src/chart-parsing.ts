@@ -101,6 +101,26 @@ export class ChartParsing {
           offset: true,
         },
       };
+
+      // If there's grid options of x axis
+      if (chartConfig.geochart.xAxis?.grid) {
+        optionsLine.scales.x ??= {}; // Should always exist, because of above, but for peace of mind..
+        optionsLine.scales.x.grid = {
+          ...optionsLine.scales.x.grid,
+          ...chartConfig.geochart.xAxis.grid,
+          display: chartConfig.geochart.xAxis.grid?.display ?? true, // default to true
+        };
+      }
+
+      // If there's grid options of y axis
+      if (chartConfig.geochart.yAxis?.grid) {
+        optionsLine.scales.y ??= {};
+        optionsLine.scales.y.grid = {
+          ...optionsLine.scales.y.grid,
+          ...chartConfig.geochart.yAxis.grid,
+          display: chartConfig.geochart.xAxis.grid?.display ?? true, // default to true
+        };
+      }
     }
 
     // If line or bar
@@ -108,12 +128,9 @@ export class ChartParsing {
       const optionsLine = options as ChartOptions<'line' | 'bar'>;
       // If type is set
       if (yAxisType) {
-        optionsLine.scales = {
-          ...optionsLine.scales,
-          y: {
-            type: yAxisType,
-          },
-        };
+        optionsLine.scales ??= {};
+        optionsLine.scales.y ??= {};
+        optionsLine.scales.y.type = yAxisType;
       }
 
       // Drill

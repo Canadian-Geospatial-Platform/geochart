@@ -255,11 +255,13 @@ export function GeoChart<
   const [xSliderMin, setXSliderMin] = useState(0);
   const [xSliderMax, setXSliderMax] = useState(0);
   const [xSliderSteps, setXSliderSteps] = useState<number | undefined>();
-  const [xSliderValues, setXSliderValues] = useState<number | number[] | undefined>();
+  const [xSliderValuesActive, setXSliderValuesActive] = useState<number | number[] | undefined>();
+  const [xSliderValues, setXSliderValues] = useState<number | number[] | undefined>(xSliderValuesActive);
   const [ySliderMin, setYSliderMin] = useState(0);
   const [ySliderMax, setYSliderMax] = useState(0);
   const [ySliderSteps, setYSliderSteps] = useState<number | undefined>();
-  const [ySliderValues, setYSliderValues] = useState<number | number[]>();
+  const [ySliderValuesActive, setYSliderValuesActive] = useState<number | number[] | undefined>();
+  const [ySliderValues, setYSliderValues] = useState<number | number[] | undefined>(ySliderValuesActive);
   const [validatorInputs, setValidatorInputs] = useState<ValidatorResult | undefined>();
   const [validatorOptions, setValidatorOptions] = useState<ValidatorResult | undefined>();
   const [validatorData, setValidatorData] = useState<ValidatorResult | undefined>();
@@ -303,11 +305,6 @@ export function GeoChart<
   // #endregion
 
   // #region DEFAULTS SECTION *****************************************************************************************
-
-  // Attribute the ChartJS default colors
-  if (defaultColors?.backgroundColor) ChartJS.defaults.backgroundColor = defaultColors?.backgroundColor;
-  if (defaultColors?.borderColor) ChartJS.defaults.borderColor = defaultColors?.borderColor;
-  if (defaultColors?.color) ChartJS.defaults.color = defaultColors?.color;
 
   // Attribute the color palettes
   ChartParsing.setColorPalettes(inputs);
@@ -418,8 +415,8 @@ export function GeoChart<
     let valuesComeFromState: boolean = false;
     if (uiOptions?.xSlider?.display) {
       if (xMaxVal && !theXSliderStateValues) {
-        // Set the values for x axis to min/max
-        setXSliderValues([xMinVal!, xMaxVal]);
+        // Set the values for x axis to min/max on the UI itself
+        setXSliderValuesActive([xMinVal!, xMaxVal]);
       } else if (theXSliderStateValues) {
         // eslint-disable-next-line no-param-reassign
         [xMinVal, xMaxVal] = theXSliderStateValues;
@@ -431,7 +428,7 @@ export function GeoChart<
     if (uiOptions?.ySlider?.display) {
       if (yMaxVal && !theYSliderStateValues) {
         // Set the state
-        setYSliderValues([yMinVal!, yMaxVal]);
+        setYSliderValuesActive([yMinVal!, yMaxVal]);
       } else if (theYSliderStateValues) {
         // eslint-disable-next-line no-param-reassign
         [yMinVal, yMaxVal] = theYSliderStateValues;
@@ -521,6 +518,25 @@ export function GeoChart<
   // #region HOOKS USE CALLBACK GEOCHART SECTION **********************************************************************
 
   /**
+   * Memoizes the default colors.
+   */
+  const memoDefaultColors = useMemo(() => {
+    // Log
+    logger.logTraceUseMemo('GEOCHART - memoDefaultColors', defaultColors);
+
+    // Reassign colors to ChartJS
+    if (defaultColors?.backgroundColor) ChartJS.defaults.backgroundColor = defaultColors?.backgroundColor;
+    if (defaultColors?.borderColor) ChartJS.defaults.borderColor = defaultColors?.borderColor;
+    if (defaultColors?.color) ChartJS.defaults.color = defaultColors?.color;
+
+    // Force a redraw
+    setAction({ shouldRedraw: true });
+
+    // Return the colors to be used by the Chart
+    return { backgroundColor: ChartJS.defaults.backgroundColor, borderColor: ChartJS.defaults.borderColor, color: ChartJS.defaults.color };
+  }, [defaultColors, logger]);
+
+  /**
    * Updates the selected datasets object in synch with the actual datasets read from the data.
    * @param {Record<string, unknown>[] | undefined} items - The items reprensenting the data
    * @param {string | undefined} catPropertyName - The property name for the categorization
@@ -557,8 +573,8 @@ export function GeoChart<
           datasetRegistry[catName] = {
             visible: true,
             checked: true,
-            backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
-            borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
+            backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, memoDefaultColors.color as string),
+            borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, memoDefaultColors.color as string),
           };
           backgroundIndex++;
           borderIndex++;
@@ -587,7 +603,7 @@ export function GeoChart<
         setDatasetRegistry({ ...datasetRegistry });
       }
     },
-    [datasetRegistry, colorPaletteCategoryBackgroundIndex, colorPaletteCategoryBorderIndex, logger]
+    [logger, colorPaletteCategoryBackgroundIndex, colorPaletteCategoryBorderIndex, datasetRegistry, memoDefaultColors.color]
   );
 
   /**
@@ -631,8 +647,8 @@ export function GeoChart<
             datasRegistry[labelName] = {
               visible: true,
               checked: true,
-              backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, ChartJS.defaults.color as string),
-              borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, ChartJS.defaults.color as string),
+              backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, memoDefaultColors.color as string),
+              borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, memoDefaultColors.color as string),
             };
             backgroundIndex++;
             borderIndex++;
@@ -662,7 +678,7 @@ export function GeoChart<
         setColorPaletteAxisBorderIndex(borderIndex);
       }
     },
-    [datasRegistry, colorPaletteAxisBackgroundIndex, colorPaletteAxisBorderIndex, logger]
+    [logger, colorPaletteAxisBackgroundIndex, colorPaletteAxisBorderIndex, datasRegistry, memoDefaultColors.color]
   );
 
   /**
@@ -1017,6 +1033,21 @@ export function GeoChart<
 
       // Set the X State
       setXSliderValues(newValue);
+    },
+    [logger]
+  );
+
+  /**
+   * Handles when the X Slider changes
+   * @param {number | number[]} newValue - Indicates the slider value
+   */
+  const handleSliderXChangeCommitted = useCallback(
+    (newValue: number | number[]): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleSliderXChangeCommitted', newValue);
+
+      // Set the X values active
+      setXSliderValuesActive(newValue);
 
       // Callback
       onSliderXChanged?.(newValue);
@@ -1035,6 +1066,21 @@ export function GeoChart<
 
       // Set the Y State
       setYSliderValues(newValue);
+    },
+    [logger]
+  );
+
+  /**
+   * Handles when the Y Slider changes
+   * @param {number | number[]} newValue - Indicates the slider value
+   */
+  const handleSliderYChangeCommitted = useCallback(
+    (newValue: number | number[]): void => {
+      // Log
+      logger.logTraceUseCallback('GEOCHART - handleSliderYChangeCommitted', newValue);
+
+      // Set the Y State
+      setYSliderValuesActive(newValue);
 
       // Callback
       onSliderYChanged?.(newValue);
@@ -1091,8 +1137,8 @@ export function GeoChart<
     setDatasetRegistry(delegateToTurnCheckedToTrue);
     setDatasRegistry(delegateToTurnCheckedToTrue);
     setSelectedSteps(inputs?.geochart.useSteps ?? false);
-    setXSliderValues(undefined);
-    setYSliderValues(undefined);
+    setXSliderValuesActive(undefined);
+    setYSliderValuesActive(undefined);
 
     // Callback
     onResetStates?.();
@@ -1503,8 +1549,8 @@ export function GeoChart<
       setDatasRegistry(delegateToTurnCheckedToTrue);
 
       // Resets all x/y slider values
-      setXSliderValues(undefined);
-      setYSliderValues(undefined);
+      setXSliderValuesActive(undefined);
+      setYSliderValuesActive(undefined);
     }
 
     return () => {
@@ -1568,12 +1614,34 @@ export function GeoChart<
     language,
     selectedSteps,
     selectedScale,
-    xSliderValues,
-    ySliderValues,
+    xSliderValues, // Use xSliderValuesActive if you want to update the Chart only when the values from the slider are 'committed'
+    ySliderValues, // Use ySliderValuesActive if you want to update the Chart only when the values from the slider are 'committed'
     processLoadingRecordsFilteringFirst,
     processLoadingRecords,
     logger,
   ]);
+
+  /**
+   * Keeps the local state values in sync with the store values.
+   */
+  useEffect(() => {
+    // Log
+    logger.logTraceUseEffect('GEOCHART - storeValues', xSliderValuesActive);
+
+    // Sync local state
+    setXSliderValues(xSliderValuesActive);
+  }, [xSliderValuesActive, logger]);
+
+  /**
+   * Keeps the local state values in sync with the store values.
+   */
+  useEffect(() => {
+    // Log
+    logger.logTraceUseEffect('GEOCHART - storeValues', ySliderValuesActive);
+
+    // Sync local state
+    setYSliderValues(ySliderValuesActive);
+  }, [ySliderValuesActive, logger]);
 
   // Effect hook when the chartOptions, chartData change - coming from this component.
   useEffect(() => {
@@ -1778,7 +1846,8 @@ export function GeoChart<
               step={xSliderSteps}
               value={xSliderValues || 0}
               valueLabelDisplay="auto"
-              onChangeCommitted={handleSliderXChange}
+              onChange={handleSliderXChange}
+              onChangeCommitted={handleSliderXChangeCommitted}
               onValueLabelFormat={handleSliderXValueFormat}
               onValueDisplayAriaLabel={handleSliderXValueFormat}
             />
@@ -1809,7 +1878,8 @@ export function GeoChart<
               value={ySliderValues || 0}
               orientation="vertical"
               valueLabelDisplay="auto"
-              onChangeCommitted={handleSliderYChange}
+              onChange={handleSliderYChange}
+              onChangeCommitted={handleSliderYChangeCommitted}
               onValueLabelFormat={handleSliderYValueFormat}
               onValueDisplayAriaLabel={handleSliderYValueFormat}
             />
