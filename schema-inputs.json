@@ -89,6 +89,22 @@
               "$ref": "#/$defs/scaleTypeEnum",
               "default": "linear"
             },
+            "grid": {
+              "description": "Grid options on linear graphs. For more grid options, refer to: https://www.chartjs.org/docs/latest/samples/scale-options/grid.html",
+              "type": "object",
+              "properties": {
+                "display": {
+                  "description": "Indicate if the grid lines should be displayed for the X axis. This option also removes the tick lines on the axis.",
+                  "type": "boolean",
+                  "default": true
+                },
+                "drawOnChartArea": {
+                  "description": "Indicate if the grid lines should be displayed on the chart area. This option leaves the tick lines on the axis.",
+                  "type": "boolean",
+                  "default": true
+                }
+              }
+            },
             "timeFormat": {
               "description": "Defines the format string(s) used to display or parse time values. Can be a single format string (e.g., 'yyyy-MM-dd HH:mm:ss') or an object with locale-specific format strings keyed by language code (e.g., { \"en\": \"MMM dd, yyyy, HH:mm\", \"fr\": \"d MMM yyyy, HH:mm\" }). Uses standard date formatting tokens (e.g., from date-fns or equivalent). Defaults to 'yyyy-MM-dd HH:mm:ss' if not specified.",
               "oneOf": [
@@ -158,6 +174,22 @@
               "description": "Indicate the type of axis.",
               "$ref": "#/$defs/scaleTypeEnum",
               "default": "linear"
+            },
+            "grid": {
+              "description": "Grid options on linear graphs. For more grid options, refer to: https://www.chartjs.org/docs/latest/samples/scale-options/grid.html",
+              "type": "object",
+              "properties": {
+                "display": {
+                  "description": "Indicate if the grid lines should be displayed for the X axis. This option also removes the tick lines on the axis.",
+                  "type": "boolean",
+                  "default": true
+                },
+                "drawOnChartArea": {
+                  "description": "Indicate if the grid lines should be displayed on the chart area. This option leaves the tick lines on the axis.",
+                  "type": "boolean",
+                  "default": true
+                }
+              }
             },
             "label": {
               "description": "Indicate the label that should be shown for the axis.",
