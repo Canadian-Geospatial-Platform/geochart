@@ -1,4 +1,4 @@
-import { ChartType, ChartOptions, ChartTypeRegistry } from 'chart.js';
+import { ChartType, ChartOptions, ChartTypeRegistry, GridLineOptions } from 'chart.js';
 import { DistributiveArray } from 'chart.js/dist/types/utils';
 
 // Export all ChartJS types
@@ -162,6 +162,7 @@ export type GeoChartOptionsAxis = {
   ticksRule?: 'data' | 'auto' | 'labels';
   timeFormat?: string | Record<string, string>;
   timeIANA?: string;
+  grid?: Partial<GridLineOptions>;
   label?: string;
   usePalette?: boolean; // TODO: Think about removing this parameter maybe?
   paletteBackgrounds?: string[];
