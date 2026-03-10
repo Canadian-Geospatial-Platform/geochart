@@ -60419,7 +60419,7 @@ var ajv_default = /*#__PURE__*/__webpack_require__.n(ajv);
 var dist = __webpack_require__(8182);
 var dist_default = /*#__PURE__*/__webpack_require__.n(dist);
 ;// ./schema-inputs.json
-const schema_inputs_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Inputs Schema","description":"This Schema validator validates the GeoChart Inputs.","type":"object","properties":{"chart":{"description":"Supported types of Chart.","$ref":"#/$defs/chartTypeEnum","default":"line"},"title":{"description":"Optionally provide the title of the Chart.","type":"string"},"query":{"description":"Optionally provide information on how the data should be queried in the table source. When undefined, the data has to be manually provided via datasources[].items values.","type":"object","properties":{"type":{"description":"Indicate the kind of query to perform.","$ref":"#/$defs/queryTypeEnum"},"url":{"description":"Indicate the url where to fetch the data to build the Chart with - supported urls are Esri services, OGC API Features services or urls pointing to a .json file built on the GeoJson format.","type":"string"},"queryOptions":{"description":"Query parameters to be used when querying the url.","type":"object","properties":{"whereClauses":{"description":"Indicate how to generate the where clause to fetch the correct data in the table source. This is an array to support filtering on more than 1 field. The \'and\' logic operator is implicit.","type":"array","items":{"type":"object","properties":{"field":{"description":"Indicate the field name, in the table source, on which to filter.","type":"string"},"prefix":{"description":"Indicate the prefix to use to build the query (useful to support single-quotes when the attribute to query is a string).","type":"string"},"valueIs":{"description":"Indicate the value as a literal information (not read from a property name from the datasource).","type":"string"},"valueFrom":{"description":"Indicate the property name, in the datasource.sourceItem(!), to dynamically read and provide to the query parameters in order to query the table source as indicated by the url.","type":"string"},"suffix":{"description":"Indicate the suffix to use to build the query (useful to support single-quotes when the attribute to query is a string).","type":"string"}},"required":["field"],"oneOf":[{"required":["valueIs"],"not":{"required":["valueFrom"]}},{"required":["valueFrom"],"not":{"required":["valueIs"]}}]}},"orderByField":{"description":"Optionally indicate the property on which to order the results of the data coming from the table source.","type":"string"}}}},"required":["type","url"]},"geochart":{"description":"Groups information on how to build the Chart.","type":"object","properties":{"xAxis":{"description":"Groups information on the X axis.","type":"object","properties":{"property":{"description":"Indicate the property name on which to read the information from the table source.","type":"string"},"type":{"description":"Indicate the type of axis.","$ref":"#/$defs/scaleTypeEnum","default":"linear"},"timeFormat":{"description":"Defines the format string(s) used to display or parse time values. Can be a single format string (e.g., \'yyyy-MM-dd HH:mm:ss\') or an object with locale-specific format strings keyed by language code (e.g., { \\"en\\": \\"MMM dd, yyyy, HH:mm\\", \\"fr\\": \\"d MMM yyyy, HH:mm\\" }). Uses standard date formatting tokens (e.g., from date-fns or equivalent). Defaults to \'yyyy-MM-dd HH:mm:ss\' if not specified.","oneOf":[{"type":"string"},{"type":"object","properties":{"en":{"type":"string"},"fr":{"type":"string"}},"required":["en","fr"],"additionalProperties":false}],"default":"yyyy-MM-dd HH:mm:ss"},"timeIANA":{"description":"Specifies the IANA time zone identifier (e.g., \'America/Toronto\', \'UTC\') used for formatting and interpreting time values. Must be a valid time zone from the IANA Time Zone Database.","type":"string","default":"utc"},"ticksRule":{"description":"The rule to apply to provide the X axis ticks. \'auto\' automatically calculates the optimal ticks on the axis. \'data\' uses the actual data values to set the optimal ticks on the axis.","type":"string","enum":["auto","data"],"default":"auto"},"label":{"description":"Indicate the label that should be shown for the axis.","type":"string"},"usePalette":{"description":"Optionally indicate a pre-determined (GeoChart specific) color palette should be used.","type":"boolean","default":false},"paletteBackgrounds":{"description":"Optionally indicate an array of rgba color values to use as the palette for background coloring.","type":"array","items":{"description":"A rgba() color","type":"string"}},"paletteBorders":{"description":"Optionally indicate an array of rgb color values to use as the palette for border coloring.","type":"array","items":{"description":"A rgb() color","type":"string"}}},"required":["property"]},"yAxis":{"description":"Groups information on the Y axis.","type":"object","properties":{"property":{"description":"Indicate the property name on which to read the information from the table source.","type":"string"},"type":{"description":"Indicate the type of axis.","$ref":"#/$defs/scaleTypeEnum","default":"linear"},"label":{"description":"Indicate the label that should be shown for the axis.","type":"string"},"usePalette":{"description":"Optionally indicate a pre-determined (GeoChart specific) color palette should be used.","type":"boolean","default":false},"paletteBackgrounds":{"description":"Optionally indicate an array of rgba color values to use as the palette for background coloring.","type":"array","items":{"description":"A rgba() color","type":"string"}},"paletteBorders":{"description":"Optionally indicate an array of rgb color values to use as the palette for border coloring.","type":"array","items":{"description":"A rgb() color","type":"string"}},"tooltipSuffix":{"description":"Optionally indicate the suffix to use on for the values when displayed in the Chart tooltip.","type":"string"}},"required":["property"]},"borderWidth":{"description":"Optionally indicate the thickness of the borders (or lines in the line Chart).","type":"number"},"useSteps":{"description":"Optionally indicate if the line Chart should use steps.","oneOf":[{"$ref":"#/$defs/stepTypeEnum"},{"const":false}],"default":false},"tension":{"description":"Optionally indicate if the Chart should use tension when drawing the line between the values (only possible with a line type Chart).","type":"number"}},"required":["xAxis","yAxis"]},"category":{"description":"Optionally indicate how the data from the table source should be categorized (this creates the datasets aka the legend).","type":"object","properties":{"property":{"description":"Indicate the property name to use to categorize records.","type":"string"},"usePalette":{"description":"Optionally indicate a pre-determined (GeoChart specific) color palette should be used.","type":"boolean","default":false},"paletteBackgrounds":{"description":"Optionally indicate an array of rgba color values to use as the palette for background coloring.","type":"array","items":{"description":"A rgba() color","type":"string"}},"paletteBorders":{"description":"Optionally indicate the array of rgb color values to use as the palette for border coloring.","type":"array","items":{"description":"A rgb() color","type":"string"}}},"required":["property"]},"datasources":{"description":"Groups information on the datasources to build the datasource drop down and the Chart.","type":"array","items":{"type":"object","properties":{"display":{"description":"Indicate the string to be displayed in the drop down.","type":"string"},"sourceItem":{"description":"Optionally indicate the source item(!) used when fetching the data using the \'query.url\'. The source items represent the features loaded in the drop down. This property has an object with a property that should equal the property in \'query.queryOptions.whereClauses.valueFrom\'.","type":"object"},"value":{"description":"Optionally indicate the inner value used for the \'sourceItem\' - when \'display\' alone isn\'t sufficient to distinguish the values.","anyOf":[{"type":"string"},{"type":"number"}]},"items":{"description":"Optionally indicate the actual items used to build the Chart. When a query.url is specified, the items will be fetched automatically. When items are specified/populated, the data isn\'t fetched via the \'query.url\'.","type":"array","items":{"type":"object"}}},"required":["display"]}},"ui":{"description":"Optionally indicate what UI elements to show alongside the Chart.","type":"object","properties":{"xSlider":{"description":"Groups information on the X axis slider.","type":"object","properties":{"display":{"description":"Indicate if the slider on the X axis should be displayed.","type":"boolean"},"step":{"description":"Optionally indicate the steps the slider should jump when sliding.","type":"number"},"min":{"description":"Optionally indicate the minimum value for the slider.","type":"number"},"max":{"description":"Optionally indicate the maximum value for the slider.","type":"number"}},"required":["display"]},"ySlider":{"description":"Groups information on the Y axis slider.","type":"object","properties":{"display":{"description":"Optionally indicate if the slider on the Y axis should be displayed","type":"boolean"},"step":{"description":"Optionally indicate the steps the slider should jump when sliding.","type":"number"},"min":{"description":"Optionally indicate the minimum value for the slider.","type":"number"},"max":{"description":"Optionally indicate the maximum value for the slider.","type":"number"}},"required":["display"]},"stepsSwitcher":{"description":"Optionally indicate if a drop down should be shown allowing to switch the steps on-the-fly.","oneOf":[{"type":"array","items":{"oneOf":[{"$ref":"#/$defs/stepTypeEnum"},{"const":false}]},"minItems":1,"uniqueItems":true},{"type":"boolean"}],"default":false},"scalesSwitcher":{"description":"Optionally indicate if a drop down should be shown allowing to switch the scales on-the-fly.","oneOf":[{"type":"array","items":{"$ref":"#/$defs/scaleTypeEnum"},"minItems":1,"uniqueItems":true},{"type":"boolean"}],"default":false},"resetStates":{"description":"Optionally indicate if the button to reset the states should be displayed.","type":"boolean","default":false},"description":{"description":"Optionally indicate descriptive text to show at the bottom of the Chart.","type":"string"},"download":{"description":"Optionally indicate if a download button should be displayed.","type":"boolean","default":false}}},"chartjsOptions":{"description":"Optionally indicate further ChartJS specific options to open the door to further customization when natively supported by ChartJS: https://www.chartjs.org/docs/latest/general/options.html","type":"object"}},"required":["chart","geochart","datasources"],"$defs":{"chartTypeEnum":{"type":"string","enum":["line","bar","pie","doughnut"]},"queryTypeEnum":{"type":"string","enum":["esriRegular","ogcAPIFeatures","json"]},"scaleTypeEnum":{"type":"string","enum":["linear","logarithmic","category","time","timeseries"]},"stepTypeEnum":{"type":"string","enum":["before","after","middle"]}}}');
+const schema_inputs_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Inputs Schema","description":"This Schema validator validates the GeoChart Inputs.","type":"object","properties":{"chart":{"description":"Supported types of Chart.","$ref":"#/$defs/chartTypeEnum","default":"line"},"title":{"description":"Optionally provide the title of the Chart.","type":"string"},"query":{"description":"Optionally provide information on how the data should be queried in the table source. When undefined, the data has to be manually provided via datasources[].items values.","type":"object","properties":{"type":{"description":"Indicate the kind of query to perform.","$ref":"#/$defs/queryTypeEnum"},"url":{"description":"Indicate the url where to fetch the data to build the Chart with - supported urls are Esri services, OGC API Features services or urls pointing to a .json file built on the GeoJson format.","type":"string"},"queryOptions":{"description":"Query parameters to be used when querying the url.","type":"object","properties":{"whereClauses":{"description":"Indicate how to generate the where clause to fetch the correct data in the table source. This is an array to support filtering on more than 1 field. The \'and\' logic operator is implicit.","type":"array","items":{"type":"object","properties":{"field":{"description":"Indicate the field name, in the table source, on which to filter.","type":"string"},"prefix":{"description":"Indicate the prefix to use to build the query (useful to support single-quotes when the attribute to query is a string).","type":"string"},"valueIs":{"description":"Indicate the value as a literal information (not read from a property name from the datasource).","type":"string"},"valueFrom":{"description":"Indicate the property name, in the datasource.sourceItem(!), to dynamically read and provide to the query parameters in order to query the table source as indicated by the url.","type":"string"},"suffix":{"description":"Indicate the suffix to use to build the query (useful to support single-quotes when the attribute to query is a string).","type":"string"}},"required":["field"],"oneOf":[{"required":["valueIs"],"not":{"required":["valueFrom"]}},{"required":["valueFrom"],"not":{"required":["valueIs"]}}]}},"orderByField":{"description":"Optionally indicate the property on which to order the results of the data coming from the table source.","type":"string"}}}},"required":["type","url"]},"geochart":{"description":"Groups information on how to build the Chart.","type":"object","properties":{"xAxis":{"description":"Groups information on the X axis.","type":"object","properties":{"property":{"description":"Indicate the property name on which to read the information from the table source.","type":"string"},"type":{"description":"Indicate the type of axis.","$ref":"#/$defs/scaleTypeEnum","default":"linear"},"grid":{"description":"Grid options on linear graphs. For more grid options, refer to: https://www.chartjs.org/docs/latest/samples/scale-options/grid.html","type":"object","properties":{"display":{"description":"Indicate if the grid lines should be displayed for the X axis. This option also removes the tick lines on the axis.","type":"boolean","default":true},"drawOnChartArea":{"description":"Indicate if the grid lines should be displayed on the chart area. This option leaves the tick lines on the axis.","type":"boolean","default":true}}},"timeFormat":{"description":"Defines the format string(s) used to display or parse time values. Can be a single format string (e.g., \'yyyy-MM-dd HH:mm:ss\') or an object with locale-specific format strings keyed by language code (e.g., { \\"en\\": \\"MMM dd, yyyy, HH:mm\\", \\"fr\\": \\"d MMM yyyy, HH:mm\\" }). Uses standard date formatting tokens (e.g., from date-fns or equivalent). Defaults to \'yyyy-MM-dd HH:mm:ss\' if not specified.","oneOf":[{"type":"string"},{"type":"object","properties":{"en":{"type":"string"},"fr":{"type":"string"}},"required":["en","fr"],"additionalProperties":false}],"default":"yyyy-MM-dd HH:mm:ss"},"timeIANA":{"description":"Specifies the IANA time zone identifier (e.g., \'America/Toronto\', \'UTC\') used for formatting and interpreting time values. Must be a valid time zone from the IANA Time Zone Database.","type":"string","default":"utc"},"ticksRule":{"description":"The rule to apply to provide the X axis ticks. \'auto\' automatically calculates the optimal ticks on the axis. \'data\' uses the actual data values to set the optimal ticks on the axis.","type":"string","enum":["auto","data"],"default":"auto"},"label":{"description":"Indicate the label that should be shown for the axis.","type":"string"},"usePalette":{"description":"Optionally indicate a pre-determined (GeoChart specific) color palette should be used.","type":"boolean","default":false},"paletteBackgrounds":{"description":"Optionally indicate an array of rgba color values to use as the palette for background coloring.","type":"array","items":{"description":"A rgba() color","type":"string"}},"paletteBorders":{"description":"Optionally indicate an array of rgb color values to use as the palette for border coloring.","type":"array","items":{"description":"A rgb() color","type":"string"}}},"required":["property"]},"yAxis":{"description":"Groups information on the Y axis.","type":"object","properties":{"property":{"description":"Indicate the property name on which to read the information from the table source.","type":"string"},"type":{"description":"Indicate the type of axis.","$ref":"#/$defs/scaleTypeEnum","default":"linear"},"grid":{"description":"Grid options on linear graphs. For more grid options, refer to: https://www.chartjs.org/docs/latest/samples/scale-options/grid.html","type":"object","properties":{"display":{"description":"Indicate if the grid lines should be displayed for the X axis. This option also removes the tick lines on the axis.","type":"boolean","default":true},"drawOnChartArea":{"description":"Indicate if the grid lines should be displayed on the chart area. This option leaves the tick lines on the axis.","type":"boolean","default":true}}},"label":{"description":"Indicate the label that should be shown for the axis.","type":"string"},"usePalette":{"description":"Optionally indicate a pre-determined (GeoChart specific) color palette should be used.","type":"boolean","default":false},"paletteBackgrounds":{"description":"Optionally indicate an array of rgba color values to use as the palette for background coloring.","type":"array","items":{"description":"A rgba() color","type":"string"}},"paletteBorders":{"description":"Optionally indicate an array of rgb color values to use as the palette for border coloring.","type":"array","items":{"description":"A rgb() color","type":"string"}},"tooltipSuffix":{"description":"Optionally indicate the suffix to use on for the values when displayed in the Chart tooltip.","type":"string"}},"required":["property"]},"borderWidth":{"description":"Optionally indicate the thickness of the borders (or lines in the line Chart).","type":"number"},"useSteps":{"description":"Optionally indicate if the line Chart should use steps.","oneOf":[{"$ref":"#/$defs/stepTypeEnum"},{"const":false}],"default":false},"tension":{"description":"Optionally indicate if the Chart should use tension when drawing the line between the values (only possible with a line type Chart).","type":"number"}},"required":["xAxis","yAxis"]},"category":{"description":"Optionally indicate how the data from the table source should be categorized (this creates the datasets aka the legend).","type":"object","properties":{"property":{"description":"Indicate the property name to use to categorize records.","type":"string"},"usePalette":{"description":"Optionally indicate a pre-determined (GeoChart specific) color palette should be used.","type":"boolean","default":false},"paletteBackgrounds":{"description":"Optionally indicate an array of rgba color values to use as the palette for background coloring.","type":"array","items":{"description":"A rgba() color","type":"string"}},"paletteBorders":{"description":"Optionally indicate the array of rgb color values to use as the palette for border coloring.","type":"array","items":{"description":"A rgb() color","type":"string"}}},"required":["property"]},"datasources":{"description":"Groups information on the datasources to build the datasource drop down and the Chart.","type":"array","items":{"type":"object","properties":{"display":{"description":"Indicate the string to be displayed in the drop down.","type":"string"},"sourceItem":{"description":"Optionally indicate the source item(!) used when fetching the data using the \'query.url\'. The source items represent the features loaded in the drop down. This property has an object with a property that should equal the property in \'query.queryOptions.whereClauses.valueFrom\'.","type":"object"},"value":{"description":"Optionally indicate the inner value used for the \'sourceItem\' - when \'display\' alone isn\'t sufficient to distinguish the values.","anyOf":[{"type":"string"},{"type":"number"}]},"items":{"description":"Optionally indicate the actual items used to build the Chart. When a query.url is specified, the items will be fetched automatically. When items are specified/populated, the data isn\'t fetched via the \'query.url\'.","type":"array","items":{"type":"object"}}},"required":["display"]}},"ui":{"description":"Optionally indicate what UI elements to show alongside the Chart.","type":"object","properties":{"xSlider":{"description":"Groups information on the X axis slider.","type":"object","properties":{"display":{"description":"Indicate if the slider on the X axis should be displayed.","type":"boolean"},"step":{"description":"Optionally indicate the steps the slider should jump when sliding.","type":"number"},"min":{"description":"Optionally indicate the minimum value for the slider.","type":"number"},"max":{"description":"Optionally indicate the maximum value for the slider.","type":"number"}},"required":["display"]},"ySlider":{"description":"Groups information on the Y axis slider.","type":"object","properties":{"display":{"description":"Optionally indicate if the slider on the Y axis should be displayed","type":"boolean"},"step":{"description":"Optionally indicate the steps the slider should jump when sliding.","type":"number"},"min":{"description":"Optionally indicate the minimum value for the slider.","type":"number"},"max":{"description":"Optionally indicate the maximum value for the slider.","type":"number"}},"required":["display"]},"stepsSwitcher":{"description":"Optionally indicate if a drop down should be shown allowing to switch the steps on-the-fly.","oneOf":[{"type":"array","items":{"oneOf":[{"$ref":"#/$defs/stepTypeEnum"},{"const":false}]},"minItems":1,"uniqueItems":true},{"type":"boolean"}],"default":false},"scalesSwitcher":{"description":"Optionally indicate if a drop down should be shown allowing to switch the scales on-the-fly.","oneOf":[{"type":"array","items":{"$ref":"#/$defs/scaleTypeEnum"},"minItems":1,"uniqueItems":true},{"type":"boolean"}],"default":false},"resetStates":{"description":"Optionally indicate if the button to reset the states should be displayed.","type":"boolean","default":false},"description":{"description":"Optionally indicate descriptive text to show at the bottom of the Chart.","type":"string"},"download":{"description":"Optionally indicate if a download button should be displayed.","type":"boolean","default":false}}},"chartjsOptions":{"description":"Optionally indicate further ChartJS specific options to open the door to further customization when natively supported by ChartJS: https://www.chartjs.org/docs/latest/general/options.html","type":"object"}},"required":["chart","geochart","datasources"],"$defs":{"chartTypeEnum":{"type":"string","enum":["line","bar","pie","doughnut"]},"queryTypeEnum":{"type":"string","enum":["esriRegular","ogcAPIFeatures","json"]},"scaleTypeEnum":{"type":"string","enum":["linear","logarithmic","category","time","timeseries"]},"stepTypeEnum":{"type":"string","enum":["before","after","middle"]}}}');
 ;// ./schema-chartjs-data.json
 const schema_chartjs_data_namespaceObject = /*#__PURE__*/JSON.parse('{"$schema":"http://json-schema.org/draft-07/schema#","title":"GeoChart Data Schema","description":"This Schema validator validates the ChartJS data. ABSOLUTELY UNFINISHED.","type":"object","properties":{"labels":{"description":"The labels to use for the X axis.","type":"array","items":{"type":"string"}},"datasets":{"description":"The mandatory datasets information to use to build the chart.","type":"array","items":{"type":"object","properties":{"label":{"type":"string"},"data":{"oneOf":[{"type":"array","items":{"anyOf":[{"type":"number"},{"type":"null"}]}},{"type":"array","items":{"type":"object","properties":{"x":{"oneOf":[{"type":"number"},{"type":"string"},{"type":"object"}]},"y":{"oneOf":[{"type":"number"},{"type":"string"},{"type":"null"}]}},"required":["x","y"]}},{"type":"object"}]},"backgroundColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderColor":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}]},"borderWidth":{"type":"integer"},"stepped":{"anyOf":[{"type":"string","enum":["before","after","middle"]},{"type":"boolean"}],"default":false}},"required":["data"]}}}}');
 ;// ./schema-chartjs-options.json
@@ -61118,7 +61118,7 @@ var ChartParsing = /*#__PURE__*/function () {
 
       // If line and using a time series
       if (chartConfig.chart === 'line' && (((_chartConfig$geochart = chartConfig.geochart.xAxis) === null || _chartConfig$geochart === void 0 ? void 0 : _chartConfig$geochart.type) === 'time' || ((_chartConfig$geochart2 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart2 === void 0 ? void 0 : _chartConfig$geochart2.type) === 'timeseries')) {
-        var _chartConfig$geochart3, _chartConfig$geochart4, _chartConfig$geochart5;
+        var _chartConfig$geochart3, _chartConfig$geochart4, _chartConfig$geochart5, _chartConfig$geochart6, _chartConfig$geochart7;
         // Calculate the time format
         var timeFormat = ChartParsing.calculateTimeFormat(chartConfig.geochart.xAxis.timeFormat, language);
 
@@ -61178,6 +61178,20 @@ var ChartParsing = /*#__PURE__*/function () {
             offset: true
           }
         });
+
+        // If there's grid options of x axis
+        if ((_chartConfig$geochart6 = chartConfig.geochart.xAxis) !== null && _chartConfig$geochart6 !== void 0 && _chartConfig$geochart6.grid) {
+          var _optionsLine$scales, _optionsLine$scales$x;
+          (_optionsLine$scales$x = (_optionsLine$scales = optionsLine.scales).x) !== null && _optionsLine$scales$x !== void 0 ? _optionsLine$scales$x : _optionsLine$scales.x = {}; // Should always exist, because of above, but for peace of mind..
+          optionsLine.scales.x.grid = chart_parsing_objectSpread(chart_parsing_objectSpread({}, optionsLine.scales.x.grid), chartConfig.geochart.xAxis.grid);
+        }
+
+        // If there's grid options of y axis
+        if ((_chartConfig$geochart7 = chartConfig.geochart.yAxis) !== null && _chartConfig$geochart7 !== void 0 && _chartConfig$geochart7.grid) {
+          var _optionsLine$scales2, _optionsLine$scales2$;
+          (_optionsLine$scales2$ = (_optionsLine$scales2 = optionsLine.scales).y) !== null && _optionsLine$scales2$ !== void 0 ? _optionsLine$scales2$ : _optionsLine$scales2.y = {};
+          optionsLine.scales.y.grid = chart_parsing_objectSpread(chart_parsing_objectSpread({}, optionsLine.scales.y.grid), chartConfig.geochart.yAxis.grid);
+        }
       }
 
       // If line or bar
@@ -61185,11 +61199,10 @@ var ChartParsing = /*#__PURE__*/function () {
         var _optionsLine = options;
         // If type is set
         if (yAxisType) {
-          _optionsLine.scales = chart_parsing_objectSpread(chart_parsing_objectSpread({}, _optionsLine.scales), {}, {
-            y: {
-              type: yAxisType
-            }
-          });
+          var _optionsLine$scales3, _optionsLine$scales4, _optionsLine$scales4$;
+          (_optionsLine$scales3 = _optionsLine.scales) !== null && _optionsLine$scales3 !== void 0 ? _optionsLine$scales3 : _optionsLine.scales = {};
+          (_optionsLine$scales4$ = (_optionsLine$scales4 = _optionsLine.scales).y) !== null && _optionsLine$scales4$ !== void 0 ? _optionsLine$scales4$ : _optionsLine$scales4.y = {};
+          _optionsLine.scales.y.type = yAxisType;
         }
 
         // Drill
@@ -61238,7 +61251,7 @@ var ChartParsing = /*#__PURE__*/function () {
   }, {
     key: "createChartJSData",
     value: function createChartJSData(chartConfig, datasetsRegistry, datasRegistry, steps, records, defaultData) {
-      var _chartConfig$geochart6, _chartConfig$geochart7;
+      var _chartConfig$geochart8, _chartConfig$geochart9;
       // If there's a data source, parse it to a GeoChart data
       var data = chart_parsing_objectSpread({}, defaultData);
       if (records && records.length > 0) {
@@ -61249,7 +61262,7 @@ var ChartParsing = /*#__PURE__*/function () {
       _sortOnDatasetLabels.call(ChartParsing, data);
 
       // If the x axis type is time
-      if (((_chartConfig$geochart6 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart6 === void 0 ? void 0 : _chartConfig$geochart6.type) === 'time' || ((_chartConfig$geochart7 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart7 === void 0 ? void 0 : _chartConfig$geochart7.type) === 'timeseries') {
+      if (((_chartConfig$geochart8 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart8 === void 0 ? void 0 : _chartConfig$geochart8.type) === 'time' || ((_chartConfig$geochart9 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart9 === void 0 ? void 0 : _chartConfig$geochart9.type) === 'timeseries') {
         // Make sure the datasets data are sorted on X
         _sortOnX.call(ChartParsing, data.datasets);
       }
@@ -61670,13 +61683,13 @@ function _createDataCompressedForPieDoughnut(chartConfig, dataset, labels, recor
  * @private
  */
 function _createDataXYFormat(chartConfig, attributes) {
-  var _chartConfig$geochart8, _chartConfig$geochart9;
+  var _chartConfig$geochart0, _chartConfig$geochart1;
   // Read the unknown value in x
   var valRawX = attributes[chartConfig.geochart.xAxis.property];
 
   // If the value is expected to be a time
   var xVal = valRawX;
-  if (((_chartConfig$geochart8 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart8 === void 0 ? void 0 : _chartConfig$geochart8.type) === 'time' || ((_chartConfig$geochart9 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart9 === void 0 ? void 0 : _chartConfig$geochart9.type) === 'timeseries') {
+  if (((_chartConfig$geochart0 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart0 === void 0 ? void 0 : _chartConfig$geochart0.type) === 'time' || ((_chartConfig$geochart1 = chartConfig.geochart.xAxis) === null || _chartConfig$geochart1 === void 0 ? void 0 : _chartConfig$geochart1.type) === 'timeseries') {
     xVal = _ChartParsing.readDateValue(valRawX);
   }
 
@@ -64461,72 +64474,80 @@ function GeoChart(props) {
     setXSliderSteps = _useState26[1];
   var _useState27 = useState(),
     _useState28 = _slicedToArray(_useState27, 2),
-    xSliderValues = _useState28[0],
-    setXSliderValues = _useState28[1];
-  var _useState29 = useState(0),
+    xSliderValuesActive = _useState28[0],
+    setXSliderValuesActive = _useState28[1];
+  var _useState29 = useState(xSliderValuesActive),
     _useState30 = _slicedToArray(_useState29, 2),
-    ySliderMin = _useState30[0],
-    setYSliderMin = _useState30[1];
+    xSliderValues = _useState30[0],
+    setXSliderValues = _useState30[1];
   var _useState31 = useState(0),
     _useState32 = _slicedToArray(_useState31, 2),
-    ySliderMax = _useState32[0],
-    setYSliderMax = _useState32[1];
-  var _useState33 = useState(),
+    ySliderMin = _useState32[0],
+    setYSliderMin = _useState32[1];
+  var _useState33 = useState(0),
     _useState34 = _slicedToArray(_useState33, 2),
-    ySliderSteps = _useState34[0],
-    setYSliderSteps = _useState34[1];
+    ySliderMax = _useState34[0],
+    setYSliderMax = _useState34[1];
   var _useState35 = useState(),
     _useState36 = _slicedToArray(_useState35, 2),
-    ySliderValues = _useState36[0],
-    setYSliderValues = _useState36[1];
+    ySliderSteps = _useState36[0],
+    setYSliderSteps = _useState36[1];
   var _useState37 = useState(),
     _useState38 = _slicedToArray(_useState37, 2),
-    validatorInputs = _useState38[0],
-    setValidatorInputs = _useState38[1];
-  var _useState39 = useState(),
+    ySliderValuesActive = _useState38[0],
+    setYSliderValuesActive = _useState38[1];
+  var _useState39 = useState(ySliderValuesActive),
     _useState40 = _slicedToArray(_useState39, 2),
-    validatorOptions = _useState40[0],
-    setValidatorOptions = _useState40[1];
+    ySliderValues = _useState40[0],
+    setYSliderValues = _useState40[1];
   var _useState41 = useState(),
     _useState42 = _slicedToArray(_useState41, 2),
-    validatorData = _useState42[0],
-    setValidatorData = _useState42[1];
-  var _useState43 = useState((_inputs$geochart$useS = inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) !== null && _inputs$geochart$useS !== void 0 ? _inputs$geochart$useS : false),
+    validatorInputs = _useState42[0],
+    setValidatorInputs = _useState42[1];
+  var _useState43 = useState(),
     _useState44 = _slicedToArray(_useState43, 2),
-    selectedSteps = _useState44[0],
-    setSelectedSteps = _useState44[1];
-  var _useState45 = useState((_inputs$geochart$yAxi = inputs === null || inputs === void 0 || (_inputs$geochart$yAxi2 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi2 === void 0 ? void 0 : _inputs$geochart$yAxi2.type) !== null && _inputs$geochart$yAxi !== void 0 ? _inputs$geochart$yAxi : 'linear'),
+    validatorOptions = _useState44[0],
+    setValidatorOptions = _useState44[1];
+  var _useState45 = useState(),
     _useState46 = _slicedToArray(_useState45, 2),
-    selectedScale = _useState46[0],
-    setSelectedScale = _useState46[1];
-  var _useState47 = useState(),
+    validatorData = _useState46[0],
+    setValidatorData = _useState46[1];
+  var _useState47 = useState((_inputs$geochart$useS = inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) !== null && _inputs$geochart$useS !== void 0 ? _inputs$geochart$useS : false),
     _useState48 = _slicedToArray(_useState47, 2),
-    plugins = _useState48[0],
-    setPlugins = _useState48[1];
-  var _useState49 = useState(0),
+    selectedSteps = _useState48[0],
+    setSelectedSteps = _useState48[1];
+  var _useState49 = useState((_inputs$geochart$yAxi = inputs === null || inputs === void 0 || (_inputs$geochart$yAxi2 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi2 === void 0 ? void 0 : _inputs$geochart$yAxi2.type) !== null && _inputs$geochart$yAxi !== void 0 ? _inputs$geochart$yAxi : 'linear'),
     _useState50 = _slicedToArray(_useState49, 2),
-    colorPaletteCategoryBackgroundIndex = _useState50[0],
-    setColorPaletteCategoryBackgroundIndex = _useState50[1];
-  var _useState51 = useState(0),
+    selectedScale = _useState50[0],
+    setSelectedScale = _useState50[1];
+  var _useState51 = useState(),
     _useState52 = _slicedToArray(_useState51, 2),
-    colorPaletteCategoryBorderIndex = _useState52[0],
-    setColorPaletteCategoryBorderIndex = _useState52[1];
+    plugins = _useState52[0],
+    setPlugins = _useState52[1];
   var _useState53 = useState(0),
     _useState54 = _slicedToArray(_useState53, 2),
-    colorPaletteAxisBackgroundIndex = _useState54[0],
-    setColorPaletteAxisBackgroundIndex = _useState54[1];
+    colorPaletteCategoryBackgroundIndex = _useState54[0],
+    setColorPaletteCategoryBackgroundIndex = _useState54[1];
   var _useState55 = useState(0),
     _useState56 = _slicedToArray(_useState55, 2),
-    colorPaletteAxisBorderIndex = _useState56[0],
-    setColorPaletteAxisBorderIndex = _useState56[1];
-  var _useState57 = useState(false),
+    colorPaletteCategoryBorderIndex = _useState56[0],
+    setColorPaletteCategoryBorderIndex = _useState56[1];
+  var _useState57 = useState(0),
     _useState58 = _slicedToArray(_useState57, 2),
-    lockedUI = _useState58[0],
-    setLockedUI = _useState58[1];
-  var _useState59 = useState(null),
+    colorPaletteAxisBackgroundIndex = _useState58[0],
+    setColorPaletteAxisBackgroundIndex = _useState58[1];
+  var _useState59 = useState(0),
     _useState60 = _slicedToArray(_useState59, 2),
-    anchorEl = _useState60[0],
-    setAnchorEl = _useState60[1];
+    colorPaletteAxisBorderIndex = _useState60[0],
+    setColorPaletteAxisBorderIndex = _useState60[1];
+  var _useState61 = useState(false),
+    _useState62 = _slicedToArray(_useState61, 2),
+    lockedUI = _useState62[0],
+    setLockedUI = _useState62[1];
+  var _useState63 = useState(null),
+    _useState64 = _slicedToArray(_useState63, 2),
+    anchorEl = _useState64[0],
+    setAnchorEl = _useState64[1];
   var open = Boolean(anchorEl);
   var chartRef = useRef(null);
 
@@ -64568,11 +64589,6 @@ function GeoChart(props) {
   // #endregion
 
   // #region DEFAULTS SECTION *****************************************************************************************
-
-  // Attribute the ChartJS default colors
-  if (defaultColors !== null && defaultColors !== void 0 && defaultColors.backgroundColor) Chart.defaults.backgroundColor = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.backgroundColor;
-  if (defaultColors !== null && defaultColors !== void 0 && defaultColors.borderColor) Chart.defaults.borderColor = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.borderColor;
-  if (defaultColors !== null && defaultColors !== void 0 && defaultColors.color) Chart.defaults.color = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.color;
 
   // Attribute the color palettes
   ChartParsing.setColorPalettes(inputs);
@@ -64672,8 +64688,8 @@ function GeoChart(props) {
     var valuesComeFromState = false;
     if (uiOptions !== null && uiOptions !== void 0 && (_uiOptions$xSlider4 = uiOptions.xSlider) !== null && _uiOptions$xSlider4 !== void 0 && _uiOptions$xSlider4.display) {
       if (xMaxVal && !theXSliderStateValues) {
-        // Set the values for x axis to min/max
-        setXSliderValues([xMinVal, xMaxVal]);
+        // Set the values for x axis to min/max on the UI itself
+        setXSliderValuesActive([xMinVal, xMaxVal]);
       } else if (theXSliderStateValues) {
         // eslint-disable-next-line no-param-reassign
         var _theXSliderStateValue = _slicedToArray(theXSliderStateValues, 2);
@@ -64687,7 +64703,7 @@ function GeoChart(props) {
     if (uiOptions !== null && uiOptions !== void 0 && (_uiOptions$ySlider4 = uiOptions.ySlider) !== null && _uiOptions$ySlider4 !== void 0 && _uiOptions$ySlider4.display) {
       if (yMaxVal && !theYSliderStateValues) {
         // Set the state
-        setYSliderValues([yMinVal, yMaxVal]);
+        setYSliderValuesActive([yMinVal, yMaxVal]);
       } else if (theYSliderStateValues) {
         // eslint-disable-next-line no-param-reassign
         var _theYSliderStateValue = _slicedToArray(theYSliderStateValues, 2);
@@ -64802,6 +64818,31 @@ function GeoChart(props) {
   // #region HOOKS USE CALLBACK GEOCHART SECTION **********************************************************************
 
   /**
+   * Memoizes the default colors.
+   */
+  var memoDefaultColors = useMemo(function () {
+    // Log
+    logger.logTraceUseMemo('GEOCHART - memoDefaultColors', defaultColors);
+
+    // Reassign colors to ChartJS
+    if (defaultColors !== null && defaultColors !== void 0 && defaultColors.backgroundColor) Chart.defaults.backgroundColor = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.backgroundColor;
+    if (defaultColors !== null && defaultColors !== void 0 && defaultColors.borderColor) Chart.defaults.borderColor = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.borderColor;
+    if (defaultColors !== null && defaultColors !== void 0 && defaultColors.color) Chart.defaults.color = defaultColors === null || defaultColors === void 0 ? void 0 : defaultColors.color;
+
+    // Force a redraw
+    setAction({
+      shouldRedraw: true
+    });
+
+    // Return the colors to be used by the Chart
+    return {
+      backgroundColor: Chart.defaults.backgroundColor,
+      borderColor: Chart.defaults.borderColor,
+      color: Chart.defaults.color
+    };
+  }, [defaultColors, logger]);
+
+  /**
    * Updates the selected datasets object in synch with the actual datasets read from the data.
    * @param {Record<string, unknown>[] | undefined} items - The items reprensenting the data
    * @param {string | undefined} catPropertyName - The property name for the categorization
@@ -64832,8 +64873,8 @@ function GeoChart(props) {
         datasetRegistry[catName] = {
           visible: true,
           checked: true,
-          backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, Chart.defaults.color),
-          borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, Chart.defaults.color)
+          backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, memoDefaultColors.color),
+          borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, memoDefaultColors.color)
         };
         backgroundIndex++;
         borderIndex++;
@@ -64861,7 +64902,7 @@ function GeoChart(props) {
     if (oneSelectedDatasetUpdated) {
       setDatasetRegistry(chart_objectSpread({}, datasetRegistry));
     }
-  }, [datasetRegistry, colorPaletteCategoryBackgroundIndex, colorPaletteCategoryBorderIndex, logger]);
+  }, [logger, colorPaletteCategoryBackgroundIndex, colorPaletteCategoryBorderIndex, datasetRegistry, memoDefaultColors.color]);
 
   /**
    * Updates the selected data object in synch with the actual labels read from the data.
@@ -64897,8 +64938,8 @@ function GeoChart(props) {
           datasRegistry[labelName] = {
             visible: true,
             checked: true,
-            backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, Chart.defaults.color),
-            borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, Chart.defaults.color)
+            backgroundColor: Utils.getColorFromPalette(paletteBackgrounds, backgroundIndex, memoDefaultColors.color),
+            borderColor: Utils.getColorFromPalette(paletteBorders, borderIndex, memoDefaultColors.color)
           };
           backgroundIndex++;
           borderIndex++;
@@ -64927,7 +64968,7 @@ function GeoChart(props) {
       setColorPaletteAxisBackgroundIndex(backgroundIndex);
       setColorPaletteAxisBorderIndex(borderIndex);
     }
-  }, [datasRegistry, colorPaletteAxisBackgroundIndex, colorPaletteAxisBorderIndex, logger]);
+  }, [logger, colorPaletteAxisBackgroundIndex, colorPaletteAxisBorderIndex, datasRegistry, memoDefaultColors.color]);
 
   /**
    * Updates the chart dataset visibility based on the currently selected datasets.
@@ -65242,8 +65283,20 @@ function GeoChart(props) {
     // Log
     logger.logTraceUseCallback('GEOCHART - handleSliderXChange', newValue);
 
-    // Set the X State
+    // Set the X State for the slider UI itself
     setXSliderValues(newValue);
+  }, [logger]);
+
+  /**
+   * Handles when the X Slider changes
+   * @param {number | number[]} newValue - Indicates the slider value
+   */
+  var handleSliderXChangeCommitted = useCallback(function (newValue) {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - handleSliderXChangeCommitted', newValue);
+
+    // Set the X values active
+    setXSliderValuesActive(newValue);
 
     // Callback
     onSliderXChanged === null || onSliderXChanged === void 0 || onSliderXChanged(newValue);
@@ -65257,8 +65310,20 @@ function GeoChart(props) {
     // Log
     logger.logTraceUseCallback('GEOCHART - handleSliderYChange', newValue);
 
-    // Set the Y State
+    // Set the Y State for the slider UI itself
     setYSliderValues(newValue);
+  }, [logger]);
+
+  /**
+   * Handles when the Y Slider changes
+   * @param {number | number[]} newValue - Indicates the slider value
+   */
+  var handleSliderYChangeCommitted = useCallback(function (newValue) {
+    // Log
+    logger.logTraceUseCallback('GEOCHART - handleSliderYChangeCommitted', newValue);
+
+    // Set the Y values active
+    setYSliderValuesActive(newValue);
 
     // Callback
     onSliderYChanged === null || onSliderYChanged === void 0 || onSliderYChanged(newValue);
@@ -65308,8 +65373,8 @@ function GeoChart(props) {
     setDatasetRegistry(delegateToTurnCheckedToTrue);
     setDatasRegistry(delegateToTurnCheckedToTrue);
     setSelectedSteps((_inputs$geochart$useS2 = inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) !== null && _inputs$geochart$useS2 !== void 0 ? _inputs$geochart$useS2 : false);
-    setXSliderValues(undefined);
-    setYSliderValues(undefined);
+    setXSliderValuesActive(undefined);
+    setYSliderValuesActive(undefined);
 
     // Callback
     onResetStates === null || onResetStates === void 0 || onResetStates();
@@ -65667,8 +65732,8 @@ function GeoChart(props) {
       setDatasRegistry(delegateToTurnCheckedToTrue);
 
       // Resets all x/y slider values
-      setXSliderValues(undefined);
-      setYSliderValues(undefined);
+      setXSliderValuesActive(undefined);
+      setYSliderValuesActive(undefined);
     }
     return function () {
       // Log
@@ -65715,7 +65780,33 @@ function GeoChart(props) {
       // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC, selectedDatasource);
     };
-  }, [inputs, selectedDatasource, datasRegistry, datasetRegistry, language, selectedSteps, selectedScale, xSliderValues, ySliderValues, processLoadingRecordsFilteringFirst, processLoadingRecords, logger]);
+  }, [inputs, selectedDatasource, datasRegistry, datasetRegistry, language, selectedSteps, selectedScale, xSliderValues,
+  // Use xSliderValuesActive if you want to update the Chart only when the values from the slider are 'committed'
+  ySliderValues,
+  // Use ySliderValuesActive if you want to update the Chart only when the values from the slider are 'committed'
+  processLoadingRecordsFilteringFirst, processLoadingRecords, logger]);
+
+  /**
+   * Keeps the local state values in sync with the store values.
+   */
+  useEffect(function () {
+    // Log
+    logger.logTraceUseEffect('GEOCHART - storeValues', xSliderValuesActive);
+
+    // Sync local state
+    setXSliderValues(xSliderValuesActive);
+  }, [xSliderValuesActive, logger]);
+
+  /**
+   * Keeps the local state values in sync with the store values.
+   */
+  useEffect(function () {
+    // Log
+    logger.logTraceUseEffect('GEOCHART - storeValues', ySliderValuesActive);
+
+    // Sync local state
+    setYSliderValues(ySliderValuesActive);
+  }, [ySliderValuesActive, logger]);
 
   // Effect hook when the chartOptions, chartData change - coming from this component.
   useEffect(function () {
@@ -65928,7 +66019,8 @@ function GeoChart(props) {
             step: xSliderSteps,
             value: xSliderValues || 0,
             valueLabelDisplay: "auto",
-            onChangeCommitted: handleSliderXChange,
+            onChange: handleSliderXChange,
+            onChangeCommitted: handleSliderXChangeCommitted,
             onValueLabelFormat: handleSliderXValueFormat,
             onValueDisplayAriaLabel: handleSliderXValueFormat
           })
@@ -65959,7 +66051,8 @@ function GeoChart(props) {
             value: ySliderValues || 0,
             orientation: "vertical",
             valueLabelDisplay: "auto",
-            onChangeCommitted: handleSliderYChange,
+            onChange: handleSliderYChange,
+            onChangeCommitted: handleSliderYChangeCommitted,
             onValueLabelFormat: handleSliderYValueFormat,
             onValueDisplayAriaLabel: handleSliderYValueFormat
           })
