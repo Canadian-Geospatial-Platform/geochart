@@ -550,9 +550,6 @@ export function GeoChart<
       paletteBackgrounds: string[] | undefined,
       paletteBorders: string[] | undefined
     ): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - processDatasets', items, catPropertyName);
-
       // Check
       if (!items || !catPropertyName) return;
 
@@ -622,9 +619,6 @@ export function GeoChart<
       paletteBackgrounds: string[] | undefined,
       paletteBorders: string[] | undefined
     ): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - processLabels', theChartType, items);
-
       // Check
       if (!items || !labelPropertyName) return;
 
@@ -688,9 +682,6 @@ export function GeoChart<
    */
   const updateDatasetVisibilityUsingState = useCallback(
     (theChartRef: ChartJS<TType, TData, TLabel> | undefined, theDatasetRegistry: GeoChartSelectedDataset): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - updateDatasetVisibilityUsingState', theChartRef, theDatasetRegistry);
-
       if (!theChartRef) return;
 
       // Get the current dataset labels
@@ -717,9 +708,6 @@ export function GeoChart<
    */
   const updateDataVisibilityUsingState = useCallback(
     (theChartRef: ChartJS<TType, TData, TLabel> | undefined, theDatasRegistry: GeoChartSelectedDataset): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - updateDataVisibilityUsingState', theChartRef, theDatasRegistry);
-
       // Check
       if (!theChartRef) return;
 
@@ -764,9 +752,6 @@ export function GeoChart<
       theYScale: ScalePossibility,
       records: Record<string, unknown>[] | undefined
     ): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - processLoadingRecords', theInputs, theDatasetRegistry, theDatasRegistry, theLanguage);
-
       // Parse the data
       const parsedOptions = ChartParsing.createChartJSOptions<TType>(theInputs, parentOptions!, theYScale, theLanguage);
       const parsedData = ChartParsing.createChartJSData<TType, TData, TLabel>(
@@ -817,15 +802,6 @@ export function GeoChart<
       xValues: number | number[] | undefined,
       yValues: number | number[] | undefined
     ): void => {
-      // Log
-      logger.logTraceUseCallback(
-        'GEOCHART - processLoadingRecordsFilteringFirst',
-        theInputs,
-        theDatasetRegistry,
-        theDatasRegistry,
-        theLanguage
-      );
-
       // If chart type is line
       let resItemsFinal: Record<string, unknown>[] = records ? [...records] : [];
       if (theInputs?.chart === 'line') {
@@ -885,9 +861,6 @@ export function GeoChart<
    */
   const handleChartJSAfterInit = useCallback(
     (chart: ChartJS<TType, TData, TLabel>): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleChartJSAfterInit', chart, datasRegistry, datasetRegistry);
-
       // Make sure the UI fits with the registry state before the first render is made. Mostly useful for pie/doughnut charts.
       updateDatasetVisibilityUsingState(chart, datasetRegistry);
       updateDataVisibilityUsingState(chart, datasRegistry);
@@ -923,9 +896,6 @@ export function GeoChart<
    */
   const handleDatasourceChanged = useCallback(
     async (e: Event, item: typeof MenuItem): Promise<void> => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleDatasourceChanged', item);
-
       // If no inputs, return
       if (!inputs) return;
 
@@ -964,9 +934,6 @@ export function GeoChart<
    */
   const handleDatasetChecked = useCallback(
     (datasetIndex: number, datasetLabel: string | undefined, checked: boolean): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleDatasetChecked', datasetRegistry);
-
       // If already checked
       const isAlreadyChecked = datasetLabel && memoDatasetRegistryChecked.includes(datasetLabel);
 
@@ -997,9 +964,6 @@ export function GeoChart<
    */
   const handleDataChecked = useCallback(
     (dataIndex: number, dataLabel: string, checked: boolean): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleDataChecked', datasRegistry);
-
       // If already checked
       const isAlreadyChecked = memoDatasRegistryChecked.includes(dataLabel);
 
@@ -1028,9 +992,6 @@ export function GeoChart<
    */
   const handleSliderXChange = useCallback(
     (newValue: number | number[]): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleSliderXChange', newValue);
-
       // Set the X State for the slider UI itself
       setXSliderValues(newValue);
     },
@@ -1043,9 +1004,6 @@ export function GeoChart<
    */
   const handleSliderXChangeCommitted = useCallback(
     (newValue: number | number[]): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleSliderXChangeCommitted', newValue);
-
       // Set the X values active
       setXSliderValuesActive(newValue);
 
@@ -1061,9 +1019,6 @@ export function GeoChart<
    */
   const handleSliderYChange = useCallback(
     (newValue: number | number[]): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleSliderYChange', newValue);
-
       // Set the Y State for the slider UI itself
       setYSliderValues(newValue);
     },
@@ -1076,9 +1031,6 @@ export function GeoChart<
    */
   const handleSliderYChangeCommitted = useCallback(
     (newValue: number | number[]): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleSliderYChangeCommitted', newValue);
-
       // Set the Y values active
       setYSliderValuesActive(newValue);
 
@@ -1095,9 +1047,6 @@ export function GeoChart<
    */
   const handleStepsSwitcherChanged = useCallback(
     (e: unknown, item: typeof MenuItem): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleStepsSwitcherChanged', item);
-
       // Set the step switcher
       setSelectedSteps(item.props.value as StepsPossibility);
 
@@ -1114,9 +1063,6 @@ export function GeoChart<
    */
   const handleScalesSwitcherChanged = useCallback(
     (e: unknown, item: typeof MenuItem): void => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleScalesSwitcherChanged', item);
-
       // Set the scale switcher
       setSelectedScale(item.props.value as ScalePossibility);
 
@@ -1130,9 +1076,6 @@ export function GeoChart<
    * Handles when the States must be cleared
    */
   const handleResetStates = useCallback((): void => {
-    // Log
-    logger.logTraceUseCallback('GEOCHART - handleResetStates');
-
     // Clear all states
     setDatasetRegistry(delegateToTurnCheckedToTrue);
     setDatasRegistry(delegateToTurnCheckedToTrue);
@@ -1150,9 +1093,6 @@ export function GeoChart<
    */
   const handleSliderXValueFormat = useCallback(
     (value: number): string => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleSliderXValueFormat', value);
-
       // Callback in case we're overriding this behavior
       const val = onSliderXValueDisplaying?.(value);
       if (val) return val;
@@ -1188,9 +1128,6 @@ export function GeoChart<
    */
   const handleSliderYValueFormat = useCallback(
     (value: number): string => {
-      // Log
-      logger.logTraceUseCallback('GEOCHART - handleSliderYValueFormat', value);
-
       // Callback in case we're overriding this behavior
       const val = onSliderYValueDisplaying?.(value);
       if (val) return val;
@@ -1206,9 +1143,6 @@ export function GeoChart<
    */
   const handleExportClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
-      // Log
-      logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClick');
-
       setAnchorEl(event.currentTarget);
     },
     [logger]
@@ -1218,9 +1152,6 @@ export function GeoChart<
    * Close export menu.
    */
   const handleExportClose = useCallback(() => {
-    // Log
-    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleClose');
-
     setAnchorEl(null);
   }, [logger]);
 
@@ -1228,9 +1159,6 @@ export function GeoChart<
    * Handles when the download filtered button is clicked
    */
   const handleDownloadFiltered = useCallback((): void => {
-    // Log
-    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleDownloadFiltered');
-
     // Get the data
     const data = { ...selectedDatasource! } as GeoChartDatasource;
 
@@ -1275,9 +1203,6 @@ export function GeoChart<
    * Handles when the download all button is clicked
    */
   const handleDownloadAll = useCallback((): void => {
-    // Log
-    logger.logTraceUseCallback('DATA-TABLE - EXPORT BUTTON - handleDownloadAll');
-
     // Get the data
     const data = { ...selectedDatasource! } as GeoChartDatasource;
 
