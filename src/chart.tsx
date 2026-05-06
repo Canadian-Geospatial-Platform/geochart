@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Theme } from '@mui/material';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
+import ResetIcon from '@mui/icons-material/RestartAlt';
 import { Chart as ChartJS, ChartType, ChartOptions, ChartData, ChartDataset, registerables, ChartConfiguration, Plugin } from 'chart.js';
 import { Chart as ChartReact } from 'react-chartjs-2';
 import 'chartjs-adapter-moment';
@@ -133,6 +134,7 @@ const DEFAULT_CHART: ChartType = 'line';
 /** Default options */
 const DEFAULT_OPTIONS: ChartOptions<ChartType> = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       display: false,
@@ -176,25 +178,11 @@ export function GeoChart<
   // Fetch the cgpv module
   const { cgpv } = w;
   const { logger } = cgpv;
-  const { useEffect, useState, useCallback, useMemo, useRef } = cgpv.reactUtilities.react as typeof React;
+  const { useEffect, useState, useCallback, useMemo, useRef, useId } = cgpv.reactUtilities.react as typeof React;
   // const { useWhatChanged } = cgpv.ui;
 
-  const {
-    Paper,
-    Box,
-    Grid,
-    Checkbox,
-    Select,
-    Button,
-    IconButton,
-    DownloadIcon,
-    Menu,
-    MenuItem,
-    Typography,
-    Slider,
-    Tooltip,
-    CircularProgress,
-  } = cgpv.ui.elements;
+  const { Paper, Box, Checkbox, Select, IconButton, DownloadIcon, Menu, MenuItem, Typography, Slider, Tooltip, CircularProgress } =
+    cgpv.ui.elements;
   type TypeMenuItemProps = typeof cgpv.ui.elements.TypeMenuItemProps;
 
   // Cast
@@ -229,6 +217,15 @@ export function GeoChart<
   const parentOptions = (props.options ?? DEFAULT_OPTIONS) as ChartOptions<TType>;
   const parentData = (props.data ?? DEFAULT_DATA) as ChartData<TType, TData, TLabel>;
   const sxClasses = getSxClasses(cgpvTheme);
+
+  // WCAG - Generate unique IDs
+  const xAxisLabelId = useId();
+  const yAxisLabelId = useId();
+  const datasourceLabelId = useId();
+  const stepsLabelId = useId();
+  const scaleLabelId = useId();
+  const datasetCheckboxBaseId = useId();
+  const dataCheckboxBaseId = useId();
 
   // Translation
   const { i18n, t } = useTranslation(NAMESPACE_I18N);
@@ -273,11 +270,15 @@ export function GeoChart<
   const [colorPaletteAxisBackgroundIndex, setColorPaletteAxisBackgroundIndex] = useState(0);
   const [colorPaletteAxisBorderIndex, setColorPaletteAxisBorderIndex] = useState(0);
   const [lockedUI, setLockedUI] = useState<boolean>(false);
+  // WCAG - Live announcement state for screen readers
+  const [liveAnnouncement, setLiveAnnouncement] = useState<string>('');
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
 
   const chartRef = useRef<ChartJS<TType, TData, TLabel>>(null);
+  const inputsRef = useRef(inputs);
+  const hasLoadingStarted = useRef(false);
 
   // Track the latest request token
   const latestFetchToken = useRef(0);
@@ -1423,22 +1424,35 @@ export function GeoChart<
 
   // #region HOOKS USE EFFECT CURRENT COMP SECTION *********************************************************************************
 
-  // Effect hook ran once when initializing
+  // Keep the inputs ref synchronized with the latest inputs value
   useEffect(() => {
-    // Log
+    inputsRef.current = inputs;
+  }, [inputs]);
+
+  // Effect hook to register ChartJS plugins
+  // Uses a ref for inputs to avoid re-registering the plugin when inputs change
+  useEffect(() => {
     const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - PLUGINS';
     logger.logTraceUseEffect(USE_EFFECT_FUNC);
 
     const plugin = {
       id: 'geochart-chartjs-plugin',
-      afterInit: (chartEvent: unknown): void => handleChartJSAfterInit(chartEvent as ChartJS<TType, TData, TLabel>),
+      afterInit: (chartEvent: unknown): void => {
+        const chart = chartEvent as ChartJS<TType, TData, TLabel>;
+
+        // WCAG - Set aria-label on canvas element for screen readers
+        if (chart.canvas && inputsRef.current) {
+          const chartTitle = inputsRef.current.title || `${inputsRef.current.chart} chart`;
+          chart.canvas.setAttribute('aria-label', chartTitle);
+        }
+
+        handleChartJSAfterInit(chart);
+      },
     };
 
-    // Register
     setPlugins([plugin]);
 
     return () => {
-      // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
   }, [handleChartJSAfterInit, logger]);
@@ -1770,6 +1784,31 @@ export function GeoChart<
     };
   }, [action, logger]);
 
+  // Effect hook to announce loading state changes to screen readers
+  useEffect(() => {
+    const USE_EFFECT_FUNC = 'GEOCHART - CURRENT - LOADING ANNOUNCEMENT';
+    logger.logTraceUseEffect(USE_EFFECT_FUNC, isLoadingDatasource);
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    if (isLoadingDatasource) {
+      hasLoadingStarted.current = true;
+      setLiveAnnouncement(t('geochart.loadingData'));
+    } else if (hasLoadingStarted.current) {
+      // Only announce completion if loading had actually started
+      setLiveAnnouncement(t('geochart.dataLoaded'));
+
+      timer = setTimeout(() => {
+        setLiveAnnouncement('');
+      }, 1000);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [isLoadingDatasource, t, logger]);
+
   // #endregion
 
   // #region RENDER SECTION *******************************************************************************************
@@ -1784,23 +1823,31 @@ export function GeoChart<
 
   /**
    * Renders the X Axis label
-   * @returns The Chart JSX.Element representing the X Axis label or an empty Box if no label
+   * @returns The Chart JSX.Element representing the X Axis label, or null for non-line/bar charts
    */
-  const renderXAxisLabel = (): JSX.Element => {
+  const renderXAxisLabel = (): JSX.Element | null => {
     if (chartType === 'line' || chartType === 'bar')
-      return <Box sx={sxClasses.xAxisLabel}>{inputs?.geochart.xAxis.label || inputs?.geochart.xAxis.property}</Box>;
-    return <Box />;
+      return (
+        <Box id={xAxisLabelId} sx={sxClasses.xAxisLabel}>
+          {inputs?.geochart.xAxis.label || inputs?.geochart.xAxis.property}
+        </Box>
+      );
+    return null;
   };
 
   /**
    * Renders the Y Axis label
-   * @returns The Chart JSX.Element representing the Y Axis label or an empty Box if no label
+   * @returns The Chart JSX.Element representing the Y Axis label, or null for non-line/bar charts
    */
-  const renderYAxisLabel = (): JSX.Element => {
+  const renderYAxisLabel = (): JSX.Element | null => {
     // If line or bar chart
     if (chartType === 'line' || chartType === 'bar')
-      return <Box sx={sxClasses.yAxisLabel}>{inputs?.geochart.yAxis.label || inputs?.geochart.yAxis.property}</Box>;
-    return <Box />;
+      return (
+        <Box id={yAxisLabelId} sx={sxClasses.yAxisLabel}>
+          {inputs?.geochart.yAxis.label || inputs?.geochart.yAxis.property}
+        </Box>
+      );
+    return null;
   };
 
   /**
@@ -1840,6 +1887,12 @@ export function GeoChart<
         return (
           <Box sx={sxClasses.xSliderWrapper}>
             <Slider
+              getAriaLabel={(index: number) => {
+                const baseLabel = inputs?.geochart.xAxis.label || inputs?.geochart.xAxis.property || t('geochart.xAxis');
+                return Array.isArray(xSliderValues) && xSliderValues.length === 2
+                  ? `${baseLabel}, ${index === 0 ? t('geochart.start') : t('geochart.end')}`
+                  : baseLabel;
+              }}
               marks={getMarkers(xSliderMin, xSliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_X, handleSliderXValueFormat)}
               min={xSliderMin}
               max={xSliderMax}
@@ -1871,6 +1924,12 @@ export function GeoChart<
         return (
           <Box sx={sxClasses.ySliderWrapper}>
             <Slider
+              getAriaLabel={(index: number) => {
+                const baseLabel = inputs?.geochart.yAxis.label || inputs?.geochart.yAxis.property || t('geochart.yAxis');
+                return Array.isArray(ySliderValues) && ySliderValues.length === 2
+                  ? `${baseLabel}, ${index === 0 ? t('geochart.start') : t('geochart.end')}`
+                  : baseLabel;
+              }}
               marks={getMarkers(ySliderMin, ySliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_Y, handleSliderYValueFormat)}
               min={ySliderMin}
               max={ySliderMax}
@@ -1896,23 +1955,29 @@ export function GeoChart<
    * Renders a description text
    * @returns The Description text in a Box element
    */
-  const renderDescription = (): JSX.Element => {
+  const renderDescription = (): JSX.Element | null => {
     // If an y description
     if (inputs?.ui?.description) {
       return <Box>{inputs.ui.description}</Box>;
     }
-    return <Box />;
+    return null;
   };
 
   /**
    * Renders the download data button
    * @returns The Download data button if wanted in the UI
    */
-  const renderDownload = (): JSX.Element => {
+  const renderDownload = (): JSX.Element | null => {
     if (inputs?.ui?.download) {
       return (
         <>
-          <IconButton sx={sxClasses.downloadButton} onClick={handleExportClick} tooltip={t('geochart.exportBtn')} className="buttonOutline">
+          <IconButton
+            onClick={handleExportClick}
+            aria-label={t('geochart.exportBtn')}
+            tooltip={t('geochart.exportBtn')}
+            tooltipPlacement="top"
+            className="buttonOutline"
+          >
             <DownloadIcon />
           </IconButton>
           <Menu anchorEl={anchorEl} open={open} onClose={handleExportClose}>
@@ -1922,14 +1987,14 @@ export function GeoChart<
         </>
       );
     }
-    return <Box />;
+    return null;
   };
 
   /**
    * Renders the Datasource selector
    * @returns The Datasource selector Element
    */
-  const renderDatasourceSelector = (): JSX.Element => {
+  const renderDatasourceSelector = (): JSX.Element | null => {
     if (inputs) {
       // Create the menu items
       const menuItems: TypeMenuItemProps[] = [];
@@ -1942,39 +2007,42 @@ export function GeoChart<
       if (inputs.datasources.length > 1) featureLabel += 's';
 
       return (
-        <Box>
-          <Tooltip title={t('geochart.featuresTooltip')} arrow placement="top">
-            <Select
-              container={containerElement}
-              sx={sxClasses.datasourceSelector}
-              label={featureLabel}
-              onChange={handleDatasourceChanged}
-              menuItems={menuItems}
-              value={selectedDatasource?.value || selectedDatasource?.display || ''}
-            />
-          </Tooltip>
-        </Box>
+        <Tooltip title={t('geochart.featuresTooltip')} arrow placement="top">
+          <Select
+            container={containerElement}
+            sx={sxClasses.datasourceSelector}
+            label={featureLabel}
+            labelId={datasourceLabelId}
+            onChange={handleDatasourceChanged}
+            menuItems={menuItems}
+            value={selectedDatasource?.value || selectedDatasource?.display || ''}
+          />
+        </Tooltip>
       );
     }
 
     // Empty
-    return <Box />;
+    return null;
   };
 
   /**
    * Renders the Title of the GeoChart
    * @returns The Ttile Element
    */
-  const renderTitle = (): JSX.Element => {
+  const renderTitle = (): JSX.Element | null => {
     if (inputs && inputs.title) {
-      return <Box sx={sxClasses.title}>{inputs.title}</Box>;
+      return (
+        <Typography component="h3" variant="h6" sx={sxClasses.title}>
+          {inputs.title}
+        </Typography>
+      );
     }
 
     // Empty
-    return <Box />;
+    return null;
   };
 
-  const renderUIOptionsStepsSwitcher = (): JSX.Element => {
+  const renderUIOptionsStepsSwitcher = (): JSX.Element | null => {
     if (inputs?.ui?.stepsSwitcher) {
       // Default all values
       let stepsOptions: StepsPossibility[] = [...StepsPossibilitiesConst];
@@ -1996,6 +2064,7 @@ export function GeoChart<
             container={containerElement}
             sx={sxClasses.uiOptionsStepsSelector}
             label={t('geochart.steps')}
+            labelId={stepsLabelId}
             onChange={handleStepsSwitcherChanged}
             menuItems={menuItems}
             value={selectedSteps ?? inputs?.geochart.useSteps ?? false}
@@ -2003,10 +2072,10 @@ export function GeoChart<
         </Tooltip>
       );
     }
-    return <Box />;
+    return null;
   };
 
-  const renderUIOptionsScalesSwitcher = (): JSX.Element => {
+  const renderUIOptionsScalesSwitcher = (): JSX.Element | null => {
     if (inputs?.ui?.scalesSwitcher) {
       // Default all values
       let scaleOptions: ScalePossibility[] = [...ScalePossibilitiesConst];
@@ -2028,6 +2097,7 @@ export function GeoChart<
             container={containerElement}
             sx={sxClasses.uiOptionsScaleSelector}
             label={t('geochart.scale')}
+            labelId={scaleLabelId}
             onChange={handleScalesSwitcherChanged}
             menuItems={menuItems}
             value={selectedScale || inputs?.geochart.yAxis?.type || 'linear'}
@@ -2035,18 +2105,24 @@ export function GeoChart<
         </Tooltip>
       );
     }
-    return <Box />;
+    return null;
   };
 
-  const renderUIOptionsResetStates = (): JSX.Element => {
+  const renderUIOptionsResetStates = (): JSX.Element | null => {
     if (inputs?.ui?.resetStates) {
       return (
-        <Button sx={sxClasses.uiOptionsResetStates} onClick={handleResetStates}>
-          {t('geochart.resetStates')}
-        </Button>
+        <IconButton
+          onClick={handleResetStates}
+          aria-label={t('geochart.resetStates')}
+          tooltip={t('geochart.resetStates')}
+          tooltipPlacement="top"
+          className="buttonOutline"
+        >
+          <ResetIcon />
+        </IconButton>
       );
     }
-    return <Box />;
+    return null;
   };
 
   /**
@@ -2058,7 +2134,6 @@ export function GeoChart<
       <>
         {renderUIOptionsStepsSwitcher()}
         {renderUIOptionsScalesSwitcher()}
-        {renderUIOptionsResetStates()}
       </>
     );
   };
@@ -2075,11 +2150,16 @@ export function GeoChart<
     }
 
     return (
-      <Button sx={sxClasses.uiOptionsResetStates} onClick={handleLockStates}>
-        <Tooltip title={tooltip} placement="top">
-          {lockedUI ? <LockIcon /> : <LockOpenIcon />}
-        </Tooltip>
-      </Button>
+      <IconButton
+        onClick={handleLockStates}
+        aria-label={t('geochart.lockLabel')}
+        aria-pressed={lockedUI}
+        tooltip={tooltip}
+        tooltipPlacement="top"
+        className="buttonOutline"
+      >
+        {lockedUI ? <LockIcon /> : <LockOpenIcon />}
+      </IconButton>
     );
   };
 
@@ -2087,13 +2167,13 @@ export function GeoChart<
    * Renders the Dataset selector, aka the legend
    * @returns The Dataset selector Element
    */
-  const renderDatasetSelector = (): JSX.Element => {
+  const renderDatasetSelector = (): JSX.Element | null => {
     if (inputs && chartData && inputs.category) {
       if (Object.keys(datasetRegistry).length > 1) {
-        const label = chartType === 'pie' || chartType === 'doughnut' ? `${t('geochart.category')}:` : '';
+        const label = chartType === 'pie' || chartType === 'doughnut' ? `${t('geochart.categories')}:` : '';
         return (
-          <div>
-            <Typography sx={sxClasses.checkDatasetWrapperLabel}>{label}</Typography>
+          <Box sx={sxClasses.checkDatasetContainer} role="group" aria-label={t('geochart.categories')}>
+            {label && <Typography sx={sxClasses.checkDatasetWrapperLabel}>{label}</Typography>}
             {Object.entries(datasetRegistry)
               .filter(([, dsOption]: [string, GeoChartDatasetOption]) => {
                 return dsOption.visible;
@@ -2101,7 +2181,7 @@ export function GeoChart<
               .map(([dsLabel, dsOption]: [string, GeoChartDatasetOption], idx: number) => {
                 let color;
                 if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
-                const checkboxId = `checkboxDataset-${dsLabel}`; // Ensure uniqueness if rendering multiple
+                const checkboxId = `${datasetCheckboxBaseId}-${idx}`; // Ensure uniqueness if rendering multiple
                 return (
                   <Box component="label" htmlFor={checkboxId} sx={sxClasses.checkDatasetWrapper} key={checkboxId}>
                     <Checkbox
@@ -2117,32 +2197,32 @@ export function GeoChart<
                   </Box>
                 );
               })}
-          </div>
+          </Box>
         );
       }
     }
 
     // Empty
-    return <Box />;
+    return null;
   };
 
   /**
    * Renders the Data selector for the pie and doughnut charts
    * @returns The Data selector Element
    */
-  const renderDataSelector = (): JSX.Element => {
+  const renderDataSelector = (): JSX.Element | null => {
     if (inputs && chartData) {
       if (chartType === 'pie' || chartType === 'doughnut') {
         if (Object.keys(datasRegistry).length > 1) {
           return (
-            <>
+            <Box sx={sxClasses.checkDatasetContainer} role="group" aria-label={t('geochart.dataLabels')}>
               {Object.entries(datasRegistry)
                 .filter(([, dsOption]: [string, GeoChartDatasetOption]) => {
                   return dsOption.visible;
                 })
                 .map(([dsLabel, dsOption]: [string, GeoChartDatasetOption], idx: number) => {
                   const color = dsOption.borderColor;
-                  const checkboxId = `checkboxDatas-${dsLabel}`; // Ensure uniqueness if rendering multiple
+                  const checkboxId = `${dataCheckboxBaseId}-${idx}`; // Ensure uniqueness if rendering multiple
 
                   return (
                     <Box component="label" htmlFor={checkboxId} sx={sxClasses.checkDatasetWrapper} key={checkboxId}>
@@ -2159,14 +2239,14 @@ export function GeoChart<
                     </Box>
                   );
                 })}
-            </>
+            </Box>
           );
         }
       }
     }
 
     // Empty
-    return <Box />;
+    return null;
   };
 
   /**
@@ -2177,43 +2257,52 @@ export function GeoChart<
     // The xs: 1, 11 and 12 used here are as documented online
     return (
       <Paper sx={{ ...sx, ...sxClasses.mainGeoChartContainer }}>
-        <Grid container sx={{ m: '20px' }}>
-          <Grid item size={{ xs: 12 }}>
-            <Box sx={sxClasses.header}>
+        {/* Header section */}
+        <Box sx={sxClasses.headerContainer}>
+          <Box sx={sxClasses.header}>
+            <Box sx={sxClasses.headerSelections} role="group" aria-label={t('geochart.filters')}>
               {renderDatasourceSelector()}
               {renderUIOptions()}
+            </Box>
+            <Box sx={sxClasses.headerActions} role="group" aria-label={t('geochart.actions')}>
+              {renderUIOptionsResetStates()}
               {renderLockOptions()}
               {renderDownload()}
             </Box>
-            <Box sx={sxClasses.title}>{renderTitle()}</Box>
-            <Box sx={sxClasses.dataset}>
-              {renderDataSelector()}
-              {renderDatasetSelector()}
-            </Box>
-          </Grid>
+          </Box>
+          <Box sx={sxClasses.dataset}>
+            {renderTitle()}
+            {renderDataSelector()}
+            {renderDatasetSelector()}
+          </Box>
+        </Box>
 
-          <Grid item sx={sxClasses.yAxisContainer} size={{ xs: 1 }}>
-            {renderYAxisLabel()}
-          </Grid>
-          <Grid item sx={sxClasses.chartContent} size={{ xs: 10 }}>
-            {isLoadingDatasource && <CircularProgress sx={sxClasses.loadingDatasource} />}
+        {/* Chart section - Y axis label, chart, Y slider */}
+        <Box sx={sxClasses.chartContentContainer}>
+          <Box sx={sxClasses.yAxisContainer}>{renderYAxisLabel()}</Box>
+          <Box sx={sxClasses.chartContent}>
+            {isLoadingDatasource && <CircularProgress aria-label={t('geochart.loadingData')} sx={sxClasses.loadingDatasource} />}
             {renderChart()}
-          </Grid>
-          <Grid item size={{ xs: 1 }}>
-            {renderYSlider()}
-          </Grid>
+          </Box>
+          <Box sx={sxClasses.ySliderContainer}>{renderYSlider()}</Box>
+        </Box>
+        {/* X axis section */}
+        <Box sx={sxClasses.xAxisContainer}>
+          {renderXAxisLabel()}
+          {renderXSlider()}
+        </Box>
 
-          <Grid item size={{ xs: 1.25 }} />
-          <Grid item size={{ xs: 9.75 }}>
-            {renderXAxisLabel()}
-            {renderXSlider()}
-          </Grid>
-          <Grid item size={{ xs: 1 }} />
-
-          <Grid item size={{ xs: 12 }}>
-            {renderDescription()}
-          </Grid>
-        </Grid>
+        {/* Description */}
+        {renderDescription()}
+        {/* WCAG 4.1.3 - ARIA live region for loading state announcements */}
+        <Box
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          sx={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}
+        >
+          {liveAnnouncement}
+        </Box>
       </Paper>
     );
   };
@@ -2226,7 +2315,7 @@ export function GeoChart<
     return (
       <Box sx={sxClasses.mainContainer}>
         {!isLoadingChart && renderChartContainer()}
-        {isLoadingChart && <CircularProgress />}
+        {isLoadingChart && <CircularProgress aria-label={t('geochart.loadingChart')} />}
       </Box>
     );
   };
@@ -2237,7 +2326,7 @@ export function GeoChart<
    */
   const renderChartContainerFailed = (): JSX.Element => {
     return (
-      <Box sx={sxClasses.chartError}>
+      <Box role="alert" sx={sxClasses.chartError}>
         {t('geochart.parsingError')} {t('geochart.viewConsoleDetails')}
       </Box>
     );
