@@ -140,26 +140,26 @@ export class Utils {
    * The default color palette that ChartJS uses (I couldn't easily find out where that const is stored within ChartJS)
    */
   static readonly DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT: string[] = [
-    'rgba(54, 162, 235, 0.5)', // light blue
-    'rgba(255, 99, 132, 0.5)', // light red
-    'rgba(75, 192, 192, 0.5)', // light green
-    'rgba(255, 159, 64, 0.5)', // light orange
-    'rgba(153, 102, 255, 0.5)', // light purple
-    'rgba(255, 205, 86, 0.5)', // light yellow
-    'rgba(201, 203, 207, 0.5)', // light gray
-    'rgba(0, 0, 255, 0.5)', // blue
-    'rgba(0, 255, 0, 0.5)', // green
-    'rgba(255, 0, 0, 0.5)', // red
-    'rgba(255, 150, 0, 0.5)', // orange
-    'rgba(255, 0, 255, 0.5)', // pink
-    'rgba(30, 219, 34, 0.5)', // lime green
-    'rgba(190, 0, 190, 0.5)', // purple
-    'rgba(132, 255, 255, 0.5)', // cyan
-    'rgba(255, 250, 0, 0.5)', // yellow
-    'rgba(128, 0, 128, 0.5)', // maroon
-    'rgba(0, 128, 128, 0.5)', // teal
-    'rgba(128, 128, 0, 0.5)', // olive
-    'rgba(128, 128, 128, 0.5)', // gray
+    'rgba(31, 119, 180, 0.5)',
+    'rgba(214, 39, 40, 0.5)',
+    'rgba(44, 140, 140, 0.5)',
+    'rgba(227, 119, 0, 0.5)',
+    'rgba(148, 103, 189, 0.5)',
+    'rgba(188, 128, 0, 0.5)',
+    'rgba(140, 140, 140, 0.5)',
+    'rgba(0, 0, 200, 0.5)',
+    'rgba(0, 130, 0, 0.5)',
+    'rgba(200, 0, 0, 0.5)',
+    'rgba(230, 115, 0, 0.5)',
+    'rgba(180, 0, 180, 0.5)',
+    'rgba(0, 150, 0, 0.5)',
+    'rgba(150, 0, 150, 0.5)',
+    'rgba(0, 140, 140, 0.5)',
+    'rgba(180, 140, 0, 0.5)',
+    'rgba(128, 0, 128, 0.5)',
+    'rgba(0, 100, 100, 0.5)',
+    'rgba(100, 100, 0, 0.5)',
+    'rgba(100, 100, 100, 0.5)',
   ];
 
   /**
