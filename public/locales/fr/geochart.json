@@ -1,19 +1,30 @@
 {
   "geochart": {
+    "actions": "Actions du graphique",
+    "filters": "Filtres du graphique",
     "feature": "Enregistrement",
     "featuresTooltip": "Sélectionner l'enregistrement pour lequel vous voulez visualiser le graphique.",
     "steps": "Marches",
     "stepsTooltip": "Sélectionner la façon dont la ligne progresse entre les valeurs.",
     "scale": "Échelle",
     "scaleTooltip": "Sélectionner le type d'échelle appliqué à l'axe Y.",
-    "category": "Catégorie",
     "parsingError": "Une erreur est survenue lors de la lecture des paramètres.",
     "viewConsoleDetails": "Voir détails dans la console.",
     "exportBtn": "Télécharger les données du graphique",
     "downloadFiltered": "Télécharger visuel",
     "downloadAll": "Télécharger tout",
+    "lockLabel": "Verrouiller les paramètres du graphique",
     "lockStates": "Verrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) afin d'éviter leur réinitialisation lors du passage d'un graphique à un autre.",
     "unlockStates": "Déverrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) pour permettre leur réinitialisation lors du passage d'un graphique à un autre.",
-    "resetStates": "Réinitialiser"
+    "resetStates": "Réinitialiser",
+    "xAxis": "Axe X",
+    "yAxis": "Axe Y",
+    "loadingChart": "Chargement du graphique...",
+    "loadingData": "Chargement des données...",
+    "dataLoaded": "Données chargées",
+    "categories": "Catégories",
+    "dataLabels": "Étiquettes de données",
+    "start": "début",
+    "end": "fin"
   }
 }
