@@ -1,5 +1,7 @@
 {
   "geochart": {
+    "actions": "Chart actions",
+    "filters": "Chart filters",
     "feature": "Feature",
     "featuresTooltip": "Select the feature for which you want to view the chart.",
     "steps": "Steps",
@@ -12,8 +14,18 @@
     "exportBtn": "Download the graph data",
     "downloadFiltered": "Download visible",
     "downloadAll": "Download all",
+    "lockLabel": "Lock chart settings",
     "lockStates": "Lock the current chart settings (slider values, selected legend items) to prevent them from resetting when switching between charts.",
     "unlockStates": "Unlock the current chart settings (slider values, selected legend items) to allow them from resetting when switching between charts.",
-    "resetStates": "Reset"
+    "resetStates": "Reset",
+    "xAxis": "X Axis",
+    "yAxis": "Y Axis",
+    "loadingChart": "Loading chart...",
+    "loadingData": "Loading data...",
+    "dataLoaded": "Data loaded",
+    "categories": "Categories",
+    "dataLabels": "Data labels",
+    "start": "start",
+    "end": "end"
   }
 }
