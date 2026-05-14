@@ -36822,6 +36822,14 @@ function createSvgIcon(path, displayName) {
 /* harmony default export */ const Lock = (createSvgIcon(/*#__PURE__*/(0,jsx_runtime.jsx)("path", {
   d: "M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2m-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2m3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1z"
 }), 'Lock'));
+;// ./node_modules/@mui/icons-material/esm/RestartAlt.js
+"use client";
+
+
+
+/* harmony default export */ const RestartAlt = (createSvgIcon(/*#__PURE__*/(0,jsx_runtime.jsx)("path", {
+  d: "M12 5V2L8 6l4 4V7c3.31 0 6 2.69 6 6 0 2.97-2.17 5.43-5 5.91v2.02c3.95-.49 7-3.85 7-7.93 0-4.42-3.58-8-8-8m-6 8c0-1.65.67-3.15 1.76-4.24L6.34 7.34C4.9 8.79 4 10.79 4 13c0 4.08 3.05 7.44 7 7.93v-2.02c-2.83-.48-5-2.94-5-5.91"
+}), 'RestartAlt'));
 ;// ./node_modules/@kurkle/color/dist/color.esm.js
 /*!
  * @kurkle/color v0.3.4
@@ -60978,46 +60986,47 @@ function _normalizeTimeStep(ms) {
 }
 /**
  * The default color palette that ChartJS uses (I couldn't easily find out where that const is stored within ChartJS)
+ * WCAG - These colors have been verified to have sufficient contrast for text against a white background
  */
-_defineProperty(Utils, "DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT", ['rgba(54, 162, 235, 0.5)',
-// light blue
-'rgba(255, 99, 132, 0.5)',
-// light red
-'rgba(75, 192, 192, 0.5)',
-// light green
-'rgba(255, 159, 64, 0.5)',
-// light orange
-'rgba(153, 102, 255, 0.5)',
-// light purple
-'rgba(255, 205, 86, 0.5)',
-// light yellow
-'rgba(201, 203, 207, 0.5)',
-// light gray
-'rgba(0, 0, 255, 0.5)',
-// blue
-'rgba(0, 255, 0, 0.5)',
-// green
-'rgba(255, 0, 0, 0.5)',
+_defineProperty(Utils, "DEFAULT_COLOR_PALETTE_CHARTJS_TRANSPARENT", ['rgba(31, 119, 180, 0.5)',
+// steel blue
+'rgba(214, 39, 40, 0.5)',
 // red
-'rgba(255, 150, 0, 0.5)',
-// orange
-'rgba(255, 0, 255, 0.5)',
-// pink
-'rgba(30, 219, 34, 0.5)',
-// lime green
-'rgba(190, 0, 190, 0.5)',
-// purple
-'rgba(132, 255, 255, 0.5)',
-// cyan
-'rgba(255, 250, 0, 0.5)',
-// yellow
-'rgba(128, 0, 128, 0.5)',
-// maroon
-'rgba(0, 128, 128, 0.5)',
+'rgba(44, 140, 140, 0.5)',
 // teal
-'rgba(128, 128, 0, 0.5)',
+'rgba(227, 119, 0, 0.5)',
+// orange
+'rgba(148, 103, 189, 0.5)',
+// purple
+'rgba(188, 128, 0, 0.5)',
+// gold
+'rgba(140, 140, 140, 0.5)',
+// gray
+'rgba(0, 0, 200, 0.5)',
+// blue
+'rgba(0, 130, 0, 0.5)',
+// green
+'rgba(200, 0, 0, 0.5)',
+// bright red
+'rgba(230, 115, 0, 0.5)',
+// bright orange
+'rgba(180, 0, 180, 0.5)',
+// magenta
+'rgba(0, 150, 0, 0.5)',
+// bright green
+'rgba(150, 0, 150, 0.5)',
+// purple
+'rgba(0, 140, 140, 0.5)',
+// cyan
+'rgba(180, 140, 0, 0.5)',
+// olive gold
+'rgba(128, 0, 128, 0.5)',
+// purple
+'rgba(0, 100, 100, 0.5)',
+// dark cyan
+'rgba(100, 100, 0, 0.5)',
 // olive
-'rgba(128, 128, 128, 0.5)' // gray
+'rgba(100, 100, 100, 0.5)' // dark gray
 ]);
 /**
  * The default color palette that ChartJS uses (I couldn't easily find out where that const is stored within ChartJS)
@@ -61750,82 +61759,156 @@ function _sortOnDatasetLabels(data) {
 /** The default date time format */
 _defineProperty(ChartParsing, "DEFAULT_DATE_TIME_FORMAT", 'yyyy-MM-dd HH:mm:ss');
 ;// ./src/chart-style.ts
+
+function chart_style_ownKeys(e, r) { var t = Object.keys(e); if (Object.getOwnPropertySymbols) { var o = Object.getOwnPropertySymbols(e); r && (o = o.filter(function (r) { return Object.getOwnPropertyDescriptor(e, r).enumerable; })), t.push.apply(t, o); } return t; }
+function chart_style_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { var t = null != arguments[r] ? arguments[r] : {}; r % 2 ? chart_style_ownKeys(Object(t), !0).forEach(function (r) { _defineProperty(e, r, t[r]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t)) : chart_style_ownKeys(Object(t)).forEach(function (r) { Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r)); }); } return e; }
 /**
  * SX Classes for the Chart
  */
+
+/**
+ * Chart container heights optimized for different viewport sizes.
+ * - Mobile: Taller to accommodate vertical scrolling patterns
+ * - Desktop: Shorter to fit within viewport without vertical scrolling
+ */
+var CHART_HEIGHT = {
+  /** Height for mobile/smaller screens - allows most charts to be functional */
+  MOBILE: '800px',
+  /** Height for desktop/larger screens - optimized to prevent page scrolling */
+  DESKTOP: '636px'
+};
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 var getSxClasses = function getSxClasses(theme) {
   var _gvThemePalette$geoVi, _gvThemePalette$geoVi2, _gvThemePalette$geoVi3;
   // Cast
   var gvThemePalette = theme.palette;
+
+  // Base selector style
+  var baseSelectorStyle = {
+    '& .MuiSelect-select': {
+      whiteSpace: 'nowrap',
+      // Prevent text wrapping inside
+      overflow: 'hidden',
+      // Hide overflow text
+      textOverflow: 'ellipsis'
+    }
+  };
   return {
     mainContainer: {
-      fontFamily: theme.typography.body1.fontFamily
+      fontFamily: theme.typography.body1.fontFamily,
+      height: '100%',
+      containerType: 'inline-size',
+      containerName: 'main'
     },
-    mainGeoChartContainer: {
+    mainGeoChartContainer: _defineProperty(_defineProperty({
       position: 'relative',
-      padding: '25px',
+      padding: '20px',
       display: 'flex',
+      flexDirection: 'column',
+      gap: '10px',
       borderColor: (_gvThemePalette$geoVi = gvThemePalette.geoViewColor) === null || _gvThemePalette$geoVi === void 0 ? void 0 : _gvThemePalette$geoVi.primary.main,
       borderWidth: '2px',
-      borderStyle: 'solid'
-    },
-    header: {
+      borderStyle: 'solid',
+      height: CHART_HEIGHT.MOBILE
+    }, "@container main (min-width: ".concat(theme.breakpoints.values.sm, "px)"), {
+      height: CHART_HEIGHT.DESKTOP,
+      padding: '20px'
+    }), '.fullscreen-mode &', {
+      padding: '0'
+    }),
+    headerContainer: {
       display: 'flex',
-      flexDirection: 'row'
+      flexDirection: 'column',
+      gap: '20px'
     },
-    datasourceSelector: {
-      minWidth: '150px',
-      marginRight: '10px',
-      '& .MuiSelect-select': {
-        padding: '8px 12px !important'
-      }
-    },
-    uiOptionsStepsSelector: {
-      minWidth: '100px',
-      '& .MuiSelect-select': {
-        padding: '8px 12px !important'
-      },
-      marginRight: '10px'
-    },
-    uiOptionsScaleSelector: {
-      minWidth: '130px',
-      '& .MuiSelect-select': {
-        padding: '8px 12px !important'
-      },
-      marginRight: '10px'
-    },
-    downloadButton: {
-      marginTop: 'auto',
-      marginBottom: 'auto',
-      marginLeft: 'auto',
-      '& button': {
-        height: '40px',
-        textTransform: 'capitalize'
-      }
-    },
-    dataset: {
+    header: _defineProperty({
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '20px',
       alignItems: 'center',
-      justifyContent: 'center',
-      textAlign: 'center'
+      justifyContent: 'flex-start'
+    }, "@container main (min-width: ".concat(theme.breakpoints.values.sm, "px)"), {
+      flexDirection: 'row',
+      justifyContent: 'space-between'
+    }),
+    headerSelections: _defineProperty({
+      display: 'flex',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: '20px',
+      alignItems: 'center',
+      '& .MuiFormControl-root': {
+        maxWidth: '100%'
+      }
+    }, "@container main (max-width: ".concat(theme.breakpoints.values.sm, "px)"), {
+      width: '100%',
+      flexDirection: 'column',
+      alignItems: 'stretch'
+    }),
+    headerActions: {
+      display: 'flex',
+      gap: 1,
+      alignItems: 'center'
+    },
+    datasourceSelector: chart_style_objectSpread(chart_style_objectSpread({}, baseSelectorStyle), {}, _defineProperty({
+      minWidth: '150px'
+    }, "@container main (max-width: ".concat(theme.breakpoints.values.sm, "px)"), {
+      width: '100%'
+    })),
+    uiOptionsStepsSelector: chart_style_objectSpread(chart_style_objectSpread({}, baseSelectorStyle), {}, _defineProperty({
+      minWidth: '100px'
+    }, "@container main (max-width: ".concat(theme.breakpoints.values.sm, "px)"), {
+      width: '100%'
+    })),
+    uiOptionsScaleSelector: chart_style_objectSpread(chart_style_objectSpread({}, baseSelectorStyle), {}, _defineProperty({
+      minWidth: '130px'
+    }, "@container main (max-width: ".concat(theme.breakpoints.values.sm, "px)"), {
+      width: '100%'
+    })),
+    dataset: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '10px'
     },
     title: {
       fontFamily: theme.typography.h5.fontFamily,
       fontWeight: theme.typography.h5.fontWeight,
       fontSize: theme.typography.h5.fontSize,
       textAlign: 'center',
-      margin: '10px 0px'
+      margin: '0'
+    },
+    checkDatasetContainer: {
+      display: 'flex',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: '4px'
+    },
+    chartContentContainer: {
+      display: 'flex',
+      gap: '10px',
+      alignItems: 'stretch',
+      position: 'relative',
+      flex: '1 1 0%',
+      // Grow to fill remaining space
+      minHeight: 0 // Allow shrinking below content size
+    },
+    xAxisContainer: {
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px',
+      width: '80%',
+      // Provide room to the left and right for tooltips
+      justifyContent: 'center',
+      alignItems: 'stretch',
+      textAlign: 'center',
+      margin: '0 auto'
     },
     xAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
       fontWeight: theme.typography.fontWeightBold,
-      fontSize: (_gvThemePalette$geoVi2 = gvThemePalette.geoViewFontSize) === null || _gvThemePalette$geoVi2 === void 0 ? void 0 : _gvThemePalette$geoVi2["default"],
-      textAlign: 'center',
-      margin: '10px 0px'
-    },
-    yAxisContainer: {
-      display: 'inline-flex;'
+      fontSize: (_gvThemePalette$geoVi2 = gvThemePalette.geoViewFontSize) === null || _gvThemePalette$geoVi2 === void 0 ? void 0 : _gvThemePalette$geoVi2["default"]
     },
     yAxisLabel: {
       fontFamily: theme.typography.body1.fontFamily,
@@ -61836,13 +61919,9 @@ var getSxClasses = function getSxClasses(theme) {
       position: 'absolute',
       top: '50%',
       transform: 'rotate(-180deg) translateY(50%)',
-      transformOrigin: 'center'
-    },
-    uiOptionsResetStates: {
-      display: 'inline-flex',
-      width: '40px',
-      textTransform: 'capitalize',
-      margin: '10px'
+      transformOrigin: 'center',
+      textAlign: 'center',
+      height: '100%'
     },
     checkDatasetWrapperLabel: {
       display: 'inline-block',
@@ -61851,6 +61930,7 @@ var getSxClasses = function getSxClasses(theme) {
     checkDatasetWrapper: {
       display: 'inline-block',
       cursor: 'pointer',
+      whiteSpace: 'nowrap',
       '& .Mui-checked': {
         color: "".concat(gvThemePalette === null || gvThemePalette === void 0 ? void 0 : gvThemePalette.primary.main, " !important")
       }
@@ -61860,22 +61940,65 @@ var getSxClasses = function getSxClasses(theme) {
       display: 'inline-flex',
       verticalAlign: 'middle'
     },
+    yAxisContainer: {
+      display: 'flex',
+      flexShrink: 0,
+      width: '50px',
+      // Fixed width for alignment
+      alignItems: 'center',
+      justifyContent: 'center'
+    },
     chartContent: {
-      position: 'relative'
+      position: 'relative',
+      flex: 1,
+      minWidth: 0,
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '10px'
     },
-    xSliderWrapper: {
+    ySliderContainer: {
+      display: 'flex',
+      flexShrink: 0,
+      justifyContent: 'flex-end'
+    },
+    xSliderWrapper: _defineProperty({
+      flex: 1,
       '& .MuiSlider-root': {
         color: gvThemePalette === null || gvThemePalette === void 0 ? void 0 : gvThemePalette.primary.main
+      },
+      '& .MuiSlider-markLabel': {
+        fontSize: '0.75rem'
       }
-    },
-    ySliderWrapper: {
-      height: '70%',
+    }, theme.breakpoints.down('md'), {
+      '& .MuiSlider-markLabel': {
+        display: 'none'
+      },
+      '& .MuiSlider-root': {
+        marginBottom: 0 // Remove default margin when labels are hidden
+      }
+    }),
+    ySliderWrapper: _defineProperty({
+      height: '100%',
       textAlign: 'center',
-      marginLeft: '20px',
       '& .MuiSlider-root': {
         color: gvThemePalette === null || gvThemePalette === void 0 ? void 0 : gvThemePalette.primary.main
+      },
+      '& .MuiSlider-markLabel': {
+        whiteSpace: 'nowrap',
+        maxWidth: '36px',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+        fontSize: '0.75rem',
+        display: 'inline-block'
       }
-    },
+    }, theme.breakpoints.down('md'), {
+      '& .MuiSlider-markLabel': {
+        display: 'none'
+      },
+      '& .MuiSlider-root': {
+        marginRight: 0 // Remove default margin when labels are hidden
+      }
+    }),
     loadingDatasource: {
       backgroundColor: 'transparent',
       zIndex: 0
@@ -64233,9 +64356,9 @@ const i18next_loadLanguages = instance.loadLanguages;
 
 
 ;// ./public/locales/en/geochart.json
-const geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Feature","featuresTooltip":"Select the feature for which you want to view the chart.","steps":"Steps","stepsTooltip":"Select how the line steps between values.","scale":"Scale","scaleTooltip":"Select the type of scale applied to the Y-axis.","category":"Category","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","exportBtn":"Download the graph data","downloadFiltered":"Download visible","downloadAll":"Download all","lockStates":"Lock the current chart settings (slider values, selected legend items) to prevent them from resetting when switching between charts.","unlockStates":"Unlock the current chart settings (slider values, selected legend items) to allow them from resetting when switching between charts.","resetStates":"Reset"}}');
+const geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"actions":"Chart actions","filters":"Chart filters","feature":"Feature","featuresTooltip":"Select the feature for which you want to view the chart.","steps":"Steps","stepsTooltip":"Select how the line steps between values.","scale":"Scale","scaleTooltip":"Select the type of scale applied to the Y-axis.","parsingError":"There was an error parsing the Chart inputs.","viewConsoleDetails":"View console for details.","exportBtn":"Download the graph data","downloadFiltered":"Download visible","downloadAll":"Download all","lockLabel":"Lock chart settings","lockStates":"Lock the current chart settings (slider values, selected legend items) to prevent them from resetting when switching between charts.","unlockStates":"Unlock the current chart settings (slider values, selected legend items) to allow them from resetting when switching between charts.","resetStates":"Reset","xAxis":"X Axis","yAxis":"Y Axis","loadingChart":"Loading chart...","loadingData":"Loading data...","dataLoaded":"Data loaded","categories":"Categories","dataLabels":"Data labels","start":"start","end":"end"}}');
 ;// ./public/locales/fr/geochart.json
-const fr_geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"feature":"Enregistrement","featuresTooltip":"Sélectionner l\'enregistrement pour lequel vous voulez visualiser le graphique.","steps":"Marches","stepsTooltip":"Sélectionner la façon dont la ligne progresse entre les valeurs.","scale":"Échelle","scaleTooltip":"Sélectionner le type d\'échelle appliqué à l\'axe Y.","category":"Catégorie","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","exportBtn":"Télécharger les données du graphique","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","lockStates":"Verrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) afin d\'éviter leur réinitialisation lors du passage d\'un graphique à un autre.","unlockStates":"Déverrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) pour permettre leur réinitialisation lors du passage d\'un graphique à un autre.","resetStates":"Réinitialiser"}}');
+const fr_geochart_namespaceObject = /*#__PURE__*/JSON.parse('{"geochart":{"actions":"Actions du graphique","filters":"Filtres du graphique","feature":"Enregistrement","featuresTooltip":"Sélectionner l\'enregistrement pour lequel vous voulez visualiser le graphique.","steps":"Marches","stepsTooltip":"Sélectionner la façon dont la ligne progresse entre les valeurs.","scale":"Échelle","scaleTooltip":"Sélectionner le type d\'échelle appliqué à l\'axe Y.","parsingError":"Une erreur est survenue lors de la lecture des paramètres.","viewConsoleDetails":"Voir détails dans la console.","exportBtn":"Télécharger les données du graphique","downloadFiltered":"Télécharger visuel","downloadAll":"Télécharger tout","lockLabel":"Verrouiller les paramètres du graphique","lockStates":"Verrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) afin d\'éviter leur réinitialisation lors du passage d\'un graphique à un autre.","unlockStates":"Déverrouiller les paramètres actuels du graphique (valeurs du curseur, éléments de légende sélectionnés) pour permettre leur réinitialisation lors du passage d\'un graphique à un autre.","resetStates":"Réinitialiser","xAxis":"Axe X","yAxis":"Axe Y","loadingChart":"Chargement du graphique...","loadingData":"Chargement des données...","dataLoaded":"Données chargées","categories":"Catégories","dataLabels":"Étiquettes de données","start":"début","end":"fin"}}');
 ;// ./src/i18n.ts
 
 
@@ -64290,6 +64413,7 @@ function chart_objectSpread(e) { for (var r = 1; r < arguments.length; r++) { va
 
 
 
+
 /** The i18n namespace to use to bundle geochart locales into */
 
 var NAMESPACE_I18N = 'geochart';
@@ -64307,6 +64431,7 @@ var DEFAULT_CHART = 'line';
 /** Default options */
 var DEFAULT_OPTIONS = {
   responsive: true,
+  maintainAspectRatio: false,
   plugins: {
     legend: {
       display: false
@@ -64355,16 +64480,15 @@ function GeoChart(props) {
     useState = _ref.useState,
     useCallback = _ref.useCallback,
     useMemo = _ref.useMemo,
-    useRef = _ref.useRef;
+    useRef = _ref.useRef,
+    useId = _ref.useId;
   // const { useWhatChanged } = cgpv.ui;
 
   var _cgpv$ui$elements = cgpv.ui.elements,
     Paper = _cgpv$ui$elements.Paper,
     Box = _cgpv$ui$elements.Box,
-    Grid = _cgpv$ui$elements.Grid,
     Checkbox = _cgpv$ui$elements.Checkbox,
     Select = _cgpv$ui$elements.Select,
-    Button = _cgpv$ui$elements.Button,
     IconButton = _cgpv$ui$elements.IconButton,
     DownloadIcon = _cgpv$ui$elements.DownloadIcon,
     Menu = _cgpv$ui$elements.Menu,
@@ -64402,6 +64526,15 @@ function GeoChart(props) {
   var parentOptions = (_props$options = props.options) !== null && _props$options !== void 0 ? _props$options : DEFAULT_OPTIONS;
   var parentData = (_props$data = props.data) !== null && _props$data !== void 0 ? _props$data : DEFAULT_DATA;
   var sxClasses = getSxClasses(cgpvTheme);
+
+  // WCAG - Generate unique IDs
+  var xAxisLabelId = useId();
+  var yAxisLabelId = useId();
+  var datasourceLabelId = useId();
+  var stepsLabelId = useId();
+  var scaleLabelId = useId();
+  var datasetCheckboxBaseId = useId();
+  var dataCheckboxBaseId = useId();
 
   // Translation
   var _useTranslation = useTranslation_useTranslation(NAMESPACE_I18N),
@@ -64544,12 +64677,19 @@ function GeoChart(props) {
     _useState62 = _slicedToArray(_useState61, 2),
     lockedUI = _useState62[0],
     setLockedUI = _useState62[1];
-  var _useState63 = useState(null),
+  // WCAG - Live announcement state for screen readers
+  var _useState63 = useState(''),
     _useState64 = _slicedToArray(_useState63, 2),
-    anchorEl = _useState64[0],
-    setAnchorEl = _useState64[1];
+    liveAnnouncement = _useState64[0],
+    setLiveAnnouncement = _useState64[1];
+  var _useState65 = useState(null),
+    _useState66 = _slicedToArray(_useState65, 2),
+    anchorEl = _useState66[0],
+    setAnchorEl = _useState66[1];
   var open = Boolean(anchorEl);
   var chartRef = useRef(null);
+  var inputsRef = useRef(inputs);
+  var hasLoadingStarted = useRef(false);
 
   // Track the latest request token
   var latestFetchToken = useRef(0);
@@ -65623,22 +65763,31 @@ function GeoChart(props) {
 
   // #region HOOKS USE EFFECT CURRENT COMP SECTION *********************************************************************************
 
-  // Effect hook ran once when initializing
+  // Keep the inputs ref synchronized with the latest inputs value
   useEffect(function () {
-    // Log
+    inputsRef.current = inputs;
+  }, [inputs]);
+
+  // Effect hook to register ChartJS plugins
+  // Uses a ref for inputs to avoid re-registering the plugin when inputs change
+  useEffect(function () {
     var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - PLUGINS';
     logger.logTraceUseEffect(USE_EFFECT_FUNC);
     var plugin = {
       id: 'geochart-chartjs-plugin',
       afterInit: function afterInit(chartEvent) {
-        return handleChartJSAfterInit(chartEvent);
+        var chart = chartEvent;
+
+        // WCAG - Set aria-label on canvas element for screen readers
+        if (chart.canvas && inputsRef.current) {
+          var chartTitle = inputsRef.current.title || "".concat(inputsRef.current.chart, " chart");
+          chart.canvas.setAttribute('aria-label', chartTitle);
+        }
+        handleChartJSAfterInit(chart);
       }
     };
-
-    // Register
     setPlugins([plugin]);
     return function () {
-      // Log
       logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
     };
   }, [handleChartJSAfterInit, logger]);
@@ -65929,6 +66078,27 @@ function GeoChart(props) {
     };
   }, [action, logger]);
 
+  // Effect hook to announce loading state changes to screen readers
+  useEffect(function () {
+    var USE_EFFECT_FUNC = 'GEOCHART - CURRENT - LOADING ANNOUNCEMENT';
+    logger.logTraceUseEffect(USE_EFFECT_FUNC, isLoadingDatasource);
+    var timer;
+    if (isLoadingDatasource) {
+      hasLoadingStarted.current = true;
+      setLiveAnnouncement(t('geochart.loadingData'));
+    } else if (hasLoadingStarted.current) {
+      // Only announce completion if loading had actually started
+      setLiveAnnouncement(t('geochart.dataLoaded'));
+      timer = setTimeout(function () {
+        setLiveAnnouncement('');
+      }, 1000);
+    }
+    return function () {
+      if (timer) clearTimeout(timer);
+      logger.logTraceUseEffectUnmount(USE_EFFECT_FUNC);
+    };
+  }, [isLoadingDatasource, t, logger]);
+
   // #endregion
 
   // #region RENDER SECTION *******************************************************************************************
@@ -65950,27 +66120,29 @@ function GeoChart(props) {
 
   /**
    * Renders the X Axis label
-   * @returns The Chart JSX.Element representing the X Axis label or an empty Box if no label
+   * @returns The Chart JSX.Element representing the X Axis label, or null for non-line/bar charts
    */
   var renderXAxisLabel = function renderXAxisLabel() {
     if (chartType === 'line' || chartType === 'bar') return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+      id: xAxisLabelId,
       sx: sxClasses.xAxisLabel,
       children: (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.xAxis.label) || (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.xAxis.property)
     });
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
    * Renders the Y Axis label
-   * @returns The Chart JSX.Element representing the Y Axis label or an empty Box if no label
+   * @returns The Chart JSX.Element representing the Y Axis label, or null for non-line/bar charts
    */
   var renderYAxisLabel = function renderYAxisLabel() {
     // If line or bar chart
     if (chartType === 'line' || chartType === 'bar') return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+      id: yAxisLabelId,
       sx: sxClasses.yAxisLabel,
       children: (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.yAxis.label) || (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.yAxis.property)
     });
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
@@ -66013,6 +66185,10 @@ function GeoChart(props) {
         return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: sxClasses.xSliderWrapper,
           children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+            getAriaLabel: function getAriaLabel(index) {
+              var baseLabel = (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.xAxis.label) || (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.xAxis.property) || t('geochart.xAxis');
+              return Array.isArray(xSliderValues) && xSliderValues.length === 2 ? "".concat(baseLabel, ", ").concat(index === 0 ? t('geochart.start') : t('geochart.end')) : baseLabel;
+            },
             marks: getMarkers(xSliderMin, xSliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_X, handleSliderXValueFormat),
             min: xSliderMin,
             max: xSliderMax,
@@ -66044,6 +66220,10 @@ function GeoChart(props) {
         return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: sxClasses.ySliderWrapper,
           children: /*#__PURE__*/(0,jsx_runtime.jsx)(Slider, {
+            getAriaLabel: function getAriaLabel(index) {
+              var baseLabel = (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.yAxis.label) || (inputs === null || inputs === void 0 ? void 0 : inputs.geochart.yAxis.property) || t('geochart.yAxis');
+              return Array.isArray(ySliderValues) && ySliderValues.length === 2 ? "".concat(baseLabel, ", ").concat(index === 0 ? t('geochart.start') : t('geochart.end')) : baseLabel;
+            },
             marks: getMarkers(ySliderMin, ySliderMax, DEFAULT_NUMBER_OF_SLIDER_MARKS_Y, handleSliderYValueFormat),
             min: ySliderMin,
             max: ySliderMax,
@@ -66076,7 +66256,7 @@ function GeoChart(props) {
         children: inputs.ui.description
       });
     }
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
@@ -66088,9 +66268,10 @@ function GeoChart(props) {
     if (inputs !== null && inputs !== void 0 && (_inputs$ui4 = inputs.ui) !== null && _inputs$ui4 !== void 0 && _inputs$ui4.download) {
       return /*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
         children: [/*#__PURE__*/(0,jsx_runtime.jsx)(IconButton, {
-          sx: sxClasses.downloadButton,
           onClick: handleExportClick,
+          "aria-label": t('geochart.exportBtn'),
           tooltip: t('geochart.exportBtn'),
+          tooltipPlacement: "top",
           className: "buttonOutline",
           children: /*#__PURE__*/(0,jsx_runtime.jsx)(DownloadIcon, {})
         }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Menu, {
@@ -66107,7 +66288,7 @@ function GeoChart(props) {
         })]
       });
     }
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
@@ -66131,25 +66312,24 @@ function GeoChart(props) {
       // The feature(s) label
       var featureLabel = t('geochart.feature');
       if (inputs.datasources.length > 1) featureLabel += 's';
-      return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
-        children: /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
-          title: t('geochart.featuresTooltip'),
-          arrow: true,
-          placement: "top",
-          children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
-            container: containerElement,
-            sx: sxClasses.datasourceSelector,
-            label: featureLabel,
-            onChange: handleDatasourceChanged,
-            menuItems: menuItems,
-            value: (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.value) || (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.display) || ''
-          })
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
+        title: t('geochart.featuresTooltip'),
+        arrow: true,
+        placement: "top",
+        children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
+          container: containerElement,
+          sx: sxClasses.datasourceSelector,
+          label: featureLabel,
+          labelId: datasourceLabelId,
+          onChange: handleDatasourceChanged,
+          menuItems: menuItems,
+          value: (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.value) || (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.display) || ''
         })
       });
     }
 
     // Empty
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
@@ -66158,14 +66338,16 @@ function GeoChart(props) {
    */
   var renderTitle = function renderTitle() {
     if (inputs && inputs.title) {
-      return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
+        component: "h3",
+        variant: "h6",
         sx: sxClasses.title,
         children: inputs.title
       });
     }
 
     // Empty
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
   var renderUIOptionsStepsSwitcher = function renderUIOptionsStepsSwitcher() {
     var _inputs$ui5;
@@ -66198,13 +66380,14 @@ function GeoChart(props) {
           container: containerElement,
           sx: sxClasses.uiOptionsStepsSelector,
           label: t('geochart.steps'),
+          labelId: stepsLabelId,
           onChange: handleStepsSwitcherChanged,
           menuItems: menuItems,
           value: (_ref12 = selectedSteps !== null && selectedSteps !== void 0 ? selectedSteps : inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) !== null && _ref12 !== void 0 ? _ref12 : false
         })
       });
     }
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
   var renderUIOptionsScalesSwitcher = function renderUIOptionsScalesSwitcher() {
     var _inputs$ui6;
@@ -66237,24 +66420,28 @@ function GeoChart(props) {
           container: containerElement,
           sx: sxClasses.uiOptionsScaleSelector,
           label: t('geochart.scale'),
+          labelId: scaleLabelId,
           onChange: handleScalesSwitcherChanged,
           menuItems: menuItems,
           value: selectedScale || (inputs === null || inputs === void 0 || (_inputs$geochart$yAxi5 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi5 === void 0 ? void 0 : _inputs$geochart$yAxi5.type) || 'linear'
         })
       });
     }
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
   var renderUIOptionsResetStates = function renderUIOptionsResetStates() {
     var _inputs$ui7;
     if (inputs !== null && inputs !== void 0 && (_inputs$ui7 = inputs.ui) !== null && _inputs$ui7 !== void 0 && _inputs$ui7.resetStates) {
-      return /*#__PURE__*/(0,jsx_runtime.jsx)(Button, {
-        sx: sxClasses.uiOptionsResetStates,
+      return /*#__PURE__*/(0,jsx_runtime.jsx)(IconButton, {
         onClick: handleResetStates,
-        children: t('geochart.resetStates')
+        "aria-label": t('geochart.resetStates'),
+        tooltip: t('geochart.resetStates'),
+        tooltipPlacement: "top",
+        className: "buttonOutline",
+        children: /*#__PURE__*/(0,jsx_runtime.jsx)(RestartAlt, {})
       });
     }
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
@@ -66263,7 +66450,7 @@ function GeoChart(props) {
    */
   var renderUIOptions = function renderUIOptions() {
     return /*#__PURE__*/(0,jsx_runtime.jsxs)(jsx_runtime.Fragment, {
-      children: [renderUIOptionsStepsSwitcher(), renderUIOptionsScalesSwitcher(), renderUIOptionsResetStates()]
+      children: [renderUIOptionsStepsSwitcher(), renderUIOptionsScalesSwitcher()]
     });
   };
 
@@ -66277,14 +66464,14 @@ function GeoChart(props) {
     if (lockedUI) {
       tooltip = t('geochart.unlockStates');
     }
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Button, {
-      sx: sxClasses.uiOptionsResetStates,
+    return /*#__PURE__*/(0,jsx_runtime.jsx)(IconButton, {
       onClick: handleLockStates,
-      children: /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
-        title: tooltip,
-        placement: "top",
-        children: lockedUI ? /*#__PURE__*/(0,jsx_runtime.jsx)(Lock, {}) : /*#__PURE__*/(0,jsx_runtime.jsx)(LockOpen, {})
-      })
+      "aria-label": t('geochart.lockLabel'),
+      "aria-pressed": lockedUI,
+      tooltip: tooltip,
+      tooltipPlacement: "top",
+      className: "buttonOutline",
+      children: lockedUI ? /*#__PURE__*/(0,jsx_runtime.jsx)(Lock, {}) : /*#__PURE__*/(0,jsx_runtime.jsx)(LockOpen, {})
     });
   };
 
@@ -66295,9 +66482,12 @@ function GeoChart(props) {
   var renderDatasetSelector = function renderDatasetSelector() {
     if (inputs && chartData && inputs.category) {
       if (Object.keys(datasetRegistry).length > 1) {
-        var label = chartType === 'pie' || chartType === 'doughnut' ? "".concat(t('geochart.category'), ":") : '';
-        return /*#__PURE__*/(0,jsx_runtime.jsxs)("div", {
-          children: [/*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
+        var label = chartType === 'pie' || chartType === 'doughnut' ? "".concat(t('geochart.categories'), ":") : '';
+        return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+          sx: sxClasses.checkDatasetContainer,
+          role: "group",
+          "aria-label": t('geochart.categories'),
+          children: [label && /*#__PURE__*/(0,jsx_runtime.jsx)(Typography, {
             sx: sxClasses.checkDatasetWrapperLabel,
             children: label
           }), Object.entries(datasetRegistry).filter(function (_ref13) {
@@ -66310,7 +66500,7 @@ function GeoChart(props) {
               dsOption = _ref16[1];
             var color;
             if (chartType === 'line' || chartType === 'bar') color = dsOption.borderColor;
-            var checkboxId = "checkboxDataset-".concat(dsLabel); // Ensure uniqueness if rendering multiple
+            var checkboxId = "".concat(datasetCheckboxBaseId, "-").concat(idx); // Ensure uniqueness if rendering multiple
             return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
               component: "label",
               htmlFor: checkboxId,
@@ -66336,7 +66526,7 @@ function GeoChart(props) {
     }
 
     // Empty
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
@@ -66347,7 +66537,10 @@ function GeoChart(props) {
     if (inputs && chartData) {
       if (chartType === 'pie' || chartType === 'doughnut') {
         if (Object.keys(datasRegistry).length > 1) {
-          return /*#__PURE__*/(0,jsx_runtime.jsx)(jsx_runtime.Fragment, {
+          return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+            sx: sxClasses.checkDatasetContainer,
+            role: "group",
+            "aria-label": t('geochart.dataLabels'),
             children: Object.entries(datasRegistry).filter(function (_ref17) {
               var _ref18 = _slicedToArray(_ref17, 2),
                 dsOption = _ref18[1];
@@ -66357,7 +66550,7 @@ function GeoChart(props) {
                 dsLabel = _ref20[0],
                 dsOption = _ref20[1];
               var color = dsOption.borderColor;
-              var checkboxId = "checkboxDatas-".concat(dsLabel); // Ensure uniqueness if rendering multiple
+              var checkboxId = "".concat(dataCheckboxBaseId, "-").concat(idx); // Ensure uniqueness if rendering multiple
 
               return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
                 component: "label",
@@ -66385,7 +66578,7 @@ function GeoChart(props) {
     }
 
     // Empty
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {});
+    return null;
   };
 
   /**
@@ -66393,75 +66586,60 @@ function GeoChart(props) {
    * @returns The Chart container JSX.Element or an empty box
    */
   var renderChartContainer = function renderChartContainer() {
+    var _inputs$ui8;
     // The xs: 1, 11 and 12 used here are as documented online
-    return /*#__PURE__*/(0,jsx_runtime.jsx)(Paper, {
+    return /*#__PURE__*/(0,jsx_runtime.jsxs)(Paper, {
       sx: chart_objectSpread(chart_objectSpread({}, sx), sxClasses.mainGeoChartContainer),
-      children: /*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
-        container: true,
-        sx: {
-          m: '20px'
-        },
-        children: [/*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
-          item: true,
-          size: {
-            xs: 12
-          },
+      children: [/*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+        sx: sxClasses.headerContainer,
+        children: [/*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+          sx: sxClasses.header,
           children: [/*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
-            sx: sxClasses.header,
-            children: [renderDatasourceSelector(), renderUIOptions(), renderLockOptions(), renderDownload()]
-          }), /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
-            sx: sxClasses.title,
-            children: renderTitle()
+            sx: sxClasses.headerSelections,
+            role: "group",
+            "aria-label": t('geochart.filters'),
+            children: [renderDatasourceSelector(), renderUIOptions()]
           }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
-            sx: sxClasses.dataset,
-            children: [renderDataSelector(), renderDatasetSelector()]
+            sx: sxClasses.headerActions,
+            role: "group",
+            "aria-label": t('geochart.actions'),
+            children: [renderUIOptionsResetStates(), renderLockOptions(), renderDownload()]
           })]
-        }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
-          item: true,
+        }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+          sx: sxClasses.dataset,
+          children: [renderTitle(), renderDataSelector(), renderDatasetSelector()]
+        })]
+      }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+        sx: sxClasses.chartContentContainer,
+        children: [(chartType === 'line' || chartType === 'bar') && /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
           sx: sxClasses.yAxisContainer,
-          size: {
-            xs: 1
-          },
           children: renderYAxisLabel()
-        }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
-          item: true,
+        }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
           sx: sxClasses.chartContent,
-          size: {
-            xs: 10
-          },
           children: [isLoadingDatasource && /*#__PURE__*/(0,jsx_runtime.jsx)(CircularProgress, {
+            "aria-label": t('geochart.loadingData'),
             sx: sxClasses.loadingDatasource
           }), renderChart()]
-        }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
-          item: true,
-          size: {
-            xs: 1
-          },
+        }), (inputs === null || inputs === void 0 ? void 0 : inputs.chart) === 'line' && ((_inputs$ui8 = inputs.ui) === null || _inputs$ui8 === void 0 || (_inputs$ui8 = _inputs$ui8.ySlider) === null || _inputs$ui8 === void 0 ? void 0 : _inputs$ui8.display) && /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+          sx: sxClasses.ySliderContainer,
           children: renderYSlider()
-        }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
-          item: true,
-          size: {
-            xs: 1.25
-          }
-        }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Grid, {
-          item: true,
-          size: {
-            xs: 9.75
-          },
-          children: [renderXAxisLabel(), renderXSlider()]
-        }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
-          item: true,
-          size: {
-            xs: 1
-          }
-        }), /*#__PURE__*/(0,jsx_runtime.jsx)(Grid, {
-          item: true,
-          size: {
-            xs: 12
-          },
-          children: renderDescription()
         })]
-      })
+      }), /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+        sx: sxClasses.xAxisContainer,
+        children: [renderXAxisLabel(), renderXSlider()]
+      }), renderDescription(), /*#__PURE__*/(0,jsx_runtime.jsx)(Box, {
+        role: "status",
+        "aria-live": "polite",
+        "aria-atomic": "true",
+        sx: {
+          position: 'absolute',
+          left: '-10000px',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden'
+        },
+        children: liveAnnouncement
+      })]
     });
   };
 
@@ -66472,7 +66650,9 @@ function GeoChart(props) {
   var renderEverything = function renderEverything() {
     return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
       sx: sxClasses.mainContainer,
-      children: [!isLoadingChart && renderChartContainer(), isLoadingChart && /*#__PURE__*/(0,jsx_runtime.jsx)(CircularProgress, {})]
+      children: [!isLoadingChart && renderChartContainer(), isLoadingChart && /*#__PURE__*/(0,jsx_runtime.jsx)(CircularProgress, {
+        "aria-label": t('geochart.loadingChart')
+      })]
     });
   };
 
@@ -66482,6 +66662,7 @@ function GeoChart(props) {
    */
   var renderChartContainerFailed = function renderChartContainerFailed() {
     return /*#__PURE__*/(0,jsx_runtime.jsxs)(Box, {
+      role: "alert",
       sx: sxClasses.chartError,
       children: [t('geochart.parsingError'), " ", t('geochart.viewConsoleDetails')]
     });
