@@ -61898,7 +61898,7 @@ var getSxClasses = function getSxClasses(theme) {
       display: 'flex',
       flexDirection: 'column',
       gap: '10px',
-      width: '80%',
+      width: '70%',
       // Provide room to the left and right for tooltips
       justifyContent: 'center',
       alignItems: 'stretch',
@@ -66194,7 +66194,6 @@ function GeoChart(props) {
             max: xSliderMax,
             step: xSliderSteps,
             value: xSliderValues || 0,
-            valueLabelDisplay: "auto",
             onChange: handleSliderXChange,
             onChangeCommitted: handleSliderXChangeCommitted,
             onValueLabelFormat: handleSliderXValueFormat,
