@@ -1898,7 +1898,6 @@ export function GeoChart<
               max={xSliderMax}
               step={xSliderSteps}
               value={xSliderValues || 0}
-              valueLabelDisplay="auto"
               onChange={handleSliderXChange}
               onChangeCommitted={handleSliderXChangeCommitted}
               onValueLabelFormat={handleSliderXValueFormat}
