@@ -148,9 +148,9 @@ export type GeoChartCategoryGroup<TData> = {
  * The default colors to assign to the chart.
  */
 export type GeoChartDefaultColors = {
-  backgroundColor: string;
-  borderColor: string;
-  color: string;
+  backgroundColor?: string;
+  borderColor?: string;
+  color?: string;
 };
 
 /**
