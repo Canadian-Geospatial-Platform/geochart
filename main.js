@@ -64530,9 +64530,6 @@ function GeoChart(props) {
   // WCAG - Generate unique IDs
   var xAxisLabelId = useId();
   var yAxisLabelId = useId();
-  var datasourceLabelId = useId();
-  var stepsLabelId = useId();
-  var scaleLabelId = useId();
   var datasetCheckboxBaseId = useId();
   var dataCheckboxBaseId = useId();
 
@@ -66313,13 +66310,13 @@ function GeoChart(props) {
       if (inputs.datasources.length > 1) featureLabel += 's';
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
         title: t('geochart.featuresTooltip'),
+        describeChild: true,
         arrow: true,
         placement: "top",
         children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
           container: containerElement,
           sx: sxClasses.datasourceSelector,
           label: featureLabel,
-          labelId: datasourceLabelId,
           onChange: handleDatasourceChanged,
           menuItems: menuItems,
           value: (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.value) || (selectedDatasource === null || selectedDatasource === void 0 ? void 0 : selectedDatasource.display) || ''
@@ -66373,13 +66370,13 @@ function GeoChart(props) {
       });
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
         title: t('geochart.stepsTooltip'),
+        describeChild: true,
         arrow: true,
         placement: "top",
         children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
           container: containerElement,
           sx: sxClasses.uiOptionsStepsSelector,
           label: t('geochart.steps'),
-          labelId: stepsLabelId,
           onChange: handleStepsSwitcherChanged,
           menuItems: menuItems,
           value: (_ref12 = selectedSteps !== null && selectedSteps !== void 0 ? selectedSteps : inputs === null || inputs === void 0 ? void 0 : inputs.geochart.useSteps) !== null && _ref12 !== void 0 ? _ref12 : false
@@ -66413,13 +66410,13 @@ function GeoChart(props) {
       });
       return /*#__PURE__*/(0,jsx_runtime.jsx)(Tooltip, {
         title: t('geochart.scaleTooltip'),
+        describeChild: true,
         arrow: true,
         placement: "top",
         children: /*#__PURE__*/(0,jsx_runtime.jsx)(Select, {
           container: containerElement,
           sx: sxClasses.uiOptionsScaleSelector,
           label: t('geochart.scale'),
-          labelId: scaleLabelId,
           onChange: handleScalesSwitcherChanged,
           menuItems: menuItems,
           value: selectedScale || (inputs === null || inputs === void 0 || (_inputs$geochart$yAxi5 = inputs.geochart.yAxis) === null || _inputs$geochart$yAxi5 === void 0 ? void 0 : _inputs$geochart$yAxi5.type) || 'linear'
