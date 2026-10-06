@@ -221,9 +221,6 @@ export function GeoChart<
   // WCAG - Generate unique IDs
   const xAxisLabelId = useId();
   const yAxisLabelId = useId();
-  const datasourceLabelId = useId();
-  const stepsLabelId = useId();
-  const scaleLabelId = useId();
   const datasetCheckboxBaseId = useId();
   const dataCheckboxBaseId = useId();
 
@@ -2006,12 +2003,11 @@ export function GeoChart<
       if (inputs.datasources.length > 1) featureLabel += 's';
 
       return (
-        <Tooltip title={t('geochart.featuresTooltip')} arrow placement="top">
+        <Tooltip title={t('geochart.featuresTooltip')} describeChild arrow placement="top">
           <Select
             container={containerElement}
             sx={sxClasses.datasourceSelector}
             label={featureLabel}
-            labelId={datasourceLabelId}
             onChange={handleDatasourceChanged}
             menuItems={menuItems}
             value={selectedDatasource?.value || selectedDatasource?.display || ''}
@@ -2058,12 +2054,11 @@ export function GeoChart<
       });
 
       return (
-        <Tooltip title={t('geochart.stepsTooltip')} arrow placement="top">
+        <Tooltip title={t('geochart.stepsTooltip')} describeChild arrow placement="top">
           <Select
             container={containerElement}
             sx={sxClasses.uiOptionsStepsSelector}
             label={t('geochart.steps')}
-            labelId={stepsLabelId}
             onChange={handleStepsSwitcherChanged}
             menuItems={menuItems}
             value={selectedSteps ?? inputs?.geochart.useSteps ?? false}
@@ -2091,12 +2086,11 @@ export function GeoChart<
       });
 
       return (
-        <Tooltip title={t('geochart.scaleTooltip')} arrow placement="top">
+        <Tooltip title={t('geochart.scaleTooltip')} describeChild arrow placement="top">
           <Select
             container={containerElement}
             sx={sxClasses.uiOptionsScaleSelector}
             label={t('geochart.scale')}
-            labelId={scaleLabelId}
             onChange={handleScalesSwitcherChanged}
             menuItems={menuItems}
             value={selectedScale || inputs?.geochart.yAxis?.type || 'linear'}
